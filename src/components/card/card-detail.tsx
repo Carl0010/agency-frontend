@@ -145,7 +145,7 @@ function Title({ card, onSave }: { card: Detail; onSave: (title: string) => Prom
   }
   return (
     <h1 className="mt-1 text-xl font-semibold">
-      <button type="button" onClick={() => setEditing(true)} className="w-full break-words text-left hover:bg-slate-50" data-testid="card-title">
+      <button type="button" onClick={() => setEditing(true)} className="tap w-full break-words text-left hover:bg-slate-50" data-testid="card-title">
         {card.title}
       </button>
     </h1>
@@ -349,7 +349,7 @@ function Description({ card, onSave }: { card: Detail; onSave: (d: string | null
           </div>
         </div>
       ) : card.description ? (
-        <div role="button" tabIndex={0} onClick={begin} onKeyDown={(e) => e.key === 'Enter' && begin()} className="cursor-text rounded p-1 hover:bg-slate-50" data-testid="description">
+        <div role="button" tabIndex={0} onClick={begin} onKeyDown={(e) => e.key === 'Enter' && begin()} className="tap cursor-text rounded p-1 hover:bg-slate-50" data-testid="description">
           <Markdown source={card.description} />
         </div>
       ) : (

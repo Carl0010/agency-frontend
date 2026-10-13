@@ -19,6 +19,17 @@ body {
     min-height: 44px;
     min-width: 44px;
   }
+  /* Form controls are targets too, including inline-edit fields and checkboxes. */
+  input:not([type='checkbox'], [type='radio'], [type='hidden']),
+  select,
+  textarea {
+    min-height: 44px;
+  }
+  input[type='checkbox'],
+  input[type='radio'] {
+    min-height: 44px;
+    min-width: 44px;
+  }
 }
 
 .prose-sm p {

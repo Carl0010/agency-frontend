@@ -1,4 +1,5 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test } from '@playwright/test';
+import { list, signupToBoard } from './helpers';
 
 /**
  * Slice 1 smoke path: signup → onboarding → board, then a second browser on
@@ -6,32 +7,10 @@ import { expect, test, type Page } from '@playwright/test';
  * and comments on a card. Order survives a reload.
  */
 
-const list = (page: Page, name: string) => page.getByRole('region', { name: `List ${name}` });
-
 test('signup to a commented card, live in a second browser', async ({ browser }) => {
-  const stamp = Date.now();
-  const email = `smoke-${stamp}@example.test`;
-  const password = 'smoke-password-123';
-
-  const a = await (await browser.newContext()).newPage();
-  await a.goto('/signup');
-  await a.getByLabel('Your name').fill('Smoke Owner');
-  await a.getByLabel('Work email').fill(email);
-  await a.getByLabel('Password').fill(password);
-  await a.getByRole('button', { name: 'Create account' }).click();
-
-  // Onboarding step 1: name the workspace.
-  await expect(a).toHaveURL(/\/onboarding$/);
-  await a.getByLabel('Agency name').fill(`Smoke Agency ${stamp}`);
-  await a.getByRole('button', { name: 'Continue' }).click();
-
-  // Step 2: first client project → lands on its board with the three default lists.
-  await a.getByLabel('Project name').fill('Acme site rebuild');
-  await a.getByLabel('Client name').fill('Acme');
-  await a.getByRole('button', { name: 'Create project' }).click();
-  await expect(a).toHaveURL(/\/w\/[^/]+\/p\/[^/]+\/b\/[^/]+$/);
-  for (const name of ['To do', 'In progress', 'Done']) await expect(list(a, name)).toBeVisible();
-  const boardUrl = a.url();
+  const { page: a, account } = await signupToBoard(browser);
+  const { email, password, boardUrl } = account;
+  for (const name of ['In progress', 'Done']) await expect(list(a, name)).toBeVisible();
 
   // Browser B: same account, separate session, same board.
   const b = await (await browser.newContext()).newPage();

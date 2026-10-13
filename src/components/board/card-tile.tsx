@@ -94,7 +94,7 @@ export function SortableCard({ card, projectKey, now, href, disabled }: { card: 
       aria-label={`${projectKey}-${card.number}: ${card.title}`}
       data-testid="card-tile"
       data-card-id={card.id}
-      className={`tap cursor-pointer rounded-md focus-visible:outline-2 focus-visible:outline-blue-600 ${isDragging ? 'opacity-40' : ''}`}
+      className={`tap shrink-0 cursor-pointer rounded-md focus-visible:outline-2 focus-visible:outline-blue-600 ${isDragging ? 'opacity-40' : ''}`}
     >
       <CardTileView card={card} projectKey={projectKey} now={now} />
     </div>
