@@ -20,13 +20,14 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useMemo, useState, type FormEvent } from 'react';
+import { ProjectRail, ProjectTabs } from '@/components/project-chrome';
 import { useToast } from '@/components/toast';
 import { Avatar, Spinner } from '@/components/ui';
 import { api, errorMessage } from '@/lib/api';
 import { findCard, moveCardLocal, moveListLocal, upsertCard, upsertList } from '@/lib/board-state';
 import { isFiltering, matchesFilters, parseFilters, writeFilters, type BoardFilters } from '@/lib/filters';
 import { useProjectRealtime } from '@/lib/realtime';
-import type { Board, CardTile, Label, Member, Page, Project } from '@/lib/types';
+import type { Board, CardTile, Label, Member, Page } from '@/lib/types';
 import { useNow } from '@/lib/use-now';
 import { useWorkspace } from '@/lib/workspace';
 import { formText } from '@/lib/form';
@@ -184,11 +185,9 @@ export function BoardScreen({ boardId, projectId }: { boardId: string; projectId
             </h1>
             {shown.project.clientName ? <p className="truncate text-xs text-slate-500">{shown.project.clientName}</p> : null}
           </div>
-          <nav className="ml-2 hidden gap-1 text-sm sm:flex" aria-label="Project sections">
-            <span aria-current="page" className="rounded bg-slate-100 px-2 py-1 font-medium">
-              Board
-            </span>
-          </nav>
+          <div className="ml-2">
+            <ProjectTabs projectId={projectId} boardId={boardId} current="board" />
+          </div>
           <div className="ml-auto flex -space-x-1.5">
             {activeMembers.slice(0, 5).map((m) => (
               <Avatar key={m.userId} person={{ id: m.userId, name: m.name, avatarUrl: m.avatarUrl }} size={26} />
@@ -330,37 +329,5 @@ function ArchivedCards({ boardId, cardHref }: { boardId: string; cardHref: (id: 
         </div>
       ) : null}
     </div>
-  );
-}
-
-function ProjectRail({ open, onClose, currentProjectId }: { open: boolean; onClose: () => void; currentProjectId: string }) {
-  const ws = useWorkspace();
-  const projects = useQuery({ queryKey: ['projects', ws.id], queryFn: () => api.get<Page<Project>>(`/workspaces/${ws.id}/projects`) });
-  const body = (
-    <nav aria-label="Projects" className="space-y-1 p-2">
-      <p className="px-2 pb-1 text-xs font-semibold uppercase tracking-wide text-slate-500">Clients</p>
-      {(projects.data?.data ?? []).map((p) => (
-        <Link
-          key={p.id}
-          href={`/w/${ws.slug}/p/${p.id}/b/${p.defaultBoardId}`}
-          onClick={onClose}
-          aria-current={p.id === currentProjectId ? 'page' : undefined}
-          className={`tap block truncate rounded px-2 py-1.5 text-sm ${p.id === currentProjectId ? 'bg-blue-50 font-medium text-blue-800' : 'text-slate-700 hover:bg-slate-100'}`}
-        >
-          {p.name}
-        </Link>
-      ))}
-    </nav>
-  );
-  return (
-    <>
-      <aside className="hidden w-56 shrink-0 overflow-y-auto border-r border-slate-200 bg-white lg:block">{body}</aside>
-      {open ? (
-        <div className="fixed inset-0 z-40 lg:hidden" role="dialog" aria-modal="true" aria-label="Projects">
-          <button type="button" aria-label="Close projects" className="absolute inset-0 bg-black/30" onClick={onClose} />
-          <aside className="absolute inset-y-0 left-0 w-64 overflow-y-auto bg-white shadow-xl">{body}</aside>
-        </div>
-      ) : null}
-    </>
   );
 }

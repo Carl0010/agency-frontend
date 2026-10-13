@@ -11,7 +11,8 @@ import { useWorkspace } from '@/lib/workspace';
 /**
  * Textarea with `@` mention typeahead (AC20). Candidates come from
  * `?mentionable=true`, which the API limits to active non-guest members.
- * `⌘↵` / `Ctrl↵` submits.
+ * `⌘↵` / `Ctrl↵` submits; with `enterToSend` (chat, §3.4) `↵` sends and
+ * `⇧↵` inserts a newline.
  */
 export function MentionInput({
   value,
@@ -20,6 +21,9 @@ export function MentionInput({
   placeholder,
   autoFocus,
   label,
+  enterToSend = false,
+  onTyping,
+  rows = 3,
 }: {
   value: string;
   onChange: (v: string) => void;
@@ -27,6 +31,9 @@ export function MentionInput({
   placeholder?: string;
   autoFocus?: boolean;
   label: string;
+  enterToSend?: boolean;
+  onTyping?: () => void;
+  rows?: number;
 }) {
   const ws = useWorkspace();
   const ref = useRef<HTMLTextAreaElement>(null);
@@ -76,7 +83,7 @@ export function MentionInput({
         return;
       }
     }
-    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey || (enterToSend && !e.shiftKey && !e.nativeEvent.isComposing))) {
       e.preventDefault();
       onSubmit();
     }
@@ -87,13 +94,14 @@ export function MentionInput({
       <textarea
         ref={ref}
         value={value}
-        rows={3}
+        rows={rows}
         aria-label={label}
         placeholder={placeholder}
         autoFocus={autoFocus}
         maxLength={10_000}
         onChange={(e) => {
           onChange(e.target.value);
+          onTyping?.();
           setCaret(e.target.selectionStart);
           setHighlight(0);
         }}

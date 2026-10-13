@@ -189,3 +189,103 @@ export interface Page<T> {
 export interface ErrorEnvelope {
   error: { code: string; message: string; details?: Record<string, unknown> };
 }
+
+// ---------------------------------------------------------------------------
+// Slice 2: chat, notifications, search
+// ---------------------------------------------------------------------------
+
+export type ChannelKind = 'client' | 'internal';
+
+export interface Channel {
+  id: string;
+  projectId: string;
+  kind: ChannelKind;
+  name: string;
+  lastReadMessageAt: string | null;
+  lastMessageAt: string | null;
+  unreadCount: number;
+}
+
+export interface MessageAttachment {
+  id: string;
+  filename: string;
+  mimeType: string | null;
+  sizeBytes: number | null;
+  scanState: 'pending' | 'clean' | 'blocked';
+  uploaded: boolean;
+}
+
+export interface Message {
+  id: string;
+  channelId: string;
+  projectId: string;
+  threadRootId: string | null;
+  body: string | null;
+  author: PersonRef;
+  mentionedUserIds: string[];
+  attachments: MessageAttachment[];
+  replyCount: number;
+  lastReplyAt: string | null;
+  createdAt: string;
+  editedAt: string | null;
+  deletedAt: string | null;
+}
+
+export type NotificationType = 'mention' | 'assignment' | 'due_soon' | 'due_now' | 'new_message' | 'thread_reply';
+
+export interface AppNotification {
+  id: string;
+  workspaceId: string;
+  projectId: string | null;
+  type: NotificationType;
+  subjectType: 'card' | 'comment' | 'message';
+  subjectId: string;
+  actorUserId: string | null;
+  title: string;
+  body: string;
+  context: string;
+  url: string;
+  readAt: string | null;
+  createdAt: string;
+  fromClient: boolean;
+}
+
+export interface NotificationFeed extends Page<AppNotification> {
+  unreadCount: number;
+}
+
+export interface NotificationPreference {
+  type: NotificationType;
+  label: string;
+  inApp: true;
+  email: boolean;
+  push: boolean;
+}
+
+export type SearchType = 'card' | 'comment' | 'message';
+
+export interface SearchHit {
+  type: SearchType;
+  id: string;
+  projectId: string;
+  projectName: string;
+  title: string;
+  snippet: { text: string; hit: boolean }[];
+  author: { id: string; name: string } | null;
+  createdAt: string;
+  url: string;
+  score: number;
+}
+
+export interface SearchGroup {
+  count: number;
+  countCapped: boolean;
+  items: SearchHit[];
+  nextOffset: number | null;
+}
+
+export interface SearchResult {
+  q: string;
+  fallback: boolean;
+  groups: Record<SearchType, SearchGroup>;
+}

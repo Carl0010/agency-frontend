@@ -7,7 +7,7 @@ import { Markdown } from '@/components/markdown';
 import { useToast } from '@/components/toast';
 import { Avatar, Button, LABEL_BG, Spinner } from '@/components/ui';
 import { api, ApiError, errorMessage } from '@/lib/api';
-import { applyTile, useProjectRealtime } from '@/lib/realtime';
+import { applyTile, useProjectRealtime, useRoom } from '@/lib/realtime';
 import { timeAgo, toLocalInput } from '@/lib/time';
 import type { Board, CardDetail as Detail, CardTile, Label, Member, Page } from '@/lib/types';
 import { useNow } from '@/lib/use-now';
@@ -25,6 +25,8 @@ export function CardDetail({ cardId, boardHref }: { cardId: string; boardHref: s
   const now = useNow();
   const card = useQuery({ queryKey: ['card', cardId], queryFn: () => api.get<Detail>(`/cards/${cardId}`) });
   useProjectRealtime(card.data?.projectId);
+  // Being in card:{id} marks this card as "being viewed": comments on it arrive in-app, not as a push (§4.1).
+  useRoom(card.data ? `card:${cardId}` : null, {});
 
   /** Runs a card mutation; a returned tile updates board + card caches immediately. */
   const mutate = async (fn: () => Promise<unknown>) => {

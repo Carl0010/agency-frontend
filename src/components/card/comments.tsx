@@ -1,7 +1,8 @@
 'use client';
 
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import { Markdown } from '@/components/markdown';
 import { useToast } from '@/components/toast';
 import { Avatar, Button, Spinner } from '@/components/ui';
@@ -46,6 +47,13 @@ export function Comments({ cardId }: { cardId: string }) {
     if (await post(draft)) setDraft('');
     setBusy(false);
   }
+
+  // Notification deep links land on the exact comment (AC19).
+  const target = useSearchParams().get('comment');
+  const loaded = comments.data !== undefined;
+  useEffect(() => {
+    if (target && loaded) document.getElementById(`comment-${target}`)?.scrollIntoView({ block: 'center' });
+  }, [target, loaded]);
 
   const all = comments.data ?? [];
   const roots = all.filter((c) => !c.parentCommentId);
@@ -94,6 +102,7 @@ function Replies({ replies, cardId }: { replies: Comment[]; cardId: string }) {
 }
 
 function CommentItem({ comment, cardId, onReply }: { comment: Comment; cardId: string; onReply?: (body: string) => Promise<boolean> }) {
+  const highlighted = useSearchParams().get('comment') === comment.id;
   const { user } = useSession();
   const qc = useQueryClient();
   const toast = useToast();
@@ -126,7 +135,12 @@ function CommentItem({ comment, cardId, onReply }: { comment: Comment; cardId: s
   }
 
   return (
-    <article data-testid="comment" data-comment-id={comment.id} className="flex gap-2">
+    <article
+      id={`comment-${comment.id}`}
+      data-testid="comment"
+      data-comment-id={comment.id}
+      className={`flex gap-2 rounded ${highlighted ? 'bg-amber-50 ring-2 ring-amber-200' : ''}`}
+    >
       <Avatar person={comment.author} size={28} />
       <div className="min-w-0 flex-1">
         <p className="text-sm">

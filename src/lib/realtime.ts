@@ -1,7 +1,7 @@
 'use client';
 
 import { useQueryClient, type QueryClient } from '@tanstack/react-query';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { io, type Socket } from 'socket.io-client';
 import { getAccessToken, onAccessToken, refreshSession } from './api';
 import { removeList, upsertCard, upsertList } from './board-state';
@@ -21,7 +21,7 @@ function wsUrl(): string {
   return process.env.NEXT_PUBLIC_WS_URL ?? `${window.location.protocol}//${window.location.hostname}:4100`;
 }
 
-function getSocket(): Socket {
+export function getSocket(): Socket {
   if (socket) return socket;
   const s = io(wsUrl(), {
     path: '/ws',
@@ -142,4 +142,85 @@ export function useProjectRealtime(projectId: string | undefined): void {
       }
     };
   }, [projectId, qc]);
+}
+
+// ---------------------------------------------------------------------------
+// Generic rooms (channel:{id}, card:{id}) and per-user events
+// ---------------------------------------------------------------------------
+
+let pinger: ReturnType<typeof setInterval> | null = null;
+
+/** Re-stamps "currently viewing" for channel/card rooms so the server skips push for them (§4.1). */
+function ensurePinger(s: Socket): void {
+  if (pinger) return;
+  pinger = setInterval(() => {
+    const viewing = [...roomRefs.keys()].some((r) => r.startsWith('channel:') || r.startsWith('card:'));
+    if (viewing && s.connected) s.emit('presence.ping');
+  }, 30_000);
+}
+
+/**
+ * Joins `room` while mounted and routes the given events to `handlers`.
+ * `onJoin` runs after every (re)join so callers can refetch what they missed.
+ */
+export function useRoom(
+  room: string | null,
+  handlers: Record<string, (payload: never) => void>,
+  onJoin?: () => void,
+): void {
+  // Handlers change every render; keep the latest without re-subscribing.
+  const ref = useRef({ handlers, onJoin });
+  ref.current = { handlers, onJoin };
+  const events = Object.keys(handlers).sort().join('|');
+
+  useEffect(() => {
+    if (!room) return;
+    const s = getSocket();
+    ensurePinger(s);
+    roomRefs.set(room, (roomRefs.get(room) ?? 0) + 1);
+    const join = () => {
+      s.emit('join', { room });
+      ref.current.onJoin?.();
+    };
+    const bound = events
+      .split('|')
+      .filter(Boolean)
+      .map((event) => {
+        const fn = (payload: unknown) => (ref.current.handlers[event] as ((p: unknown) => void) | undefined)?.(payload);
+        s.on(event, fn);
+        return [event, fn] as const;
+      });
+    s.on('connect', join);
+    if (s.connected) join();
+    return () => {
+      for (const [event, fn] of bound) s.off(event, fn);
+      s.off('connect', join);
+      const left = (roomRefs.get(room) ?? 1) - 1;
+      if (left > 0) roomRefs.set(room, left);
+      else {
+        roomRefs.delete(room);
+        s.emit('leave', { room });
+      }
+    };
+  }, [room, events]);
+}
+
+/** Listens to an event on this user's own room (`user:{id}`, joined by the server at connect). */
+export function useUserEvent<T>(event: string, handler: (payload: T) => void): void {
+  const ref = useRef(handler);
+  ref.current = handler;
+  useEffect(() => {
+    const s = getSocket();
+    const fn = (payload: unknown) => ref.current(payload as T);
+    s.on(event, fn);
+    return () => {
+      s.off(event, fn);
+    };
+  }, [event]);
+}
+
+/** Emits on the shared socket (typing indicators). */
+export function emit(event: string, payload: Record<string, unknown>): void {
+  const s = getSocket();
+  if (s.connected) s.emit(event, payload);
 }

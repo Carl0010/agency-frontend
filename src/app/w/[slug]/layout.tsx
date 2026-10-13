@@ -4,6 +4,8 @@ import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useParams, usePathname, useRouter } from 'next/navigation';
 import { useEffect, type ReactNode } from 'react';
+import { NotificationBell, PushExplainer } from '@/components/notifications';
+import { CommandPalette, OPEN_EVENT } from '@/components/search/command-palette';
 import { Avatar, Spinner } from '@/components/ui';
 import { api, ApiError } from '@/lib/api';
 import { rememberWorkspace } from '@/lib/landing';
@@ -47,6 +49,7 @@ export default function WorkspaceLayout({ children }: { children: ReactNode }) {
   const nav = [
     { href: `/w/${slug}/projects`, label: 'Projects' },
     { href: `/w/${slug}/settings/members`, label: 'Members' },
+    { href: `/w/${slug}/settings/notifications`, label: 'Notifications' },
   ];
   return (
     <WorkspaceContext.Provider value={ws.data}>
@@ -67,14 +70,24 @@ export default function WorkspaceLayout({ children }: { children: ReactNode }) {
             ))}
           </nav>
           <div className="ml-auto flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => window.dispatchEvent(new Event(OPEN_EVENT))}
+              className="tap hidden items-center gap-2 rounded-md border border-slate-200 px-2 text-sm text-slate-500 hover:bg-slate-50 sm:flex"
+            >
+              Search <kbd className="rounded bg-slate-100 px-1 text-xs">⌘K</kbd>
+            </button>
+            <NotificationBell />
             <Avatar person={{ ...user, active: true }} size={28} />
             <button type="button" className="tap px-2 text-sm text-slate-600 hover:text-slate-900" onClick={() => void signOut().then(() => router.replace('/login'))}>
               Log out
             </button>
           </div>
         </header>
+        <PushExplainer />
         <div className="min-h-0 flex-1">{children}</div>
       </div>
+      <CommandPalette />
     </WorkspaceContext.Provider>
   );
 }
