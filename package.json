@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start -p 3200",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint src",
+    "lint": "eslint src e2e",
     "test": "jest",
     "test:e2e": "playwright test"
   },
