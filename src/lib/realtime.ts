@@ -1,0 +1,145 @@
+'use client';
+
+import { useQueryClient, type QueryClient } from '@tanstack/react-query';
+import { useEffect } from 'react';
+import { io, type Socket } from 'socket.io-client';
+import { getAccessToken, onAccessToken, refreshSession } from './api';
+import { removeList, upsertCard, upsertList } from './board-state';
+import type { Board, CardDetail, CardTile, Comment } from './types';
+
+/**
+ * One socket per tab, authenticated at the handshake with the in-memory
+ * access token. Rooms are joined by asking the server, which re-checks access
+ * (AC21) — the client never decides what it may hear.
+ */
+
+let socket: Socket | null = null;
+/** Rooms are ref-counted: a card modal and the board under it share one subscription. */
+const roomRefs = new Map<string, number>();
+
+function wsUrl(): string {
+  return process.env.NEXT_PUBLIC_WS_URL ?? `${window.location.protocol}//${window.location.hostname}:4100`;
+}
+
+function getSocket(): Socket {
+  if (socket) return socket;
+  const s = io(wsUrl(), {
+    path: '/ws',
+    transports: ['websocket'],
+    // Read on every (re)connect so a rotated token is picked up.
+    auth: (cb) => cb({ token: getAccessToken() ?? '' }),
+  });
+  s.on('connect_error', (err) => {
+    if (err.message === 'unauthenticated') {
+      void refreshSession().then((res) => {
+        if (res) s.connect();
+      });
+    }
+  });
+  onAccessToken((token) => {
+    if (!token) s.disconnect();
+    else if (!s.connected) s.connect();
+  });
+  socket = s;
+  return s;
+}
+
+const boardQueries = (qc: QueryClient) => qc.getQueryCache().findAll({ queryKey: ['board'] });
+
+/** Writes a fresh tile into the board and card caches. Used by realtime and by local mutations. */
+export function applyTile(qc: QueryClient, tile: CardTile): void {
+  qc.setQueryData<Board>(['board', tile.boardId], (b) => (b ? upsertCard(b, tile) : b));
+  qc.setQueryData<CardDetail>(['card', tile.id], (c) => (c ? { ...c, ...tile } : c));
+}
+
+export function applyComment(qc: QueryClient, comment: Comment): void {
+  qc.setQueryData<Comment[]>(['comments', comment.cardId], (list) => {
+    if (!list) return list;
+    return list.some((c) => c.id === comment.id)
+      ? list.map((c) => (c.id === comment.id ? comment : c))
+      : [...list, comment];
+  });
+}
+
+/** Subscribes this tab to a project's board events for as long as the component is mounted. */
+export function useProjectRealtime(projectId: string | undefined): void {
+  const qc = useQueryClient();
+
+  useEffect(() => {
+    if (!projectId) return;
+    const s = getSocket();
+    const room = `project:${projectId}:board`;
+    let resync: ReturnType<typeof setTimeout> | null = null;
+    // Positions may be renormalised server-side; a debounced refetch re-aligns sibling positions.
+    const scheduleResync = () => {
+      if (resync) clearTimeout(resync);
+      resync = setTimeout(() => void qc.invalidateQueries({ queryKey: ['board'] }), 400);
+    };
+
+    roomRefs.set(room, (roomRefs.get(room) ?? 0) + 1);
+    const join = () => {
+      s.emit('join', { room });
+      // Anything missed while disconnected is picked up by a refetch.
+      void qc.invalidateQueries({ queryKey: ['board'] });
+    };
+    const onTile = ({ card }: { card: CardTile }) => {
+      applyTile(qc, card);
+      void qc.invalidateQueries({ queryKey: ['card', card.id] });
+    };
+    const onMoved = ({ card }: { card: CardTile }) => {
+      applyTile(qc, card);
+      scheduleResync();
+    };
+    const onList = ({ list }: { list: { id: string; boardId: string; name: string; position: number } }) => {
+      qc.setQueryData<Board>(['board', list.boardId], (b) => (b ? upsertList(b, list) : b));
+    };
+    const onListArchived = ({ listId }: { listId: string }) => {
+      for (const q of boardQueries(qc)) qc.setQueryData<Board>(q.queryKey, (b) => (b ? removeList(b, listId) : b));
+    };
+    const onComment = ({ comment, card }: { comment: Comment; card: CardTile }) => {
+      applyTile(qc, card);
+      applyComment(qc, comment);
+    };
+    const onCardChanged = ({ card }: { card: CardTile }) => {
+      applyTile(qc, card);
+      void qc.invalidateQueries({ queryKey: ['card', card.id] });
+    };
+
+    // Socket payloads are untyped at the wire; the server builds them from the same view types.
+    const typed =
+      <T,>(fn: (payload: T) => void) =>
+      (payload: unknown) =>
+        fn(payload as T);
+    const handlers: [string, (payload: unknown) => void][] = [
+      ['card.created', typed(onTile)],
+      ['card.updated', typed(onTile)],
+      ['card.archived', typed(onTile)],
+      ['card.restored', typed(onTile)],
+      ['card.moved', typed(onMoved)],
+      ['list.created', typed(onList)],
+      ['list.updated', typed(onList)],
+      ['list.moved', typed(onList)],
+      ['list.archived', typed(onListArchived)],
+      ['comment.created', typed(onComment)],
+      ['comment.updated', typed(onComment)],
+      ['comment.deleted', typed(onComment)],
+      ['checklist.changed', typed(onCardChanged)],
+      ['attachment.changed', typed(onCardChanged)],
+    ];
+    for (const [event, fn] of handlers) s.on(event, fn);
+    s.on('connect', join);
+    if (s.connected) join();
+
+    return () => {
+      if (resync) clearTimeout(resync);
+      for (const [event, fn] of handlers) s.off(event, fn);
+      s.off('connect', join);
+      const left = (roomRefs.get(room) ?? 1) - 1;
+      if (left > 0) roomRefs.set(room, left);
+      else {
+        roomRefs.delete(room);
+        s.emit('leave', { room });
+      }
+    };
+  }, [projectId, qc]);
+}
