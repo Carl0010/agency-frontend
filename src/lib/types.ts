@@ -10,6 +10,8 @@ export interface User {
   avatarUrl: string | null;
   timezone: string;
   emailVerified: boolean;
+  /** Set once the coach-mark tour was finished or skipped; it never shows again. */
+  tourCompletedAt: string | null;
 }
 
 export interface AuthResponse {
@@ -22,7 +24,21 @@ export interface OnboardingState {
   projectCreated?: boolean;
   memberInvited?: boolean;
   importRun?: boolean;
+  templateApplied?: string;
+  startedEmpty?: boolean;
   dismissedAt?: string;
+}
+
+/** Stepper and "Finish setup (n/4)" chip state, computed by the API (§3.5). */
+export interface SetupProgress {
+  done: number;
+  total: number;
+  step: number;
+  stepsDone: boolean[];
+  projectId: string | null;
+  completed: boolean;
+  dismissed: boolean;
+  showChip: boolean;
 }
 
 export interface Workspace {
@@ -31,8 +47,56 @@ export interface Workspace {
   slug: string;
   onboardingState: OnboardingState;
   role: Role;
-  subscription: { status: string; trialEndsAt: string | null } | null;
+  subscription: { status: SubscriptionStatus; trialEndsAt: string | null } | null;
+  /** null for guests. */
+  setup: SetupProgress | null;
   createdAt: string;
+}
+
+export type SubscriptionStatus = 'trialing' | 'active' | 'past_due' | 'canceled' | 'incomplete' | 'unpaid';
+
+export type BillingBanner =
+  | { kind: 'trial'; day: 11 | 13; daysLeft: number }
+  | { kind: 'grace'; graceEndsAt: string }
+  | { kind: 'past_due' }
+  | { kind: 'read_only'; reason: 'trial_expired' | 'unpaid' | 'canceled'; dataDeleteAfter: string | null };
+
+/** `GET /workspaces/:id/billing` — owner only. Every number and flag is server-computed (AC18). */
+export interface Billing {
+  plan: { name: string; amountCents: number; currency: string; interval: string; seatsIncluded: number };
+  status: SubscriptionStatus;
+  trialEndsAt: string | null;
+  currentPeriodEnd: string | null;
+  nextCharge: { at: string; amountCents: number; currency: string } | null;
+  cancelAtPeriodEnd: boolean;
+  hasPaymentMethod: boolean;
+  dataDeleteAfter: string | null;
+  seats: { used: number; included: number; full: boolean; overCap: boolean };
+  notice: {
+    trialPill: { daysLeft: number; amber: boolean } | null;
+    banner: BillingBanner | null;
+    readOnly: boolean;
+    invitesBlocked: boolean;
+  };
+  invoices: {
+    id: string;
+    number: string | null;
+    amountCents: number;
+    currency: string;
+    status: string | null;
+    createdAt: string;
+    hostedUrl: string | null;
+    pdfUrl: string | null;
+  }[];
+  configured: boolean;
+}
+
+export interface TemplateSummary {
+  id: string;
+  name: string;
+  description: string;
+  lists: string[];
+  cardCount: number;
 }
 
 export interface Member {
@@ -50,6 +114,8 @@ export interface Member {
 export interface Seats {
   used: number;
   included: number;
+  full: boolean;
+  overCap: boolean;
   breakdown: { owner: number; admin: number; member: number; invited: number };
 }
 

@@ -162,6 +162,7 @@ function AddCard({ listId, boardId, at }: { listId: string; boardId: string; at:
         type="button"
         onClick={() => setOpen(true)}
         data-testid={`add-card-${at}`}
+        data-tour={at === 'end' ? 'add-card' : undefined}
         className={`tap mx-2 rounded px-2 py-1 text-left text-sm text-slate-600 hover:bg-slate-200 ${at === 'start' ? 'my-1 hidden sm:block' : 'my-2'}`}
       >
         + Add card

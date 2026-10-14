@@ -10,7 +10,7 @@ export interface Account {
   boardId: string;
 }
 
-/** Signup → onboarding steps 1–2 → lands on the new project's board with the three default lists. */
+/** Signup → onboarding (name, project, skip invites, start empty) → the new project's board with the three default lists. */
 export async function signupToBoard(browser: Browser, options: BrowserContextOptions = {}): Promise<{ page: Page; account: Account }> {
   const stamp = `${Date.now()}-${Math.floor(Math.random() * 1e6)}`;
   const email = `e2e-${stamp}@example.test`;
@@ -30,7 +30,14 @@ export async function signupToBoard(browser: Browser, options: BrowserContextOpt
   await page.getByLabel('Project name').fill('Acme site rebuild');
   await page.getByLabel('Client name').fill('Acme');
   await page.getByRole('button', { name: 'Create project' }).click();
+  // Steps 3–4 (Slice 4): no invites, start with the empty default board.
+  await page.getByRole('heading', { name: 'Invite your team' }).waitFor();
+  await page.getByRole('button', { name: 'Skip', exact: true }).click();
+  await page.getByRole('button', { name: /Start empty/ }).click();
   await expect(page).toHaveURL(/\/w\/[^/]+\/p\/[^/]+\/b\/[^/]+$/);
+  // The coach-mark tour is covered in onboarding.spec.ts; other specs start without it.
+  await page.getByTestId('coach-mark').getByRole('button', { name: 'Skip tour' }).click();
+  await expect(page.getByTestId('coach-mark')).toHaveCount(0);
   // Below 640px only the selected list is shown, so count columns rather than visible regions.
   await expect(page.getByTestId('list-column')).toHaveCount(3);
   await expect(list(page, 'To do')).toBeVisible();

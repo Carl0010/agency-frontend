@@ -1,9 +1,19 @@
 import type { ReactNode } from 'react';
 
-export function AuthCard({ title, children, footer }: { title: string; children: ReactNode; footer?: ReactNode }) {
+export function AuthCard({
+  title,
+  children,
+  footer,
+  wide = false,
+}: {
+  title: string;
+  children: ReactNode;
+  footer?: ReactNode;
+  wide?: boolean;
+}) {
   return (
     <main className="flex min-h-full items-center justify-center px-4 py-12">
-      <div className="w-full max-w-sm">
+      <div className={`w-full ${wide ? 'max-w-2xl' : 'max-w-sm'}`}>
         <p className="mb-6 text-center text-lg font-bold tracking-tight text-blue-700">Agency</p>
         <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
           <h1 className="mb-4 text-xl font-semibold">{title}</h1>

@@ -75,6 +75,7 @@ export default function ProjectsPage() {
             <li key={p.id}>
               <Link
                 href={`/w/${ws.slug}/p/${p.id}/b/${p.defaultBoardId}`}
+                data-tour="project"
                 className="flex items-center gap-3 rounded-lg border border-slate-200 bg-white p-4 hover:border-blue-300 hover:shadow-sm"
               >
                 <span className={`h-3 w-3 shrink-0 rounded-full ${PROJECT_DOT[p.color] ?? 'bg-slate-500'}`} />

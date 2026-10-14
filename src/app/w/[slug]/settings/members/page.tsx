@@ -53,7 +53,7 @@ export default function MembersPage() {
     }
   }
 
-  const full = seats.data ? seats.data.used >= seats.data.included : false;
+  const full = seats.data?.full ?? false;
   const rows = members.data?.data ?? [];
   const order = { active: 0, invited: 1, deactivated: 2 } as const;
   const sorted = [...rows].sort((a, b) => order[a.status] - order[b.status] || a.name.localeCompare(b.name));

@@ -11,8 +11,9 @@ export function rememberWorkspace(slug: string): void {
   }
 }
 
+/** The owner goes back into the stepper until they finish it or dismiss setup (§3.5). */
 export function needsOnboarding(ws: Workspace): boolean {
-  return ws.role === 'owner' && !ws.onboardingState.projectCreated && !ws.onboardingState.dismissedAt;
+  return ws.role === 'owner' && ws.setup !== null && !ws.setup.completed && !ws.setup.dismissed;
 }
 
 /**

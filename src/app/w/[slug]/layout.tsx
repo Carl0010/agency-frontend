@@ -4,7 +4,10 @@ import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useParams, usePathname, useRouter } from 'next/navigation';
 import { useEffect, type ReactNode } from 'react';
+import { BillingBanners, TrialPill } from '@/components/billing/billing-notices';
 import { NotificationBell, PushExplainer } from '@/components/notifications';
+import { SetupChip } from '@/components/onboarding/setup-chip';
+import { CoachMarks } from '@/components/onboarding/tour';
 import { CommandPalette, OPEN_EVENT } from '@/components/search/command-palette';
 import { Avatar, Spinner } from '@/components/ui';
 import { api, ApiError } from '@/lib/api';
@@ -50,6 +53,8 @@ export default function WorkspaceLayout({ children }: { children: ReactNode }) {
     { href: `/w/${slug}/projects`, label: 'Projects' },
     { href: `/w/${slug}/settings/members`, label: 'Members' },
     { href: `/w/${slug}/settings/notifications`, label: 'Notifications' },
+    // Admins and members never see the billing route (§8.6).
+    ...(ws.data.role === 'owner' ? [{ href: `/w/${slug}/settings/billing`, label: 'Billing' }] : []),
   ];
   return (
     <WorkspaceContext.Provider value={ws.data}>
@@ -70,6 +75,8 @@ export default function WorkspaceLayout({ children }: { children: ReactNode }) {
             ))}
           </nav>
           <div className="ml-auto flex items-center gap-2">
+            <SetupChip ws={ws.data} />
+            <TrialPill ws={ws.data} />
             <button
               type="button"
               onClick={() => window.dispatchEvent(new Event(OPEN_EVENT))}
@@ -84,10 +91,12 @@ export default function WorkspaceLayout({ children }: { children: ReactNode }) {
             </button>
           </div>
         </header>
+        <BillingBanners ws={ws.data} />
         <PushExplainer />
         <div className="min-h-0 flex-1">{children}</div>
       </div>
       <CommandPalette />
+      <CoachMarks />
     </WorkspaceContext.Provider>
   );
 }

@@ -76,6 +76,7 @@ export function ProjectTabs({
             key={t.key}
             href={t.href}
             aria-current={t.key === current ? 'page' : undefined}
+            data-tour={t.key === 'client' ? 'client-channel' : undefined}
             className={`tap flex items-center gap-1.5 rounded px-2 ${t.key === current ? 'bg-slate-100 font-medium' : 'text-slate-600 hover:bg-slate-50'}`}
           >
             {t.label}
