@@ -4,7 +4,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState, type FormEvent } from 'react';
 import { FormError } from '@/components/auth-card';
 import { useToast } from '@/components/toast';
-import { Avatar, Button, Input, Spinner } from '@/components/ui';
+import { Avatar, Button, GuestChip, Input, Spinner } from '@/components/ui';
 import { api, ApiError, errorMessage } from '@/lib/api';
 import { useSession } from '@/lib/session';
 import type { Member, Page, Seats } from '@/lib/types';
@@ -92,6 +92,7 @@ export default function MembersPage() {
           {sorted.map((m) => {
             const isOwner = m.role === 'owner';
             const isSelf = m.userId === user?.id;
+            const isGuest = m.role === 'guest';
             return (
               <li key={m.membershipId} data-testid="member-row" className={`flex flex-wrap items-center gap-3 p-3 ${m.status === 'deactivated' ? 'opacity-60' : ''}`}>
                 <Avatar person={{ id: m.userId, name: m.name, avatarUrl: m.avatarUrl, active: m.status !== 'deactivated' }} size={32} />
@@ -104,7 +105,23 @@ export default function MembersPage() {
                     {m.status === 'invited' ? ' · invite pending' : m.status === 'deactivated' ? ' · deactivated' : ''}
                   </p>
                 </div>
-                {canManage && !isOwner && m.status === 'active' ? (
+                {isGuest ? (
+                  <span className="flex items-center gap-2">
+                    <GuestChip />
+                    {canManage && m.status !== 'deactivated' ? (
+                      <Button
+                        variant="secondary"
+                        onClick={() => {
+                          if (window.confirm(`Make ${m.name} a member? They will see every project and use a seat.`)) {
+                            act.mutate(() => api.patch(`/workspaces/${ws.id}/members/${m.userId}`, { role: 'member' }));
+                          }
+                        }}
+                      >
+                        Promote to member
+                      </Button>
+                    ) : null}
+                  </span>
+                ) : canManage && !isOwner && m.status === 'active' ? (
                   <select
                     aria-label={`Role for ${m.name}`}
                     value={m.role}
@@ -117,12 +134,12 @@ export default function MembersPage() {
                 ) : (
                   <span className="text-sm capitalize text-slate-600">{m.role}</span>
                 )}
-                {canManage && m.status === 'invited' ? (
+                {canManage && m.status === 'invited' && !isGuest ? (
                   <Button variant="secondary" onClick={() => act.mutate(() => api.del(`/workspaces/${ws.id}/members/invites/${m.membershipId}`))}>
                     Revoke
                   </Button>
                 ) : null}
-                {canManage && !isOwner && !isSelf && m.status === 'active' ? (
+                {canManage && !isOwner && !isSelf && !isGuest && m.status === 'active' ? (
                   <Button
                     variant="secondary"
                     onClick={() => {
@@ -134,7 +151,7 @@ export default function MembersPage() {
                     Deactivate
                   </Button>
                 ) : null}
-                {canManage && m.status === 'deactivated' ? (
+                {canManage && m.status === 'deactivated' && !isGuest ? (
                   <Button variant="secondary" onClick={() => act.mutate(() => api.patch(`/workspaces/${ws.id}/members/${m.userId}`, { status: 'active' }))}>
                     Reactivate
                   </Button>

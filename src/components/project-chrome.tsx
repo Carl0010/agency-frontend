@@ -2,6 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
+import { GuestsButton } from '@/components/guests/guest-panel';
 import { api } from '@/lib/api';
 import type { ChannelKind, Page, Project } from '@/lib/types';
 import { useWorkspaceChannels } from '@/lib/unread';
@@ -78,10 +79,16 @@ export function ProjectTabs({
             className={`tap flex items-center gap-1.5 rounded px-2 ${t.key === current ? 'bg-slate-100 font-medium' : 'text-slate-600 hover:bg-slate-50'}`}
           >
             {t.label}
+            {t.key === 'internal' ? (
+              <span data-testid="internal-badge" className="rounded bg-slate-200 px-1 text-[10px] font-medium text-slate-700">
+                Internal
+              </span>
+            ) : null}
             {dot ? <UnreadDot label={`Unread in ${t.label}`} /> : null}
           </Link>
         );
       })}
+      <GuestsButton projectId={projectId} />
     </nav>
   );
 }

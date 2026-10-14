@@ -1,5 +1,5 @@
 import { api } from './api';
-import type { Page, Workspace } from './types';
+import type { Page, PortalProject, Workspace } from './types';
 
 const LAST_WS = 'agency:lastWorkspace';
 
@@ -15,9 +15,17 @@ export function needsOnboarding(ws: Workspace): boolean {
   return ws.role === 'owner' && !ws.onboardingState.projectCreated && !ws.onboardingState.dismissedAt;
 }
 
-/** Where a signed-in user lands: their last workspace, or onboarding if setup is unfinished. */
+/**
+ * Where a signed-in user lands: their last workspace, or onboarding if setup
+ * is unfinished. Someone who is only ever a guest lands in the portal.
+ */
 export async function landingPath(): Promise<string> {
-  const { data } = await api.get<Page<Workspace>>('/workspaces');
+  const { data: all } = await api.get<Page<Workspace>>('/workspaces');
+  const data = all.filter((w) => w.role !== 'guest');
+  if (data.length === 0 && all.length > 0) {
+    const portal = await api.get<Page<PortalProject>>('/portal/projects');
+    if (portal.data[0]) return `/portal/${portal.data[0].id}`;
+  }
   let last: string | null = null;
   try {
     last = localStorage.getItem(LAST_WS);

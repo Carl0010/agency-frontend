@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Markdown } from '@/components/markdown';
 import { useToast } from '@/components/toast';
-import { Avatar, Button } from '@/components/ui';
+import { Avatar, Button, GuestChip } from '@/components/ui';
 import { MentionInput } from '@/components/card/mention-input';
 import { api, errorMessage } from '@/lib/api';
 import { replySummary } from '@/lib/chat';
@@ -120,6 +120,7 @@ export function MessageItem({
         {grouped ? null : (
           <div className="flex items-baseline gap-2">
             <span className="text-sm font-semibold">{message.author.name}</span>
+            {message.author.guest ? <GuestChip /> : null}
             <time dateTime={message.createdAt} title={new Date(message.createdAt).toLocaleString()} className="text-xs text-slate-500">
               {timeAgo(message.createdAt, now)}
             </time>

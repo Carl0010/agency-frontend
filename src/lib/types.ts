@@ -57,8 +57,44 @@ export interface InvitePreview {
   workspaceName: string;
   inviterName: string | null;
   role: Role;
+  /** Guest invites: the projects being shared. */
+  projectNames: string[];
   email: string;
   needsAccount: boolean;
+}
+
+export type GuestAccess = 'read' | 'comment';
+
+/** A granted project as the guest portal sees it (§3.6). */
+export interface PortalProject {
+  id: string;
+  workspaceId: string;
+  workspaceName: string;
+  name: string;
+  clientName: string | null;
+  key: string;
+  color: string;
+  defaultBoardId: string;
+  access: GuestAccess;
+}
+
+/** A guest on a project's guest panel (members only). */
+export interface ProjectGuest {
+  userId: string;
+  name: string;
+  email: string;
+  avatarUrl: string | null;
+  access: GuestAccess;
+  status: 'invited' | 'active';
+  grantedBy: { id: string; name: string };
+  grantedAt: string;
+}
+
+/** What a guest sees of the roster: name and avatar only (AC8). */
+export interface RosterEntry {
+  userId: string;
+  name: string;
+  avatarUrl: string | null;
 }
 
 export interface Project {
@@ -85,6 +121,8 @@ export interface PersonRef {
   name: string;
   avatarUrl: string | null;
   active: boolean;
+  /** Comment and message authors: renders the Guest chip (§6.3). */
+  guest?: boolean;
 }
 
 export interface CardTile {

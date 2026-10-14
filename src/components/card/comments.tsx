@@ -5,7 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Markdown } from '@/components/markdown';
 import { useToast } from '@/components/toast';
-import { Avatar, Button, Spinner } from '@/components/ui';
+import { Avatar, Button, GuestChip, Spinner } from '@/components/ui';
 import { api, errorMessage } from '@/lib/api';
 import { applyComment } from '@/lib/realtime';
 import { useSession } from '@/lib/session';
@@ -17,8 +17,15 @@ import { MentionInput } from './mention-input';
 type Thread = Comment & { replies: Comment[] };
 const REPLY_COLLAPSE = 3;
 
-/** Card comment thread (§3.3, AC19): post, edit, delete (tombstone), one level of replies. */
-export function Comments({ cardId }: { cardId: string }) {
+export const VIEW_ONLY = 'You have view-only access to this project.';
+
+/**
+ * Card comment thread (§3.3, AC19): post, edit, delete (tombstone), one level
+ * of replies. `canPost = false` (a `read` guest, §3.6) swaps the composer for
+ * the view-only notice. Nothing is rendered until the server accepts a write,
+ * so a stale tab whose access was lowered shows only the error (AC6).
+ */
+export function Comments({ cardId, canPost = true }: { cardId: string; canPost?: boolean }) {
   const qc = useQueryClient();
   const toast = useToast();
   const [draft, setDraft] = useState('');
@@ -66,20 +73,26 @@ export function Comments({ cardId }: { cardId: string }) {
       <ol className="space-y-4">
         {roots.map((root) => (
           <li key={root.id}>
-            <CommentItem comment={root} cardId={cardId} onReply={(body) => post(body, root.id)} />
+            <CommentItem comment={root} cardId={cardId} {...(canPost ? { onReply: (body: string) => post(body, root.id) } : {})} />
             <Replies replies={repliesOf(root.id)} cardId={cardId} />
           </li>
         ))}
       </ol>
-      <div className="space-y-2">
-        <MentionInput value={draft} onChange={setDraft} onSubmit={() => void submitRoot()} placeholder="Write a comment… use @ to mention" label="Write a comment" />
-        <div className="flex items-center justify-between">
-          <span className="text-xs text-slate-500">Markdown supported · ⌘↵ to post</span>
-          <Button onClick={() => void submitRoot()} disabled={busy || !draft.trim()}>
-            Comment
-          </Button>
+      {canPost ? (
+        <div className="space-y-2">
+          <MentionInput value={draft} onChange={setDraft} onSubmit={() => void submitRoot()} placeholder="Write a comment… use @ to mention" label="Write a comment" />
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-slate-500">Markdown supported · ⌘↵ to post</span>
+            <Button onClick={() => void submitRoot()} disabled={busy || !draft.trim()}>
+              Comment
+            </Button>
+          </div>
         </div>
-      </div>
+      ) : (
+        <p data-testid="view-only" className="rounded-md bg-slate-50 px-3 py-2 text-sm text-slate-600">
+          {VIEW_ONLY}
+        </p>
+      )}
     </section>
   );
 }
@@ -146,6 +159,7 @@ function CommentItem({ comment, cardId, onReply }: { comment: Comment; cardId: s
         <p className="text-sm">
           {/* Authors render by name only — no profile link, so deactivated members stay readable (AC8). */}
           <span className="font-semibold">{comment.author.name}</span>
+          {comment.author.guest ? <span className="ml-1"><GuestChip /></span> : null}
           {!comment.author.active ? <span className="text-xs text-slate-500"> (deactivated)</span> : null}
           <span className="ml-2 text-xs text-slate-500" title={new Date(comment.createdAt).toLocaleString()}>
             {timeAgo(comment.createdAt, now)}

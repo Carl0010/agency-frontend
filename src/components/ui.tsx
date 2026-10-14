@@ -91,3 +91,12 @@ export const LABEL_BG: Record<string, string> = {
   pink: 'bg-pink-500',
   brown: 'bg-amber-800',
 };
+
+/** The `Guest` chip (§3.4, §3.6): on guest-authored comments and messages, and in the portal header with the access level. */
+export function GuestChip({ access }: { access?: 'read' | 'comment' }) {
+  return (
+    <span data-testid="guest-chip" className="inline-flex items-center rounded bg-amber-100 px-1.5 py-0.5 text-[11px] font-medium text-amber-900">
+      Guest{access ? ` · ${access === 'comment' ? 'Can comment' : 'View only'}` : ''}
+    </span>
+  );
+}

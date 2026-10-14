@@ -7,6 +7,7 @@ import { Markdown } from '@/components/markdown';
 import { useToast } from '@/components/toast';
 import { Avatar, Button, LABEL_BG, Spinner } from '@/components/ui';
 import { api, ApiError, errorMessage } from '@/lib/api';
+import { MentionScopeContext } from '@/lib/mention-scope';
 import { applyTile, useProjectRealtime, useRoom } from '@/lib/realtime';
 import { timeAgo, toLocalInput } from '@/lib/time';
 import type { Board, CardDetail as Detail, CardTile, Label, Member, Page } from '@/lib/types';
@@ -76,10 +77,12 @@ export function CardDetail({ cardId, boardHref }: { cardId: string; boardHref: s
           </Field>
         </div>
 
-        <Description card={c} onSave={(description) => mutate(() => api.patch<CardTile>(`/cards/${c.id}`, { description }))} />
-        <Checklists cardId={c.id} checklists={c.checklists} />
-        <Attachments cardId={c.id} attachments={c.attachments} />
-        <Comments cardId={c.id} />
+        <MentionScopeContext.Provider value={{ projectId: c.projectId, surface: 'card' }}>
+          <Description card={c} onSave={(description) => mutate(() => api.patch<CardTile>(`/cards/${c.id}`, { description }))} />
+          <Checklists cardId={c.id} checklists={c.checklists} />
+          <Attachments cardId={c.id} attachments={c.attachments} />
+          <Comments cardId={c.id} />
+        </MentionScopeContext.Provider>
       </div>
 
       <aside className="space-y-4 text-sm lg:w-[35%]">

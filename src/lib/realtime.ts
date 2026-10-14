@@ -36,6 +36,13 @@ export function getSocket(): Socket {
       });
     }
   });
+  // The server drops a socket when the user's access changes (a guest
+  // downgraded or revoked, §6.3). Reconnect: every room is re-joined through
+  // the server's access check, so the room set can only shrink to what is
+  // still allowed.
+  s.on('disconnect', (reason) => {
+    if (reason === 'io server disconnect' && getAccessToken()) setTimeout(() => s.connect(), 300);
+  });
   onAccessToken((token) => {
     if (!token) s.disconnect();
     else if (!s.connected) s.connect();

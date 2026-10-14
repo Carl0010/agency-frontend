@@ -4,13 +4,16 @@ import { useQuery } from '@tanstack/react-query';
 import { useRef, useState, type KeyboardEvent } from 'react';
 import { Avatar } from '@/components/ui';
 import { api } from '@/lib/api';
+import { mentionableQuery, useMentionScope } from '@/lib/mention-scope';
 import { activeMentionQuery, insertMention } from '@/lib/mentions';
-import type { Member, Page } from '@/lib/types';
+import type { Page, RosterEntry } from '@/lib/types';
 import { useWorkspace } from '@/lib/workspace';
 
 /**
  * Textarea with `@` mention typeahead (AC20). Candidates come from
- * `?mentionable=true`, which the API limits to active non-guest members.
+ * `?mentionable=true`, scoped to the surface in MentionScopeContext; the API
+ * decides who is mentionable there (members, the project's guests, or — for
+ * a guest author — only people who posted where they can read).
  * `⌘↵` / `Ctrl↵` submits; with `enterToSend` (chat, §3.4) `↵` sends and
  * `⇧↵` inserts a newline.
  */
@@ -40,9 +43,11 @@ export function MentionInput({
   const [caret, setCaret] = useState(0);
   const [highlight, setHighlight] = useState(0);
   const [dismissed, setDismissed] = useState<number | null>(null);
+  const scope = useMentionScope();
+  const qs = mentionableQuery(scope);
   const members = useQuery({
-    queryKey: ['members', ws.id, 'mentionable'],
-    queryFn: () => api.get<Page<Member>>(`/workspaces/${ws.id}/members?mentionable=true`),
+    queryKey: ['members', ws.id, qs],
+    queryFn: () => api.get<Page<RosterEntry>>(`/workspaces/${ws.id}/members?${qs}`),
   });
 
   const active = activeMentionQuery(value, caret);
@@ -52,7 +57,7 @@ export function MentionInput({
       ? (members.data?.data ?? []).filter((m) => m.name.toLowerCase().split(/\s+/).some((w) => w.startsWith(q)) || m.name.toLowerCase().startsWith(q)).slice(0, 6)
       : [];
 
-  function choose(m: Member) {
+  function choose(m: RosterEntry) {
     if (!active) return;
     const next = insertMention(value, active.start, caret, m.name, m.userId);
     onChange(next.text);

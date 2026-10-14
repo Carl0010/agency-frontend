@@ -15,6 +15,8 @@ interface AcceptResponse {
   accessToken: string | null;
   user: User;
   workspace: { id: string; slug: string };
+  role: string;
+  portalProjectId: string | null;
 }
 
 export default function InvitePage() {
@@ -35,6 +37,11 @@ export default function InvitePage() {
       const res = await request<AcceptResponse>('POST', `/invites/${token}/accept`, { body, noRetry: true });
       // An already-signed-in invitee keeps their current session (no new token is issued).
       if (res.accessToken) signIn({ accessToken: res.accessToken, user: res.user });
+      // Guests land in their own layout tree, never the workspace (AC2).
+      if (res.role === 'guest' && res.portalProjectId) {
+        router.replace(`/portal/${res.portalProjectId}`);
+        return;
+      }
       rememberWorkspace(res.workspace.slug);
       router.replace(`/w/${res.workspace.slug}/projects`);
     } catch (err) {
@@ -58,10 +65,12 @@ export default function InvitePage() {
   }
 
   const inv = preview.data;
-  const heading = `Join ${inv.workspaceName}`;
+  const guest = inv.role === 'guest';
+  const heading = guest ? `${inv.workspaceName} shared ${inv.projectNames.join(', ') || 'a project'} with you` : `Join ${inv.workspaceName}`;
   const intro = (
     <p className="mb-4 text-sm text-slate-600">
-      {inv.inviterName ?? 'Someone'} invited <strong>{inv.email}</strong> as {inv.role === 'admin' ? 'an admin' : 'a member'}.
+      {inv.inviterName ?? 'Someone'} invited <strong>{inv.email}</strong>{' '}
+      {guest ? 'to follow the project as a guest.' : `as ${inv.role === 'admin' ? 'an admin' : 'a member'}.`}
     </p>
   );
 
