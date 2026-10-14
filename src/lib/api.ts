@@ -73,33 +73,56 @@ async function toError(res: Response): Promise<ApiError> {
 }
 
 export interface RequestOptions {
+  /** JSON-encoded, unless a `FormData` (multipart upload; the browser sets the boundary). */
   body?: unknown;
   /** Skip the automatic refresh-and-retry on 401 (auth endpoints). */
   noRetry?: boolean;
   signal?: AbortSignal;
 }
 
-export async function request<T>(method: string, path: string, opts: RequestOptions = {}): Promise<T> {
-  const send = () =>
+async function send(method: string, path: string, opts: RequestOptions): Promise<Response> {
+  const form = opts.body instanceof FormData;
+  const attempt = () =>
     fetch(`${API_BASE}${path}`, {
       method,
       credentials: 'same-origin',
       signal: opts.signal,
       headers: {
-        ...(opts.body !== undefined ? { 'Content-Type': 'application/json' } : {}),
+        ...(opts.body !== undefined && !form ? { 'Content-Type': 'application/json' } : {}),
         ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
       },
-      body: opts.body !== undefined ? JSON.stringify(opts.body) : undefined,
+      body: form ? (opts.body as FormData) : opts.body !== undefined ? JSON.stringify(opts.body) : undefined,
     });
 
-  let res = await send();
+  let res = await attempt();
   if (res.status === 401 && !opts.noRetry) {
     const session = await refreshSession();
-    if (session) res = await send();
+    if (session) res = await attempt();
   }
   if (!res.ok) throw await toError(res);
+  return res;
+}
+
+export async function request<T>(method: string, path: string, opts: RequestOptions = {}): Promise<T> {
+  const res = await send(method, path, opts);
   if (res.status === 204) return undefined as T;
   return (await res.json()) as T;
+}
+
+/**
+ * Saves an authenticated file response (e.g. `report.csv`). A plain link
+ * cannot carry the in-memory bearer token, so fetch it and hand the browser a blob.
+ */
+export async function download(path: string, filename: string): Promise<void> {
+  const blob = await (await send('GET', path, {})).blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.append(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
 }
 
 export const api = {

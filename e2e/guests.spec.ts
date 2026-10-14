@@ -126,6 +126,9 @@ test('guest: invite from the guest panel, portal only, no Team channel, no assig
   await guest.goto(`${base}/team`);
   await expect(guest).toHaveURL(new RegExp(`/portal/${projectId}$`));
   await expect(guest.getByText('Margin on this one is thin')).toHaveCount(0);
+  // AC12: the import wizard is workspace-only too.
+  await guest.goto(`/w/${slug}/import`);
+  await expect(guest).toHaveURL(new RegExp(`/portal/${projectId}$`));
 
   // …and the portal redirects a member back to the workspace.
   await owner.goto(`/portal/${projectId}`);

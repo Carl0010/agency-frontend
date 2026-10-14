@@ -45,7 +45,14 @@ export default function ProjectsPage() {
     <main className="mx-auto max-w-4xl p-4 sm:p-8">
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-semibold">Clients</h1>
-        {canCreate && !creating ? <Button onClick={() => setCreating(true)}>New project</Button> : null}
+        {canCreate && !creating ? (
+          <div className="flex items-center gap-2">
+            <Link href={`/w/${ws.slug}/import`} className="tap inline-flex items-center rounded-md px-3 text-sm font-medium text-slate-700 hover:bg-slate-100">
+              Import from Trello
+            </Link>
+            <Button onClick={() => setCreating(true)}>New project</Button>
+          </div>
+        ) : null}
       </div>
       {creating ? (
         <form onSubmit={onSubmit} className="mb-6 grid gap-3 rounded-lg border border-slate-200 bg-white p-4 sm:grid-cols-[1fr_1fr_auto]">

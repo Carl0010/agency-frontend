@@ -327,3 +327,90 @@ export interface SearchResult {
   fallback: boolean;
   groups: Record<SearchType, SearchGroup>;
 }
+
+/* Trello import (§7). Mirrors `imports.service.ts` / `import.runner.ts`. */
+
+export type ImportSource = 'trello_csv' | 'trello_api';
+export type ImportStatus = 'pending' | 'running' | 'succeeded' | 'partial' | 'failed';
+
+/** One Trello member on the mapping screen; `userId: null` = unmatched (AC24). */
+export interface ImportMemberMatch {
+  externalId: string;
+  name: string;
+  userId: string | null;
+  how: 'email' | 'name' | 'manual' | null;
+}
+
+/** A §7.4 category. `count: null` = present in Trello but not countable through this source. */
+export interface ImportDrop {
+  key: string;
+  label: string;
+  count: number | null;
+  breakdown?: Record<string, number>;
+  note?: string;
+}
+
+export interface ImportPreview {
+  source: ImportSource;
+  boardName: string | null;
+  counts: {
+    lists: number;
+    cards: number;
+    archivedCards: number;
+    comments: number;
+    labels: number;
+    checklists: number;
+    attachments: number;
+    attachmentsAsFiles: number;
+    attachmentsAsLinks: number;
+    members: number;
+    unmatchedMembers: number;
+  };
+  summary: string;
+  members: ImportMemberMatch[];
+  limit: { limit: string; actual: number; max: number; message: string } | null;
+  dropped: ImportDrop[];
+  notices: string[];
+}
+
+export interface ImportTally {
+  created: number;
+  updated: number;
+  skipped: number;
+}
+
+export interface ImportStats {
+  progress: { totalCards: number; processedCards: number; batchesTotal: number; batchesDone: number; batchesFailed: number };
+  counts: {
+    lists: ImportTally;
+    labels: ImportTally;
+    cards: ImportTally & { failed: number; dropped: number };
+    checklists: ImportTally;
+    checklistItems: ImportTally;
+    comments: ImportTally & { archive: number };
+    attachments: { files: number; links: number; skipped: number };
+    assignees: { assigned: number; unmatched: number };
+  };
+  dropped: ImportDrop[];
+  fieldDrops: { dueDates: number; checklists: number; unmatchedMembers: number; boardDescription: number; titlesTruncated: number };
+  notices: string[];
+}
+
+export interface ImportJob {
+  id: string;
+  projectId: string;
+  source: ImportSource;
+  status: ImportStatus;
+  /** Empty until the runner writes its first batch. */
+  stats: Partial<ImportStats>;
+  error: { code?: string; message?: string } | null;
+  createdAt: string;
+  startedAt: string | null;
+  completedAt: string | null;
+}
+
+export interface TrelloBoardSummary {
+  id: string;
+  name: string;
+  dateLastActivity: string | null;
+}
