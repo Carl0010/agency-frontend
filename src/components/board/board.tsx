@@ -11,6 +11,7 @@ import {
   useSensor,
   useSensors,
   type CollisionDetection,
+  type KeyboardCoordinateGetter,
   type DragEndEvent,
   type DragOverEvent,
   type DragStartEvent,
@@ -58,6 +59,15 @@ const collision: CollisionDetection = (args) => {
   return isList ? closestCenter({ ...args, droppableContainers }) : closestCorners({ ...args, droppableContainers });
 };
 
+/** List keyboard moves must ignore the inset card-drop zones inside each list. */
+const boardKeyboardCoordinates: KeyboardCoordinateGetter = (event, args) => {
+  if (args.context.active?.data.current?.type !== 'list') return sortableKeyboardCoordinates(event, args);
+  const droppableRects = new Map([...args.context.droppableRects].filter(([id]) =>
+    args.context.droppableContainers.get(id)?.data.current?.type === 'list',
+  ));
+  return sortableKeyboardCoordinates(event, { ...args, context: { ...args.context, droppableRects } });
+};
+
 export function BoardScreen({ boardId, projectId }: { boardId: string; projectId: string }) {
   const ws = useWorkspace();
   const qc = useQueryClient();
@@ -95,7 +105,7 @@ export function BoardScreen({ boardId, projectId }: { boardId: string; projectId
     useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 8 } }),
     // Space lifts, arrows move, Space drops, Esc cancels (AC14). Enter is left free to open a card.
     useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
+      coordinateGetter: boardKeyboardCoordinates,
       keyboardCodes: { start: ['Space'], cancel: ['Escape'], end: ['Space'] },
     }),
   );
@@ -181,7 +191,7 @@ export function BoardScreen({ boardId, projectId }: { boardId: string; projectId
   const activeList = drag?.type === 'list' ? drag.board.lists.find((l) => l.id === drag.activeId) : undefined;
 
   return (
-    <div className="flex h-full">
+    <div data-testid="board-canvas" className="flex h-full bg-board-canvas">
       <div className="flex min-w-0 flex-1 flex-col">
         <div className="flex shrink-0 flex-wrap items-center gap-x-4 gap-y-3 border-b border-border bg-surface px-4 py-4 sm:px-6">
           <div className="min-w-0 grow basis-48">

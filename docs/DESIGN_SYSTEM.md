@@ -42,6 +42,7 @@ component library to fix an individual screen.
 | Role / utility | Value | Use |
 | --- | --- | --- |
 | `bg-background` | `#F7F8F5` | App canvas and quiet navigation rail |
+| `bg-board-canvas` | `#EEF2F6` light / `#151F27` dark | Cool neutral board work area, distinct from the warm sidebar; pair with foreground/secondary/muted text |
 | `bg-surface` | `#FFFFFF` | Cards, forms, dialogs, main headers |
 | `bg-subtle` | `#F0F2EE` | Board lanes, code, secondary control hover |
 | `bg-muted` | `#E7EBE5` | Neutral selected/pressed surfaces |
@@ -155,6 +156,11 @@ piece of information. Reuse the semantic type and color tokens above.
 | Between lists / cards | 16px / 12px | Clear grouping without compressing card content |
 | Inside a card | 16px | Common text and metadata inset |
 | Controls | 36px desktop; at least 44px below 640px | Aligned toolbar and accessible mobile touch targets |
+
+The Kanban header itself is the list drag area; do not add a separate grip.
+Keep title click/rename, keyboard reordering and menu/input interaction working.
+The sidebar retains `background`; the board canvas uses `board-canvas` in both
+themes. Add list uses a `border-hover` outline against the canvas for contrast.
 
 Keep list headings and the bottom Add card control outside the list's scrolling
 card area. Long lists scroll internally; users can still identify the list and

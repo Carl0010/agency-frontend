@@ -33,7 +33,7 @@ export function AddList({ boardId, layout = 'kanban' }: { boardId: string; layou
   return open ? <form onSubmit={(event) => void submit(event)} className={`${width} shrink-0 flex-col gap-3 rounded-xl border border-border bg-surface p-4`}>
     <Input name="name" autoFocus required aria-label="List name" placeholder="List name" maxLength={120} onKeyDown={(event) => { if (event.key === 'Escape' && !busy) { event.stopPropagation(); close(); } }} />
     <div className="flex gap-2"><Button type="submit" size="sm" disabled={busy}>{busy ? 'Adding…' : 'Add list'}</Button><Button variant="ghost" size="sm" disabled={busy} onClick={close}>Cancel</Button></div>
-  </form> : <button ref={trigger} type="button" onClick={() => setOpen(true)} data-testid="add-list-tile" className={`tap ${width} h-15 shrink-0 items-center gap-2 rounded-xl border border-dashed border-input px-4 text-left text-sm font-medium text-secondary-foreground hover:border-border-hover hover:bg-subtle active:bg-muted`}>
+  </form> : <button ref={trigger} type="button" onClick={() => setOpen(true)} data-testid="add-list-tile" className={`tap ${width} h-15 shrink-0 items-center gap-2 rounded-xl border border-dashed border-border-hover px-4 text-left text-sm font-medium text-secondary-foreground hover:border-border-hover hover:bg-subtle active:bg-muted`}>
     <Icon name="plus" />Add list
   </button>;
 }

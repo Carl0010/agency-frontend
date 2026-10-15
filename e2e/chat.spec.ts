@@ -148,6 +148,7 @@ test('⌘K palette: debounced search, ↵ navigates to the message, ⌘↵ opens
   await page.keyboard.press('ControlOrMeta+k');
   const palette = page.getByTestId('command-palette');
   await expect(palette).toBeVisible();
+  await expect(palette.getByLabel('Search cards, comments and messages')).toBeFocused();
   await palette.getByLabel('Search cards, comments and messages').pressSequentially('quokka', { delay: 40 });
   await expect(palette.getByTestId('search-result').first()).toContainText('quokka mascot');
   // Typed faster than the 250ms debounce: one request, for the full word.

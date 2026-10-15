@@ -25,6 +25,17 @@ list header height. Its creation form keeps the same 320px width. The existing
 one-list mobile Kanban layout is retained. Add card remains a separate tile
 below each list panel.
 
+Kanban lists drag from the whole header (including its title, count and padding),
+with no separate grip. The title remains the keyboard activator: Space lifts,
+arrows move, Space drops and Escape cancels. A normal title click renames;
+ending a drag must not open rename. Menus and the rename field never activate
+header dragging. Filtering keeps list/card sorting disabled as before. The List
+presentation retains its collapse control and does not enable group dragging.
+
+The board canvas uses a cool neutral `board-canvas` token in light and dark
+mode; navigation keeps the warmer `background` token. Card and toolbar surfaces
+retain their existing semantic roles.
+
 ## List layout
 
 - Groups follow the board's lists, including empty lists. Headers show the list
@@ -60,3 +71,7 @@ and retry, URL restoration, shared filtering/order, row drawer interactions,
 collapse/rename/archive, mobile creation, light/dark previews and overflow.
 Existing Kanban drag, card drawer and onboarding journeys remain regression
 coverage. Screenshots are indexed in `docs/previews/README.md`.
+
+`e2e/list-header.spec.ts` covers canvas/sidebar separation in both themes, whole
+header pointer dragging, title/menu editing, filtering, keyboard reordering and
+failed reorder recovery. New canvas token pairs are contrast-tested in both themes.

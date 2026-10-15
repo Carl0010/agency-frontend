@@ -30,6 +30,7 @@ describe.each(['light', 'dark'])('%s readable design token combinations', (theme
   beforeAll(() => { colors.clear(); loadColors(lightCss!); if (theme === 'dark') loadColors(darkCss); });
   it.each([
     ['inverse-foreground', 'inverse'], ['foreground', 'background'], ['secondary-foreground', 'surface'],
+    ['foreground', 'board-canvas'], ['secondary-foreground', 'board-canvas'], ['muted-foreground', 'board-canvas'],
     ['muted-foreground', 'surface'], ['muted-foreground', 'subtle'],
     ['primary-foreground', 'primary'], ['primary-foreground', 'primary-hover'],
     ['primary-foreground', 'primary-active'], ['primary', 'surface'],
@@ -44,7 +45,7 @@ describe.each(['light', 'dark'])('%s readable design token combinations', (theme
     expect(contrast(foreground, background)).toBeGreaterThanOrEqual(4.5);
   });
 
-  it.each([['input', 'surface'], ['ring', 'surface'], ['ring', 'background']])(
+  it.each([['input', 'surface'], ['ring', 'surface'], ['ring', 'background'], ['ring', 'board-canvas'], ['border-hover', 'board-canvas']])(
     '%s remains distinguishable on %s at 3:1', (control, background) => {
       expect(contrast(control, background)).toBeGreaterThanOrEqual(3);
     },

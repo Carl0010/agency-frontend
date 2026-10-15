@@ -3,6 +3,7 @@
 Screenshots come from Playwright journeys against the local API with disposable
 accounts. Images show implemented behavior; synthetic names are test data.
 
+- [Board canvas, light](board-canvas-light.png) / [dark](board-canvas-dark.png): subtle separation from the sidebar and full-header column dragging.
 - [Light app bar](appbar-light.png): global search, module rail and contextual sidebar.
 - [Dark Kanban](appbar-dark.png): full semantic theme and separate Add card tiles.
 - [Mobile dark Kanban](appbar-dark-mobile.png): labelled switch and compact global search.
