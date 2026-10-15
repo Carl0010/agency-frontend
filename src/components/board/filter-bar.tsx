@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { Avatar, LABEL_BG } from '@/components/ui';
+import { Icon } from '@/components/icon';
+import { Avatar, Input, LABEL_BG } from '@/components/ui';
 import { EMPTY_FILTERS, isFiltering, type BoardFilters, type DueFilter } from '@/lib/filters';
 import type { Label, Member } from '@/lib/types';
 
@@ -21,33 +22,36 @@ export function FilterBar({
   const [open, setOpen] = useState(isFiltering(filters));
   const active = isFiltering(filters);
   return (
-    <div className="border-b border-border bg-surface px-3 py-2">
-      <div className="flex flex-wrap items-center gap-2">
-        <input
-          type="search"
-          aria-label="Filter cards"
-          placeholder="Filter cards…"
-          value={filters.q}
-          onChange={(e) => onChange({ ...filters, q: e.target.value })}
-          className="tap w-40 rounded-md border border-input px-2 py-1 text-sm sm:w-56"
-        />
+    <div className="shrink-0 border-b border-border bg-surface px-4 py-3 sm:px-6">
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="relative min-w-0 flex-1 sm:max-w-xs">
+          <Icon name="search" className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            type="search"
+            aria-label="Filter cards"
+            placeholder="Filter cards…"
+            value={filters.q}
+            onChange={(e) => onChange({ ...filters, q: e.target.value })}
+            className="py-1.5 pl-9 text-label"
+          />
+        </div>
         <button
           type="button"
           aria-expanded={open}
           onClick={() => setOpen((o) => !o)}
-          className={`tap rounded-md px-2 py-1 text-sm ${active ? 'bg-primary-muted text-primary-text' : 'text-secondary-foreground hover:bg-subtle'}`}
+          className={`ui-button tap border border-border ${active ? 'bg-primary-muted text-primary-text' : 'text-secondary-foreground hover:bg-subtle'}`}
         >
-          Filters{active ? ' •' : ''}
+          <Icon name="settings" />Filters{active ? <span className="size-1.5 rounded-full bg-primary" aria-label="Active filters" /> : null}
         </button>
         {active ? (
-          <button type="button" onClick={() => onChange(EMPTY_FILTERS)} className="tap px-2 text-sm text-secondary-foreground underline">
+          <button type="button" onClick={() => onChange(EMPTY_FILTERS)} className="ui-button tap px-2 text-muted-foreground hover:bg-subtle hover:text-foreground">
             Clear
           </button>
         ) : null}
       </div>
       {open ? (
-        <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-2" data-testid="filter-panel">
-          <fieldset className="flex items-center gap-1">
+        <div className="mt-3 flex flex-wrap items-center gap-x-6 gap-y-3 rounded-lg border border-border bg-background p-3" data-testid="filter-panel">
+          <fieldset className="flex min-w-0 flex-wrap items-center gap-2">
             <legend className="sr-only">Assignee</legend>
             <span className="mr-1 text-xs font-medium text-muted-foreground">Assignee</span>
             {members.map((m) => {
@@ -66,7 +70,7 @@ export function FilterBar({
               );
             })}
           </fieldset>
-          <fieldset className="flex flex-wrap items-center gap-1">
+          <fieldset className="flex min-w-0 flex-wrap items-center gap-2">
             <legend className="sr-only">Label</legend>
             <span className="mr-1 text-xs font-medium text-muted-foreground">Label</span>
             {labels.map((l) => {
@@ -90,7 +94,7 @@ export function FilterBar({
             <select
               value={filters.due ?? ''}
               onChange={(e) => onChange({ ...filters, due: (e.target.value || null) as DueFilter | null })}
-              className="tap rounded-md border border-input bg-surface px-1 py-0.5 text-sm text-foreground"
+              className="tap min-h-9 rounded-md border border-input bg-surface px-2 py-1 text-label text-foreground"
             >
               <option value="">Any time</option>
               <option value="overdue">Overdue</option>

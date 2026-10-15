@@ -48,6 +48,8 @@
   .ui-page { @apply mx-auto w-full max-w-5xl px-4 py-6 sm:px-8 sm:py-8; }
   .ui-nav-link { @apply flex min-h-8 items-center gap-2 rounded-md px-2.5 py-1 text-label text-secondary-foreground hover:bg-subtle hover:text-foreground; }
   .ui-nav-link[aria-current='page'] { @apply bg-primary-subtle font-medium text-primary-text; }
+  .ui-module-link { @apply flex min-h-16 w-full max-w-16 shrink-0 flex-col items-center justify-center gap-1 rounded-lg py-2 text-caption font-medium text-secondary-foreground hover:bg-subtle hover:text-foreground active:bg-muted focus-visible:outline-offset-1; }
+  .ui-module-link[aria-current='location'] { @apply bg-primary-subtle text-primary-text; }
   .ui-tab { @apply inline-flex min-h-8 items-center justify-center gap-2 rounded-md px-3 py-1 text-label text-secondary-foreground hover:bg-subtle; }
   .ui-tab[aria-current='page'], .ui-tab[aria-selected='true'] { @apply bg-primary-subtle font-medium text-primary-text; }
 }
@@ -75,3 +77,11 @@
 .prose-sm h1, .prose-sm h2, .prose-sm h3 { font-weight: 600; margin: 0.5rem 0 0.25rem; }
 .prose-sm a { @apply text-primary underline decoration-primary-border underline-offset-2; }
 .prose-sm code { @apply rounded bg-subtle px-1 text-[0.85em]; }
+
+/* A narrow card inspector uses the work area; workspace navigation stays usable.
+   Keep the board mounted, but remove its covered controls from keyboard order. */
+@media (max-width: 767px) {
+  .board-split-view:has(#card-drawer) > #board-view { display: none; }
+}
+
+html[data-theme='dark'] { color-scheme: dark; }

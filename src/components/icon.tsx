@@ -13,6 +13,8 @@ const paths = {
   clock: <><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></>,
   reply: <path d="m9 5-6 6 6 6M3 11h11a7 7 0 0 1 7 7" />,
   mention: <><circle cx="11" cy="12" r="4" /><path d="M15 8v7c0 3 6 2 6-3a9 9 0 1 0-3 7" /></>,
+  moon: <path d="M20.5 13A9 9 0 0 1 11 3.5 9 9 0 1 0 20.5 13Z" />,
+  sun: <><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5 19 19M5 19l1.5-1.5M17.5 6.5 19 5" /></>,
   plus: <path d="M12 5v14M5 12h14" />,
   search: <><circle cx="10.5" cy="10.5" r="6.5" /><path d="m16 16 4.5 4.5" /></>,
   comment: <path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5H4l-1 1v-8.5A8.5 8.5 0 0 1 11.5 4H13a8 8 0 0 1 8 7.5Z" />,

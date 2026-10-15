@@ -125,7 +125,7 @@ export function Composer({
           type="button"
           onClick={() => void send()}
           disabled={sending || (!body.trim() && files.length === 0)}
-          className="tap rounded-md bg-primary px-3 text-sm font-medium text-inverse-foreground disabled:bg-primary-border"
+          className="tap rounded-md bg-primary px-3 text-sm font-medium text-primary-foreground disabled:bg-primary-border"
         >
           Send
         </button>

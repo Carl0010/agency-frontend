@@ -21,7 +21,7 @@ export default function Home() {
       <h1 className="text-4xl font-bold tracking-tight">Client work, one place.</h1>
       <p className="text-lg text-secondary-foreground">Boards, cards and comments for agencies of five. Built to replace Trello + Slack.</p>
       <div className="flex gap-3">
-        <Link href="/signup" className="tap rounded-md bg-primary px-4 py-2 font-medium text-inverse-foreground hover:bg-primary-hover">
+        <Link href="/signup" className="tap rounded-md bg-primary px-4 py-2 font-medium text-primary-foreground hover:bg-primary-hover">
           Start free trial
         </Link>
         <Link href="/login" className="tap rounded-md border border-input bg-surface px-4 py-2 font-medium hover:bg-background">

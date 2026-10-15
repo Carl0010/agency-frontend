@@ -118,7 +118,7 @@ export default function ImportPage() {
             <p className="mb-3 mt-1 text-sm text-secondary-foreground">
               Trello → board menu → Print, export and share → Export as CSV. Up to 20 MB. Attachments come over as links.
             </p>
-            <label className="tap inline-flex cursor-pointer items-center rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-inverse-foreground hover:bg-primary-hover">
+            <label className="tap inline-flex cursor-pointer items-center rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary-hover">
               Choose CSV file
               <input type="file" accept=".csv,text/csv" className="sr-only" aria-label="Trello CSV export" onChange={onFile} />
             </label>

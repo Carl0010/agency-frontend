@@ -1,5 +1,5 @@
 /* Agency UI foundations. Change values here; components consume semantic roles.
-   Palette rationale and usage: docs/frontend/DESIGN_SYSTEM.md. Light mode only. */
+   Palette rationale and usage: docs/DESIGN_SYSTEM.md. Theme overrides share the same semantic roles. */
 @theme {
   --font-sans: var(--font-geist), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, 'SF Mono', Menlo, monospace;
@@ -92,4 +92,50 @@
   --text-page: 1.5rem;
   --text-page--line-height: 2rem;
   --ease-ui: cubic-bezier(0.2, 0, 0, 1);
+}
+
+/* Keep status fills and content colors stable; adapt surfaces, text and controls. */
+html[data-theme='dark'] {
+  --color-background: #111714;
+  --color-surface: #19221c;
+  --color-subtle: #202c24;
+  --color-muted: #2d3c31;
+  --color-foreground: #e8eee9;
+  --color-secondary-foreground: #c0cec3;
+  --color-muted-foreground: #9daf9f;
+  --color-disabled-foreground: #7f9284;
+  --color-border: #35483b;
+  --color-border-subtle: #2a392f;
+  --color-input: #708878;
+  --color-border-hover: #a8bead;
+  --color-primary: #86cba5;
+  --color-primary-hover: #a0dbb9;
+  --color-primary-active: #b6e5cb;
+  --color-primary-foreground: #14261b;
+  --color-primary-subtle: #203a2b;
+  --color-primary-muted: #2c513c;
+  --color-primary-border: #50765d;
+  --color-primary-text: #b0e2c4;
+  --color-ring: #94d7b3;
+  --color-danger-subtle: #3b2322;
+  --color-danger-muted: #502b29;
+  --color-danger-border: #85504b;
+  --color-danger-text: #ffb4ac;
+  --color-success-subtle: #21382a;
+  --color-success-muted: #2b4935;
+  --color-success-border: #4b7155;
+  --color-success-text: #accfb6;
+  --color-warning-subtle: #3b3020;
+  --color-warning-muted: #514126;
+  --color-warning-border: #856c3b;
+  --color-warning-text: #f3d29a;
+  --color-info-subtle: #203347;
+  --color-info-border: #476b91;
+  --color-info-text: #b5d4f4;
+  --color-highlight: #56451b;
+  --color-highlight-foreground: #ffe9a7;
+  --color-overlay: #000000;
+  --shadow-md: 0 3px 10px -3px rgb(0 0 0 / 0.3);
+  --shadow-lg: 0 12px 32px -8px rgb(0 0 0 / 0.45);
+  --shadow-xl: 0 24px 60px -16px rgb(0 0 0 / 0.55);
 }

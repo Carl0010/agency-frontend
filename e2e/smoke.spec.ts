@@ -49,10 +49,10 @@ test('signup to a commented card, live in a second browser', async ({ browser })
 
   // Open the card and comment; B's tile picks up the comment count live.
   await list(a, 'In progress').getByRole('button', { name: /Kickoff call/ }).click();
-  const modal = a.getByTestId('card-modal');
-  await expect(modal.getByTestId('card-title')).toHaveText('Kickoff call');
-  await modal.getByLabel('Write a comment').fill('Agenda is in the brief.');
-  await modal.getByRole('button', { name: 'Comment' }).click();
-  await expect(modal.getByTestId('comment').filter({ hasText: 'Agenda is in the brief.' })).toBeVisible();
+  const drawer = a.getByTestId('card-drawer');
+  await expect(drawer.getByTestId('card-title')).toHaveText('Kickoff call');
+  await drawer.getByLabel('Write a comment').fill('Agenda is in the brief.');
+  await drawer.getByRole('button', { name: 'Comment' }).click();
+  await expect(drawer.getByTestId('comment').filter({ hasText: 'Agenda is in the brief.' })).toBeVisible();
   await expect(list(b, 'In progress').getByTestId('comment-count')).toHaveText(/1/, { timeout: 2_000 });
 });

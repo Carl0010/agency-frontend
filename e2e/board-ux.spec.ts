@@ -25,7 +25,7 @@ async function post<T>(request: APIRequestContext, headers: Record<string, strin
 }
 
 /** Cards carrying every piece of tile meta, so clipping would hide something. */
-async function seedRichCards(request: APIRequestContext, account: Account, count: number): Promise<void> {
+async function seedRichCards(request: APIRequestContext, account: Account, count: number, titles: string[] = []): Promise<void> {
   const { headers, userId } = await token(request, account);
   const board = (await (await request.get(`/api/v1/boards/${account.boardId}`, { headers })).json()) as BoardView;
   const todo = board.lists.find((l) => l.name === 'To do');
@@ -33,7 +33,7 @@ async function seedRichCards(request: APIRequestContext, account: Account, count
   const due = new Date(Date.now() + 24 * 3600 * 1000).toISOString();
   for (let i = 1; i <= count; i++) {
     const card = await post<{ id: string }>(request, headers, `/lists/${todo.id}/cards`, {
-      title: `Rich card ${i} with a title long enough to wrap onto a second line on a phone`,
+      title: titles[i - 1] ?? `Rich card ${i} with a title long enough to wrap onto a second line on a phone`,
       description: 'Has a description.',
       dueAt: due,
     });
@@ -94,7 +94,7 @@ test('at 375px, card tiles keep their full content and the card sheet has 44px t
 
   // Card detail: full-screen sheet; inline title edit and the due "Done" box are tappable.
   await tiles.first().click();
-  const sheet = page.getByTestId('card-modal');
+  const sheet = page.getByTestId('card-drawer');
   await expect(sheet.getByTestId('card-title')).toBeVisible();
   await sheet.getByTestId('card-title').click();
   await expect(sheet.getByLabel('Card title')).toBeFocused();
@@ -144,4 +144,63 @@ test('a failed move snaps the card back and shows a toast (AC12)', async ({ brow
   await page.unroute('**/api/v1/cards/*/move');
   await page.reload();
   await expect(list(page, 'To do').getByRole('button', { name: /Rich card 1/ })).toBeVisible();
+});
+
+
+test('a populated board keeps metadata readable and column actions reachable at desktop and mobile widths', async ({ browser, request }, info) => {
+  const { page, account } = await signupToBoard(browser, { viewport: { width: 1440, height: 1000 } });
+  await seedRichCards(request, account, 12, [
+    'Audit the client onboarding journey',
+    'Design the welcome email and activation checklist',
+    'Review accessibility findings with the client',
+    'Map the handoff between sales and delivery',
+    'Prepare the next round of wireframes',
+    'Collect feedback on the account setup flow',
+    'Write the launch communication plan',
+    'Check mobile layouts and keyboard navigation',
+    'Update the component documentation',
+    'Confirm the delivery timeline',
+    'Explore two directions for the client portal',
+    'Share the approved project brief',
+  ]);
+  const { headers } = await token(request, account);
+  const response = await request.get(`/api/v1/boards/${account.boardId}`, { headers });
+  expect(response.ok()).toBeTruthy();
+  const board = await response.json() as { project: { workspaceId: string }; lists: { id: string; name: string; cards: { id: string }[] }[] };
+  const todo = board.lists.find((column) => column.name === 'To do')!;
+  const design = await post<{ id: string }>(request, headers, `/workspaces/${board.project.workspaceId}/labels`, { name: 'Client experience', color: 'blue' });
+  const review = await post<{ id: string }>(request, headers, `/workspaces/${board.project.workspaceId}/labels`, { name: 'Needs review from the client team', color: 'orange' });
+  for (const [index, label] of [[0, design.id], [1, design.id], [1, review.id]] as const) {
+    await post(request, headers, `/cards/${todo.cards[index]!.id}/labels/${label}`);
+  }
+  for (const [index, name] of [[10, 'In progress'], [11, 'Done']] as const) {
+    const move = await request.patch(`/api/v1/cards/${todo.cards[index]!.id}/move`, { headers, data: { listId: board.lists.find((column) => column.name === name)!.id, beforeCardId: null } });
+    expect(move.ok()).toBeTruthy();
+  }
+  await page.reload();
+  const column = list(page, 'To do');
+  const cards = column.getByTestId('list-cards');
+  await expect(column.getByTestId('card-tile')).toHaveCount(10);
+  await expect(column.getByText('Client experience', { exact: true }).first()).toBeVisible();
+
+  // A long list scrolls internally without losing its name or Add card control.
+  await cards.evaluate((element) => { element.scrollTop = element.scrollHeight; });
+  await expect.poll(() => cards.evaluate((element) => element.scrollTop)).toBeGreaterThan(0);
+  await expect(column.getByRole('button', { name: 'To do', exact: true })).toBeInViewport();
+  await expect(column.getByTestId('add-card-end')).toBeInViewport();
+  await cards.evaluate((element) => { element.scrollTop = 0; });
+  await page.screenshot({ path: info.outputPath('kanban-desktop.png'), fullPage: true, style: 'nextjs-portal { visibility: hidden; }' });
+
+  for (const width of [1024, 390]) {
+    await page.setViewportSize({ width, height: 844 });
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+    const tile = column.getByTestId('card-tile').first();
+    await tile.scrollIntoViewIfNeeded();
+    for (const meta of [tile.getByTestId('due-pill'), tile.getByTestId('checklist-badge'), tile.getByTestId('comment-count'), tile.getByTitle('E2E Owner'), tile.getByTestId('card-tile-key')]) {
+      expect(await within(meta, tile), `metadata clips at ${width}px`).toBe(true);
+    }
+    await expect(column.getByTestId('add-card-end')).toBeInViewport();
+  }
+  await page.screenshot({ path: info.outputPath('kanban-mobile.png'), fullPage: true, style: 'nextjs-portal { visibility: hidden; }' });
+  await page.context().close();
 });

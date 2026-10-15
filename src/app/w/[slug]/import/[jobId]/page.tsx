@@ -109,7 +109,7 @@ export default function ImportJobPage() {
       {done ? (
         <div className="flex flex-wrap gap-2">
           {project.data ? (
-            <Link href={`/w/${ws.slug}/p/${project.data.id}/b/${project.data.defaultBoardId}`} className="tap inline-flex items-center rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-inverse-foreground hover:bg-primary-hover">
+            <Link href={`/w/${ws.slug}/p/${project.data.id}/b/${project.data.defaultBoardId}`} className="tap inline-flex items-center rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary-hover">
               Open {project.data.name}
             </Link>
           ) : null}
