@@ -2,6 +2,7 @@
 
 Member routes (`/w/[slug]/*`) use two navigation levels: a **72px module
 rail on the far left**, followed by the existing **256px contextual sidebar**.
+A 64px app bar spans the full viewport above both levels.
 The guest portal keeps its separate navigation and imports none of this shell.
 
 ## Ownership
@@ -10,12 +11,11 @@ The guest portal keeps its separate navigation and imports none of this shell.
 | --- | --- | --- |
 | Module rail | Switch high-level areas | Projects, Inbox with live unread count, Workspace |
 | Sidebar identity | Identify workspace and selected module | Workspace name and current module label |
-| Sidebar quick access | Find work across the workspace | Global search palette |
-| Projects sidebar | Browse client work and project surfaces | Projects overview, import, project list, current project's Board/Chat/internal Team |
+| App bar | Global actions and navigation visibility | Centered search palette trigger, hamburger, Agency home, labelled light/dark switch |
+| Projects sidebar | Browse client work and project surfaces | Projects overview, import, project list, create button, per-project menu, current project's Board/Chat/internal Team |
 | Inbox sidebar | Browse activity and configure delivery | All notifications and notification preferences |
 | Workspace sidebar | Manage people, preferences and subscription | Members, notifications, owner-only billing |
 | Sidebar footer | Resume setup, understand trial status, account actions | Setup progress, trial link, user identity/role, log out |
-| Compact app header | Location and mobile navigation access | Breadcrumb/location text and mobile menu button |
 | Project/page header | Describe and act on the current view | Project title, sharing, collaborators, archive; page-specific primary actions |
 | Content toolbars | Manipulate the current content | Card filters, list selection, message/thread controls |
 | Persistent content banners | Show urgent state and recovery actions | Read-only/payment warnings and exports; push permission explanation |
@@ -42,7 +42,9 @@ and browser history. It is not a second copy of router state or server data.
 ## Responsive behavior
 
 - At 1024px and above, the 72px rail and 256px sidebar are adjacent and fill the
-  viewport height. The content begins after 328px of navigation.
+  remaining height below the app bar. The content begins after 328px of navigation.
+  The hamburger collapses/reopens the 256px sidebar while retaining the module rail;
+  the content gains that space. This visibility persists during member-route navigation.
 - Each navigation area's middle scrolls independently. Workspace identity and
   account/status footer remain accessible. Long names truncate.
 - Below 1024px, **Open navigation** opens one native modal drawer up to 320px
@@ -53,8 +55,8 @@ and browser history. It is not a second copy of router state or server data.
   close it. Route changes finish closing the old drawer before it can be reopened.
   Closing restores focus to the opener when it still exists.
 - Module destinations close the mobile drawer just like other destinations;
-  reopening shows the selected module's links. Search closes it before opening
-  the search palette. All rail entries have icons, visible names and focus states.
+  reopening shows the selected module's links. Search is in the app bar, never the sidebar.
+  Ctrl/Cmd K from the drawer closes navigation before the palette opens. All rail entries have icons, visible names and focus states.
 - Mobile still shows one board list at a time below 640px. Navigation does not
   replace that content control or alter drag-and-drop behavior.
 
@@ -109,8 +111,8 @@ full-page layouts. Keep member drawer code outside the guest portal tree.
 ## Implementation
 
 - `components/navigation/workspace-shell.tsx`: workspace data/subscription,
-  adjacent navigation levels, responsive shell, location header and drawer visibility.
-- `components/navigation/module-rail.tsx`: high-level module links and brand.
+  adjacent navigation levels, responsive shell, global app bar and sidebar/drawer visibility.
+- `components/navigation/module-rail.tsx`: high-level module links.
 - `components/navigation/workspace-modules.ts`: module labels and URL classification.
 - `components/navigation/workspace-sidebar.tsx`: navigation sections, current
   project destinations and account footer. Projects share the existing TanStack
@@ -119,7 +121,7 @@ full-page layouts. Keep member drawer code outside the guest portal tree.
   background scroll containment and viewport cleanup.
 - `components/project-chrome.tsx`: local project actions only.
 
-Keep server state in TanStack Query. Only drawer visibility is local UI state.
+Keep server state in TanStack Query. Sidebar/drawer visibility and browser theme preference are local UI state.
 Existing API authorization remains authoritative. Billing navigation and plan
 details stay owner-only; do not infer extra permissions from visible links.
 
@@ -133,3 +135,24 @@ their unchanged workflows. `e2e/card-drawer.spec.ts` verifies board interaction,
 card switching and drafts, filters, focus, mobile layout, history, direct links
 and unavailable-card recovery. `portal-bundle.spec.ts` explicitly forbids the entire
 member navigation directory in the guest portal's transitive import graph.
+
+## Project actions
+
+The Client projects heading has an Add project button. Its native dialog creates
+through the existing API and navigates to the returned default board. A separate
+menu beside each project contains Open board, Edit project and Copy project link;
+it is never nested inside the project link. The editor supports project name,
+optional client name and the eight server-defined colors. Create/edit failures
+stay visible and preserve form input. The API decides authorization and billing.
+
+Saved custom icons and per-user stars are not in the API yet. See
+[the implementation handoff](handoffs/PROJECT_PERSONALIZATION.md). Do not add a
+pretend Starred list or silently persist project settings only in the browser.
+
+## Themes
+
+The app bar displays Dark mode or Light mode as the action's target. Before-paint
+initialization uses the saved preference, otherwise the OS preference. Explicit
+choices persist across navigation/reloads and synchronize across tabs. Storage
+failure still allows switching for the current page. Shared tokens theme all
+routes, including auth and portal; member navigation remains excluded from portal.

@@ -26,7 +26,7 @@ test('the sidebar owns workspace and project destinations while headers retain l
   await expect(page).toHaveURL(/\/chat$/);
   await expect(page.getByTestId('client-reminder')).toBeVisible();
 
-  await sidebar.getByRole('button', { name: /Search/ }).click();
+  await page.getByRole('button', { name: 'Search workspace' }).click();
   await expect(page.getByTestId('command-palette')).toBeVisible();
   await expect(page.getByLabel('Search cards, comments and messages')).toBeFocused();
   await page.keyboard.press('Escape');
@@ -77,8 +77,7 @@ test('mobile drawer traps focus, closes on navigation/Escape/backdrop, and hands
   await drawer.getByRole('link', { name: 'Chat', exact: true }).click();
   await expect(page).toHaveURL(/\/chat$/);
   await expect(drawer).toHaveCount(0);
-  await trigger.click();
-  await drawer.getByRole('button', { name: /Search/ }).click();
+  await page.getByRole('button', { name: 'Search workspace' }).click();
   await expect(drawer).toHaveCount(0);
   await expect(page.getByTestId('command-palette')).toBeVisible();
   await expect(page.getByLabel('Search cards, comments and messages')).toBeFocused();

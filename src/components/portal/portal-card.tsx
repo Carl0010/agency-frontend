@@ -53,8 +53,8 @@ export function PortalCard({ project, cardId }: { project: PortalProject; cardId
           <h1 className="text-xl font-semibold break-words">{c.title}</h1>
           <div className="mt-2 flex flex-wrap items-center gap-2">
             {c.labels.map((l) => (
-              <span key={l.id} className={`rounded px-2 py-0.5 text-xs font-medium text-inverse-foreground ${LABEL_BG[l.color] ?? 'bg-disabled-foreground'}`}>
-                {l.name}
+              <span key={l.id} className="inline-flex items-center gap-1.5 rounded bg-subtle px-2 py-0.5 text-xs font-medium text-secondary-foreground">
+                <span aria-hidden="true" className={`size-2 rounded-full ${LABEL_BG[l.color] ?? 'bg-disabled-foreground'}`} />{l.name}
               </span>
             ))}
             <DuePill dueAt={c.dueAt} dueCompletedAt={c.dueCompletedAt} now={now} />

@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { BrandMark, Icon } from '@/components/icon';
+import { Icon } from '@/components/icon';
 import { NotificationBell } from '@/components/notifications';
 import { useWorkspace } from '@/lib/workspace';
 import type { WorkspaceModule } from './workspace-modules';
@@ -12,11 +12,6 @@ export function ModuleRail({ activeModule, onNavigate }: { activeModule: Workspa
   const base = `/w/${ws.slug}`;
   return (
     <div className="flex h-full flex-col" data-testid="module-rail">
-      <div className="flex min-h-16 shrink-0 items-center justify-center border-b border-border">
-        <Link href={`${base}/projects`} onClick={onNavigate} aria-label="Agency home" title="Agency home" className="tap flex size-11 items-center justify-center rounded-lg">
-          <BrandMark className="size-9" />
-        </Link>
-      </div>
       <nav aria-label="Main modules" className="flex min-h-0 flex-1 flex-col items-center gap-2 overflow-y-auto px-1 py-4">
         <Link href={`${base}/projects`} onClick={onNavigate} title="Projects" aria-current={activeModule === 'projects' ? 'location' : undefined} className="ui-module-link tap">
           <Icon name="projects" className="size-5" /><span>Projects</span>

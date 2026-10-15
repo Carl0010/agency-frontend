@@ -1,6 +1,9 @@
 'use client';
 
 import Link from 'next/link';
+import { useState } from 'react';
+import { ProjectEditor } from '@/components/projects/project-editor';
+import { ProjectMenu } from '@/components/projects/project-menu';
 import { usePathname, useRouter } from 'next/navigation';
 import { Icon, type IconName } from '@/components/icon';
 import { SetupChip } from '@/components/onboarding/setup-chip';
@@ -8,7 +11,7 @@ import { TrialPill } from '@/components/billing/billing-notices';
 import { Avatar, Button } from '@/components/ui';
 import { useToast } from '@/components/toast';
 import { errorMessage } from '@/lib/api';
-import { PROJECT_DOT } from '@/lib/content-colors';
+import { PROJECT_ICON_BG } from '@/lib/content-colors';
 import { useSession } from '@/lib/session';
 import type { Channel, Project } from '@/lib/types';
 import { useWorkspace } from '@/lib/workspace';
@@ -26,16 +29,16 @@ export interface SidebarData {
   channels: Channel[];
 }
 
-/** The selected module's destinations live here; view-specific mutations stay in page headers. */
-export function WorkspaceSidebar({ data, projectId, activeModule, onNavigate, onSearch, onClose }: {
+/** Module destinations, project management and account controls; board actions stay with the board. */
+export function WorkspaceSidebar({ data, projectId, activeModule, onNavigate, onClose }: {
   data: SidebarData;
   activeModule: WorkspaceModule;
   projectId?: string;
   onNavigate?: () => void;
-  onSearch: () => void;
   onClose?: () => void;
 }) {
   const ws = useWorkspace();
+  const [creating, setCreating] = useState(false);
   const { user, signOut } = useSession();
   const router = useRouter();
   const pathname = usePathname();
@@ -65,13 +68,7 @@ export function WorkspaceSidebar({ data, projectId, activeModule, onNavigate, on
         {onClose ? <Button variant="ghost" size="icon" aria-label="Close navigation" onClick={onClose}><Icon name="close" /></Button> : null}
       </div>
 
-      <div className="shrink-0 space-y-1 px-3 pb-2 pt-4">
-        <button type="button" className="ui-nav-link tap w-full border border-border bg-surface shadow-sm" onClick={onSearch}>
-          <Icon name="search" /><span>Search</span><kbd className="ml-auto rounded border border-border px-1 text-caption text-muted-foreground">⌘ K</kbd>
-        </button>
-      </div>
-
-      <div className="min-h-0 flex-1 overflow-y-auto px-3 pb-4">
+      <div className="min-h-0 flex-1 overflow-y-auto px-3 pb-4 pt-4">
         {activeModule === 'projects' ? <>
           <nav aria-label="Project navigation" className="space-y-1">
             <Link href={`${base}/projects`} onClick={onNavigate} aria-current={pathname === `${base}/projects` ? 'page' : undefined} className="ui-nav-link tap">
@@ -81,7 +78,7 @@ export function WorkspaceSidebar({ data, projectId, activeModule, onNavigate, on
           </nav>
 
           <nav aria-label="Projects" className="mt-6">
-            <div className="mb-2 flex items-center justify-between px-2.5 text-caption font-medium text-muted-foreground"><span>Client projects</span><Link href={`${base}/projects`} onClick={onNavigate} aria-label="View all projects" className="tap inline-flex items-center rounded px-1 hover:text-primary"><Icon name="arrow" className="size-3.5" /></Link></div>
+            <div className="mb-2 flex items-center justify-between px-2.5 text-caption font-medium text-muted-foreground"><span>Client projects</span><Button variant="ghost" size="icon" aria-label="Add project" onClick={() => setCreating(true)}><Icon name="plus" /></Button><Link href={`${base}/projects`} onClick={onNavigate} aria-label="View all projects" className="tap inline-flex items-center rounded px-1 hover:text-primary"><Icon name="arrow" className="size-3.5" /></Link></div>
             {data.pending ? <p role="status" className="px-2.5 py-2 text-caption text-muted-foreground">Loading projects…</p> : null}
             {data.error ? <div role="alert" className="space-y-2 rounded-md border border-danger-border bg-danger-subtle p-2.5 text-caption text-danger-text"><p>{data.error}</p><Button variant="secondary" size="sm" onClick={data.retry}>Try again</Button></div> : null}
             {!data.pending && !data.error && data.projects.length === 0 ? <p className="px-2.5 py-2 text-caption text-muted-foreground">Your client projects will appear here.</p> : null}
@@ -97,12 +94,15 @@ export function WorkspaceSidebar({ data, projectId, activeModule, onNavigate, on
                 ];
                 return (
                   <li key={project.id}>
-                    <Link href={`${projectBase}/b/${project.defaultBoardId}`} onClick={onNavigate} aria-current={current ? 'location' : undefined} data-testid="rail-project" className={`ui-nav-link tap ${current ? 'bg-subtle font-medium text-foreground' : ''}`}>
-                      <span className={`size-2 shrink-0 rounded-full ${PROJECT_DOT[project.color] ?? 'bg-label-grey'}`} />
-                      <span className="min-w-0 flex-1 truncate">{project.name}</span>
-                      {unread ? <UnreadDot label={`Unread messages in ${project.name}`} /> : null}
-                      {current ? <Icon name="chevron" className="size-3 rotate-90 text-muted-foreground" /> : null}
-                    </Link>
+                    <div className="flex items-center gap-1">
+                      <Link href={`${projectBase}/b/${project.defaultBoardId}`} onClick={onNavigate} aria-current={current ? 'location' : undefined} data-testid="rail-project" className={`ui-nav-link tap min-w-0 flex-1 ${current ? 'bg-subtle font-medium text-foreground' : ''}`}>
+                        <span className={`flex size-7 shrink-0 items-center justify-center rounded-lg text-foreground ${PROJECT_ICON_BG[project.color] ?? 'bg-subtle'}`}><Icon name="board" className="size-4" /></span>
+                        <span className="min-w-0 flex-1 truncate">{project.name}</span>
+                        {unread ? <UnreadDot label={`Unread messages in ${project.name}`} /> : null}
+                        {current ? <Icon name="chevron" className="size-3 rotate-90 text-muted-foreground" /> : null}
+                      </Link>
+                      <ProjectMenu project={project} onNavigate={onNavigate} />
+                    </div>
                     {current ? <ul aria-label="Project sections" className="my-1 ml-3 border-l border-border pl-3">
                       {sections.map((section) => {
                         // Any board/card route stays under Board, including additional boards.
@@ -134,6 +134,11 @@ export function WorkspaceSidebar({ data, projectId, activeModule, onNavigate, on
         </nav> : null}
       </div>
 
+      {creating ? <ProjectEditor onClose={() => setCreating(false)} onSaved={(project) => {
+        setCreating(false);
+        onNavigate?.();
+        router.push(`${base}/p/${project.id}/b/${project.defaultBoardId}`);
+      }} /> : null}
       <div className="shrink-0 space-y-2 border-t border-border p-3">
         <SetupChip ws={ws} onNavigate={onNavigate} />
         <TrialPill ws={ws} onNavigate={onNavigate} />

@@ -83,3 +83,5 @@
 @media (max-width: 767px) {
   .board-split-view:has(#card-drawer) > #board-view { display: none; }
 }
+
+html[data-theme='dark'] { color-scheme: dark; }

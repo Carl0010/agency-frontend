@@ -205,7 +205,7 @@ export function BoardScreen({ boardId, projectId }: { boardId: string; projectId
                 role="tab"
                 aria-selected={l.id === selectedList?.id}
                 onClick={() => setMobileListId(l.id)}
-                className={`tap inline-flex shrink-0 items-center gap-2 rounded-lg px-3 text-label font-medium ${l.id === selectedList?.id ? 'bg-primary text-inverse-foreground hover:bg-primary-hover active:bg-primary-active' : 'bg-subtle text-secondary-foreground hover:bg-muted active:bg-muted'}`}
+                className={`tap inline-flex shrink-0 items-center gap-2 rounded-lg px-3 text-label font-medium ${l.id === selectedList?.id ? 'bg-primary text-primary-foreground hover:bg-primary-hover active:bg-primary-active' : 'bg-subtle text-secondary-foreground hover:bg-muted active:bg-muted'}`}
               >
                 {l.name}<span className="min-w-4 text-center text-caption">{l.cards.length}</span>
               </button>

@@ -2,9 +2,12 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const css = readFileSync(join(__dirname, '../styles/tokens.css'), 'utf8');
+const [lightCss, darkCss = ''] = css.split("html[data-theme='dark']");
 const colors = new Map<string, string>();
-for (const match of css.matchAll(/--color-([\w-]+): (#[\da-f]{6});/g)) {
-  if (match[1] && match[2]) colors.set(match[1], match[2]);
+function loadColors(source: string) {
+  for (const match of source.matchAll(/--color-([\w-]+): (#[\da-f]{6});/g)) {
+    if (match[1] && match[2]) colors.set(match[1], match[2]);
+  }
 }
 
 function luminance(token: string): number {
@@ -23,9 +26,10 @@ function contrast(a: string, b: string): number {
   return (Math.max(first, second) + 0.05) / (Math.min(first, second) + 0.05);
 }
 
-describe('readable design token combinations', () => {
+describe.each(['light', 'dark'])('%s readable design token combinations', (theme) => {
+  beforeAll(() => { colors.clear(); loadColors(lightCss!); if (theme === 'dark') loadColors(darkCss); });
   it.each([
-    ['foreground', 'background'], ['secondary-foreground', 'surface'],
+    ['inverse-foreground', 'inverse'], ['foreground', 'background'], ['secondary-foreground', 'surface'],
     ['muted-foreground', 'surface'], ['muted-foreground', 'subtle'],
     ['primary-foreground', 'primary'], ['primary-foreground', 'primary-hover'],
     ['primary-foreground', 'primary-active'], ['primary', 'surface'],

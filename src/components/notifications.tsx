@@ -38,7 +38,7 @@ export function NotificationBell({ active, onNavigate }: { active?: boolean; onN
     >
       <Icon name="inbox" className="size-5" /><span>Inbox</span>
       {n ? (
-        <span data-testid="unread-badge" className="absolute right-1 top-1 min-w-4 rounded-full bg-primary px-1 text-center text-caption font-semibold leading-4 text-inverse-foreground">
+        <span data-testid="unread-badge" className="absolute right-1 top-1 min-w-4 rounded-full bg-primary px-1 text-center text-caption font-semibold leading-4 text-primary-foreground">
           {n > 99 ? '99+' : n}
         </span>
       ) : null}
@@ -82,7 +82,7 @@ export function PushExplainer() {
               setShow(false);
             });
         }}
-        className="tap rounded-md bg-primary px-3 text-sm font-medium text-inverse-foreground"
+        className="tap rounded-md bg-primary px-3 text-sm font-medium text-primary-foreground"
       >
         Enable notifications
       </button>

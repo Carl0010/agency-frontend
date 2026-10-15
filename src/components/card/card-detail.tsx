@@ -234,8 +234,8 @@ function Labels({ card, onToggle }: { card: Detail; onToggle: (labelId: string, 
   return (
     <div className="flex flex-wrap items-center gap-1">
       {card.labels.map((l) => (
-        <span key={l.id} className={`rounded px-2 py-0.5 text-xs font-medium text-inverse-foreground ${LABEL_BG[l.color] ?? 'bg-disabled-foreground'}`}>
-          {l.name}
+        <span key={l.id} className="inline-flex items-center gap-1.5 rounded bg-subtle px-2 py-0.5 text-xs font-medium text-secondary-foreground">
+          <span aria-hidden="true" className={`size-2 rounded-full ${LABEL_BG[l.color] ?? 'bg-disabled-foreground'}`} />{l.name}
         </span>
       ))}
       <Popover label="Edit labels">
@@ -261,7 +261,7 @@ function Labels({ card, onToggle }: { card: Detail; onToggle: (labelId: string, 
                   </option>
                 ))}
               </select>
-              <button type="submit" className="rounded bg-primary px-2 text-sm text-inverse-foreground">
+              <button type="submit" className="rounded bg-primary px-2 text-sm text-primary-foreground">
                 Add
               </button>
             </form>

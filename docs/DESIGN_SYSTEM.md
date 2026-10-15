@@ -125,7 +125,8 @@ text to avoid iOS zoom. Small avatar initials are a limited exception to the
   board lanes on desktop. Below 640px,
   preserve the existing one-list-at-a-time board behavior.
 - Follow [navigation ownership](NAVIGATION.md): workspace and project destinations
-  live in the module rail and contextual sidebar; headers keep location and
+  live in the module rail and contextual sidebar; the global app bar owns search and
+  theme/sidebar toggles, while page headers keep
   local actions. Do not add a duplicate project rail or Board/Chat/Team tabs.
 - Card details use the non-modal right inspector in
   [navigation ownership](NAVIGATION.md#card-inspector). Keep the board usable
@@ -157,7 +158,8 @@ piece of information. Reuse the semantic type and color tokens above.
 Keep list headings and the bottom Add card control outside the list's scrolling
 card area. Long lists scroll internally; users can still identify the list and
 create a card. Empty lists say **No cards yet**; filtered lists with no matches
-say **No matching cards**. Keep one Add card control per list, at the bottom.
+say **No matching cards**. Keep one Add card control per list as a separate bordered surface below the
+list panel, with a 12px gap. The form expands inside that separate tile.
 
 User-selected label colors appear as dots beside their readable names on a
 neutral chip. Do not put low-contrast text on arbitrary label fills. Card facts
@@ -215,7 +217,13 @@ including metadata bounds and access to list headings and bottom actions.
 5. Run web lint, typecheck, unit tests and a production build. Check mobile
    overflow, focus, loading/empty/error states and a populated board.
 
-Light mode is the only supported theme in this slice. Add dark mode only with a
-complete palette, component review and contrast checks; do not auto-invert colors.
-This foundation is applied across the current app. More substantial page-layout
-redesigns can follow without replacing these tokens or changing business flows.
+Both light and dark themes are supported through the same semantic roles.
+`html[data-theme='dark']` overrides surface, text, control and status-container
+tokens. Content colors, avatar fills and status fills retain their identities.
+Primary fills use `primary-foreground`; inverse/status fills use
+`inverse-foreground`. Label text sits on neutral surfaces beside colored dots.
+`design-system.spec.ts` tests text/control contrast in both modes.
+
+The app bar's labelled toggle saves a browser preference. A before-paint root
+script prevents a light flash on reload; without a saved choice it follows the
+OS. Theme is local presentation state, never workspace/project data.
