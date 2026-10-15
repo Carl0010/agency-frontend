@@ -45,7 +45,7 @@ export default function SignupPage() {
       title="Start your 14-day trial"
       footer={
         <>
-          Already have an account? <Link className="font-medium text-blue-700" href="/login">Log in</Link>
+          Already have an account? <Link className="font-medium text-primary" href="/login">Log in</Link>
         </>
       }
     >
@@ -63,7 +63,7 @@ export default function SignupPage() {
         <Button type="submit" className="w-full" disabled={busy}>
           {busy ? 'Creating account…' : 'Create account'}
         </Button>
-        <a className="tap block rounded-md border border-slate-300 py-2 text-center text-sm font-medium hover:bg-slate-50" href="/api/v1/auth/google">
+        <a className="tap block rounded-md border border-input py-2 text-center text-sm font-medium hover:bg-background" href="/api/v1/auth/google">
           Sign up with Google
         </a>
       </form>

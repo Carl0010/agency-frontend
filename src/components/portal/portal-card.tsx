@@ -27,14 +27,14 @@ export function PortalCard({ project, cardId }: { project: PortalProject; cardId
   useRoom(card.data ? `card:${cardId}` : null, {});
 
   const back = (
-    <Link href={`/portal/${project.id}`} className="tap inline-flex items-center text-sm text-blue-700">
+    <Link href={`/portal/${project.id}`} className="tap inline-flex items-center text-sm text-primary">
       ← Board
     </Link>
   );
   if (card.isPending) return <Spinner />;
   if (card.error) {
     return (
-      <div className="p-8 text-center text-slate-600">
+      <div className="p-8 text-center text-secondary-foreground">
         <p>{card.error instanceof ApiError && card.error.status === 404 ? 'This card does not exist or you cannot see it.' : errorMessage(card.error)}</p>
         {back}
       </div>
@@ -47,13 +47,13 @@ export function PortalCard({ project, cardId }: { project: PortalProject; cardId
       <article className="mx-auto max-w-3xl space-y-6 p-4" data-testid="portal-card-detail">
         {back}
         <header>
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-muted-foreground">
             {c.listName} · {c.key}-{c.number}
           </p>
           <h1 className="text-xl font-semibold break-words">{c.title}</h1>
           <div className="mt-2 flex flex-wrap items-center gap-2">
             {c.labels.map((l) => (
-              <span key={l.id} className={`rounded px-2 py-0.5 text-xs font-medium text-white ${LABEL_BG[l.color] ?? 'bg-slate-400'}`}>
+              <span key={l.id} className={`rounded px-2 py-0.5 text-xs font-medium text-inverse-foreground ${LABEL_BG[l.color] ?? 'bg-disabled-foreground'}`}>
                 {l.name}
               </span>
             ))}
@@ -62,7 +62,7 @@ export function PortalCard({ project, cardId }: { project: PortalProject; cardId
         </header>
         {c.description ? (
           <section aria-label="Description">
-            <h2 className="mb-1 text-sm font-semibold text-slate-700">Description</h2>
+            <h2 className="mb-1 text-sm font-semibold text-secondary-foreground">Description</h2>
             <Markdown source={c.description} />
           </section>
         ) : null}
@@ -83,20 +83,20 @@ function ReadOnlyChecklist({ checklist }: { checklist: Checklist }) {
   const total = checklist.items.length;
   return (
     <section aria-label={checklist.title} data-testid="portal-checklist">
-      <h2 className="text-sm font-semibold text-slate-700">
+      <h2 className="text-sm font-semibold text-secondary-foreground">
         {checklist.title}{' '}
-        <span className="font-normal text-slate-500">
+        <span className="font-normal text-muted-foreground">
           {done}/{total}
         </span>
       </h2>
-      <div className="mt-1 h-1.5 rounded bg-slate-200" role="progressbar" aria-valuemin={0} aria-valuemax={total} aria-valuenow={done}>
-        <div className="h-1.5 rounded bg-green-600" style={{ width: total ? `${(done / total) * 100}%` : '0%' }} />
+      <div className="mt-1 h-1.5 rounded bg-muted" role="progressbar" aria-valuemin={0} aria-valuemax={total} aria-valuenow={done}>
+        <div className="h-1.5 rounded bg-success" style={{ width: total ? `${(done / total) * 100}%` : '0%' }} />
       </div>
       <ul className="mt-2 space-y-1">
         {checklist.items.map((i) => (
           <li key={i.id} className="flex items-start gap-2 text-sm">
             <span aria-hidden>{i.doneAt ? '☑' : '☐'}</span>
-            <span className={i.doneAt ? 'text-slate-500 line-through' : ''}>{i.text}</span>
+            <span className={i.doneAt ? 'text-muted-foreground line-through' : ''}>{i.text}</span>
             <span className="sr-only">{i.doneAt ? '(done)' : '(not done)'}</span>
           </li>
         ))}
@@ -117,7 +117,7 @@ function ReadOnlyAttachments({ attachments }: { attachments: Attachment[] }) {
   }
   return (
     <section aria-label="Attachments">
-      <h2 className="mb-1 text-sm font-semibold text-slate-700">Attachments</h2>
+      <h2 className="mb-1 text-sm font-semibold text-secondary-foreground">Attachments</h2>
       <ul className="space-y-1">
         {attachments.map((a) => (
           <li key={a.id}>
@@ -125,10 +125,10 @@ function ReadOnlyAttachments({ attachments }: { attachments: Attachment[] }) {
               type="button"
               disabled={a.kind === 'file' && a.scanState !== 'clean'}
               onClick={() => void open(a)}
-              className="tap text-left text-sm text-blue-700 hover:underline disabled:text-slate-400 disabled:no-underline"
+              className="tap text-left text-sm text-primary hover:underline disabled:text-muted-foreground disabled:no-underline"
             >
               {a.filename}
-              {a.sizeBytes ? <span className="ml-1 text-xs text-slate-500">{formatBytes(a.sizeBytes)}</span> : null}
+              {a.sizeBytes ? <span className="ml-1 text-xs text-muted-foreground">{formatBytes(a.sizeBytes)}</span> : null}
               {a.kind === 'file' && a.scanState !== 'clean' ? <span className="ml-1 text-xs">Scanning…</span> : null}
             </button>
           </li>

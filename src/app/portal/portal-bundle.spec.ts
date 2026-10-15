@@ -13,6 +13,7 @@ const SRC = resolve(__dirname, '..', '..');
 const PORTAL = join(SRC, 'app', 'portal');
 
 const FORBIDDEN: { what: string; test: (file: string) => boolean }[] = [
+  { what: 'workspace sidebar and mobile drawer', test: (f) => f.startsWith('components/navigation/') },
   { what: 'workspace layout tree (/w/*)', test: (f) => f.startsWith('app/w/') },
   { what: 'workspace nav / project rail', test: (f) => f === 'components/project-chrome.tsx' },
   { what: 'workspace notification bell (links into /w)', test: (f) => f === 'components/notifications.tsx' },

@@ -39,17 +39,17 @@ export default function NotificationSettingsPage() {
   return (
     <main className="mx-auto max-w-2xl p-4">
       <h1 className="mb-1 text-xl font-semibold">Notifications</h1>
-      <p className="mb-4 text-sm text-slate-600">
+      <p className="mb-4 text-sm text-secondary-foreground">
         Choose how you hear about activity in {ws.name}. Your inbox always shows everything; message and comment emails only go out if
         you have not read them within 10 minutes.
       </p>
       {prefs.isPending ? (
         <Spinner />
       ) : prefs.error ? (
-        <p className="text-slate-600">{errorMessage(prefs.error)}</p>
+        <p className="text-secondary-foreground">{errorMessage(prefs.error)}</p>
       ) : (
-        <table className="w-full overflow-hidden rounded-md border border-slate-200 bg-white text-sm" data-testid="preferences-grid">
-          <thead className="bg-slate-50 text-left text-xs uppercase text-slate-500">
+        <table className="w-full overflow-hidden rounded-md border border-border bg-surface text-sm" data-testid="preferences-grid">
+          <thead className="bg-background text-left text-xs uppercase text-muted-foreground">
             <tr>
               <th className="px-3 py-2">Event</th>
               <th className="px-3 py-2 text-center">In-app</th>
@@ -57,7 +57,7 @@ export default function NotificationSettingsPage() {
               <th className="px-3 py-2 text-center">Push</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100">
+          <tbody className="divide-y divide-border-subtle">
             {prefs.data.data.map((p) => (
               <tr key={p.type} data-testid={`pref-${p.type}`}>
                 <td className="px-3 py-2">{p.label}</td>

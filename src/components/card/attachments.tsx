@@ -101,24 +101,24 @@ export function Attachments({ cardId, attachments }: { cardId: string; attachmen
 
   return (
     <section aria-label="Attachments" className="space-y-2">
-      <h2 className="text-sm font-semibold text-slate-700">Attachments</h2>
+      <h2 className="text-sm font-semibold text-secondary-foreground">Attachments</h2>
       <ul className="space-y-1">
         {attachments.map((a) => {
           const ready = a.scanState === 'clean' && a.uploaded;
           const status = !a.uploaded ? 'Upload incomplete' : a.scanState === 'pending' ? 'Scanning…' : a.scanState === 'blocked' ? 'Blocked by virus scan' : null;
           return (
-            <li key={a.id} data-testid="attachment" data-scan-state={a.scanState} className={`flex items-center gap-2 rounded-md border border-slate-200 px-2 py-1.5 text-sm ${ready ? '' : 'opacity-60'}`}>
+            <li key={a.id} data-testid="attachment" data-scan-state={a.scanState} className={`flex items-center gap-2 rounded-md border border-border px-2 py-1.5 text-sm ${ready ? '' : 'opacity-60'}`}>
               <span aria-hidden>📄</span>
               {ready ? (
-                <button type="button" onClick={() => void download(a)} className="tap min-w-0 flex-1 truncate text-left text-blue-700 hover:underline">
+                <button type="button" onClick={() => void download(a)} className="tap min-w-0 flex-1 truncate text-left text-primary hover:underline">
                   {a.filename}
                 </button>
               ) : (
                 <span className="min-w-0 flex-1 truncate">{a.filename}</span>
               )}
-              <span className="shrink-0 text-xs text-slate-500">{status ?? formatBytes(a.sizeBytes)}</span>
+              <span className="shrink-0 text-xs text-muted-foreground">{status ?? formatBytes(a.sizeBytes)}</span>
               {a.uploadedBy.id === user?.id ? (
-                <button type="button" aria-label={`Delete ${a.filename}`} onClick={() => void remove(a)} className="tap px-1 text-slate-400 hover:text-red-700">
+                <button type="button" aria-label={`Delete ${a.filename}`} onClick={() => void remove(a)} className="tap px-1 text-muted-foreground hover:text-danger-text">
                   ✕
                 </button>
               ) : null}
@@ -126,15 +126,15 @@ export function Attachments({ cardId, attachments }: { cardId: string; attachmen
           );
         })}
         {uploads.map((u) => (
-          <li key={u.key} className="rounded-md border border-dashed border-slate-300 px-2 py-1.5 text-sm">
+          <li key={u.key} className="rounded-md border border-dashed border-input px-2 py-1.5 text-sm">
             <div className="flex justify-between">
               <span className="truncate">{u.name}</span>
-              <span className="text-xs text-slate-500" data-testid="upload-progress">
+              <span className="text-xs text-muted-foreground" data-testid="upload-progress">
                 {u.progress}%
               </span>
             </div>
-            <div className="mt-1 h-1 rounded bg-slate-200">
-              <div className="h-full rounded bg-blue-500 transition-all" style={{ width: `${u.progress}%` }} />
+            <div className="mt-1 h-1 rounded bg-muted">
+              <div className="h-full rounded bg-primary transition-all" style={{ width: `${u.progress}%` }} />
             </div>
           </li>
         ))}
@@ -147,7 +147,7 @@ export function Attachments({ cardId, attachments }: { cardId: string; attachmen
         onDragLeave={() => setOver(false)}
         onDrop={onDrop}
         data-testid="attachment-dropzone"
-        className={`flex flex-wrap items-center gap-2 rounded-md border-2 border-dashed px-3 py-3 text-sm ${over ? 'border-blue-400 bg-blue-50' : 'border-slate-200 text-slate-500'}`}
+        className={`flex flex-wrap items-center gap-2 rounded-md border-2 border-dashed px-3 py-3 text-sm ${over ? 'border-ring bg-primary-subtle' : 'border-border text-muted-foreground'}`}
       >
         Drop files here or
         <Button variant="secondary" onClick={() => input.current?.click()}>

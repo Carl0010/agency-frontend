@@ -68,7 +68,7 @@ export function Comments({ cardId, canPost = true }: { cardId: string; canPost?:
 
   return (
     <section aria-label="Comments" className="space-y-4">
-      <h2 className="text-sm font-semibold text-slate-700">Comments</h2>
+      <h2 className="text-sm font-semibold text-secondary-foreground">Comments</h2>
       {comments.isPending ? <Spinner /> : null}
       <ol className="space-y-4">
         {roots.map((root) => (
@@ -82,14 +82,14 @@ export function Comments({ cardId, canPost = true }: { cardId: string; canPost?:
         <div className="space-y-2">
           <MentionInput value={draft} onChange={setDraft} onSubmit={() => void submitRoot()} placeholder="Write a comment… use @ to mention" label="Write a comment" />
           <div className="flex items-center justify-between">
-            <span className="text-xs text-slate-500">Markdown supported · ⌘↵ to post</span>
+            <span className="text-xs text-muted-foreground">Markdown supported · ⌘↵ to post</span>
             <Button onClick={() => void submitRoot()} disabled={busy || !draft.trim()}>
               Comment
             </Button>
           </div>
         </div>
       ) : (
-        <p data-testid="view-only" className="rounded-md bg-slate-50 px-3 py-2 text-sm text-slate-600">
+        <p data-testid="view-only" className="rounded-md bg-background px-3 py-2 text-sm text-secondary-foreground">
           {VIEW_ONLY}
         </p>
       )}
@@ -102,9 +102,9 @@ function Replies({ replies, cardId }: { replies: Comment[]; cardId: string }) {
   if (!replies.length) return null;
   const collapsed = replies.length > REPLY_COLLAPSE && !expanded;
   return (
-    <div className="ml-9 mt-2 space-y-3 border-l-2 border-slate-100 pl-3">
+    <div className="ml-9 mt-2 space-y-3 border-l-2 border-border-subtle pl-3">
       {collapsed ? (
-        <button type="button" onClick={() => setExpanded(true)} className="tap text-sm font-medium text-blue-700">
+        <button type="button" onClick={() => setExpanded(true)} className="tap text-sm font-medium text-primary">
           {replies.length} replies
         </button>
       ) : (
@@ -152,7 +152,7 @@ function CommentItem({ comment, cardId, onReply }: { comment: Comment; cardId: s
       id={`comment-${comment.id}`}
       data-testid="comment"
       data-comment-id={comment.id}
-      className={`flex gap-2 rounded ${highlighted ? 'bg-amber-50 ring-2 ring-amber-200' : ''}`}
+      className={`flex gap-2 rounded ${highlighted ? 'bg-warning-subtle ring-2 ring-warning-border' : ''}`}
     >
       <Avatar person={comment.author} size={28} />
       <div className="min-w-0 flex-1">
@@ -160,14 +160,14 @@ function CommentItem({ comment, cardId, onReply }: { comment: Comment; cardId: s
           {/* Authors render by name only — no profile link, so deactivated members stay readable (AC8). */}
           <span className="font-semibold">{comment.author.name}</span>
           {comment.author.guest ? <span className="ml-1"><GuestChip /></span> : null}
-          {!comment.author.active ? <span className="text-xs text-slate-500"> (deactivated)</span> : null}
-          <span className="ml-2 text-xs text-slate-500" title={new Date(comment.createdAt).toLocaleString()}>
+          {!comment.author.active ? <span className="text-xs text-muted-foreground"> (deactivated)</span> : null}
+          <span className="ml-2 text-xs text-muted-foreground" title={new Date(comment.createdAt).toLocaleString()}>
             {timeAgo(comment.createdAt, now)}
           </span>
-          {comment.editedAt && !deleted ? <span className="ml-1 text-xs text-slate-500">(edited)</span> : null}
+          {comment.editedAt && !deleted ? <span className="ml-1 text-xs text-muted-foreground">(edited)</span> : null}
         </p>
         {deleted ? (
-          <p data-testid="comment-tombstone" className="text-sm italic text-slate-400">
+          <p data-testid="comment-tombstone" className="text-sm italic text-muted-foreground">
             This comment was deleted.
           </p>
         ) : editing ? (
@@ -182,18 +182,18 @@ function CommentItem({ comment, cardId, onReply }: { comment: Comment; cardId: s
           <Markdown source={comment.body ?? ''} />
         )}
         {!deleted && !editing ? (
-          <div className="mt-0.5 flex gap-3 text-xs text-slate-500">
+          <div className="mt-0.5 flex gap-3 text-xs text-muted-foreground">
             {onReply ? (
-              <button type="button" className="tap hover:text-slate-800" onClick={() => setReplying((r) => !r)}>
+              <button type="button" className="tap hover:text-foreground" onClick={() => setReplying((r) => !r)}>
                 Reply
               </button>
             ) : null}
             {own ? (
               <>
-                <button type="button" className="tap hover:text-slate-800" onClick={() => { setEditBody(comment.body ?? ''); setEditing(true); }}>
+                <button type="button" className="tap hover:text-foreground" onClick={() => { setEditBody(comment.body ?? ''); setEditing(true); }}>
                   Edit
                 </button>
-                <button type="button" className="tap hover:text-red-700" onClick={() => void remove()}>
+                <button type="button" className="tap hover:text-danger-text" onClick={() => void remove()}>
                   Delete
                 </button>
               </>

@@ -20,7 +20,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useMemo, useState, type FormEvent } from 'react';
-import { ProjectRail, ProjectTabs } from '@/components/project-chrome';
+import { ProjectActions } from '@/components/project-chrome';
 import { useToast } from '@/components/toast';
 import { Avatar, Spinner } from '@/components/ui';
 import { api, errorMessage } from '@/lib/api';
@@ -66,7 +66,6 @@ export function BoardScreen({ boardId, projectId }: { boardId: string; projectId
   const now = useNow();
   const [drag, setDrag] = useState<Drag | null>(null);
   const [mobileListId, setMobileListId] = useState<string | null>(null);
-  const [railOpen, setRailOpen] = useState(false);
 
   useProjectRealtime(projectId);
   const board = useQuery({ queryKey: ['board', boardId], queryFn: () => api.get<Board>(`/boards/${boardId}`) });
@@ -92,7 +91,7 @@ export function BoardScreen({ boardId, projectId }: { boardId: string; projectId
   );
 
   if (board.isPending) return <Spinner />;
-  if (board.error) return <p className="p-8 text-center text-slate-600">{errorMessage(board.error)}</p>;
+  if (board.error) return <p className="p-8 text-center text-secondary-foreground">{errorMessage(board.error)}</p>;
 
   const shown = drag?.board ?? board.data;
   const qs = params.toString();
@@ -173,20 +172,16 @@ export function BoardScreen({ boardId, projectId }: { boardId: string; projectId
 
   return (
     <div className="flex h-full">
-      <ProjectRail open={railOpen} onClose={() => setRailOpen(false)} currentProjectId={projectId} />
       <div className="flex min-w-0 flex-1 flex-col">
-        <div className="flex flex-wrap items-center gap-2 border-b border-slate-200 bg-white px-3 py-2">
-          <button type="button" aria-label="Projects" onClick={() => setRailOpen(true)} className="tap rounded px-2 text-slate-600 hover:bg-slate-100 lg:hidden">
-            ☰
-          </button>
+        <div className="flex flex-wrap items-center gap-2 border-b border-border bg-surface px-3 py-2">
           <div className="min-w-0">
             <h1 className="truncate text-lg font-semibold" data-testid="board-title">
               {shown.project.name}
             </h1>
-            {shown.project.clientName ? <p className="truncate text-xs text-slate-500">{shown.project.clientName}</p> : null}
+            {shown.project.clientName ? <p className="truncate text-xs text-muted-foreground">{shown.project.clientName}</p> : null}
           </div>
           <div className="ml-2">
-            <ProjectTabs projectId={projectId} boardId={boardId} current="board" />
+            <ProjectActions projectId={projectId} />
           </div>
           <div className="ml-auto flex -space-x-1.5">
             {activeMembers.slice(0, 5).map((m) => (
@@ -198,7 +193,7 @@ export function BoardScreen({ boardId, projectId }: { boardId: string; projectId
         <FilterBar filters={filters} onChange={setFilters} members={activeMembers} labels={labels.data?.data ?? []} />
 
         {shown.lists.length ? (
-          <div className="flex gap-1 overflow-x-auto border-b border-slate-200 bg-white px-2 py-1 sm:hidden" role="tablist" aria-label="Lists">
+          <div className="flex gap-1 overflow-x-auto border-b border-border bg-surface px-2 py-1 sm:hidden" role="tablist" aria-label="Lists">
             {shown.lists.map((l) => (
               <button
                 key={l.id}
@@ -206,7 +201,7 @@ export function BoardScreen({ boardId, projectId }: { boardId: string; projectId
                 role="tab"
                 aria-selected={l.id === selectedList?.id}
                 onClick={() => setMobileListId(l.id)}
-                className={`tap shrink-0 rounded-full px-3 text-sm ${l.id === selectedList?.id ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-700'}`}
+                className={`tap shrink-0 rounded-full px-3 text-sm ${l.id === selectedList?.id ? 'bg-primary text-inverse-foreground' : 'bg-subtle text-secondary-foreground'}`}
               >
                 {l.name} <span className="opacity-70">{l.cards.length}</span>
               </button>
@@ -215,9 +210,9 @@ export function BoardScreen({ boardId, projectId }: { boardId: string; projectId
         ) : null}
 
         {totalCards === 0 && !filtering ? (
-          <p className="mx-3 mt-3 rounded-md bg-blue-50 px-3 py-2 text-sm text-blue-900">Add your first card to get started.</p>
+          <p className="mx-3 mt-3 rounded-md bg-primary-subtle px-3 py-2 text-sm text-primary-text">Add your first card to get started.</p>
         ) : null}
-        {filtering ? <p className="mx-3 mt-2 text-xs text-slate-500">Filters are on — clear them to drag cards.</p> : null}
+        {filtering ? <p className="mx-3 mt-2 text-xs text-muted-foreground">Filters are on — clear them to drag cards.</p> : null}
 
         <DndContext
           sensors={sensors}
@@ -250,7 +245,7 @@ export function BoardScreen({ boardId, projectId }: { boardId: string; projectId
                 <CardTileView card={activeCard} projectKey={shown.project.key} now={now} dragging />
               </div>
             ) : activeList ? (
-              <div className="w-72 rounded-lg bg-slate-200 p-3 text-sm font-semibold shadow-lg">{activeList.name}</div>
+              <div className="w-72 rounded-lg bg-muted p-3 text-sm font-semibold shadow-lg">{activeList.name}</div>
             ) : null}
           </DragOverlay>
         </DndContext>
@@ -279,19 +274,19 @@ function AddList({ boardId }: { boardId: string }) {
   }
 
   return open ? (
-    <form onSubmit={(e) => void onSubmit(e)} className="hidden w-72 shrink-0 space-y-2 rounded-lg bg-slate-100 p-2 sm:block">
-      <input name="name" autoFocus aria-label="List name" placeholder="List name" maxLength={120} className="w-full rounded-md border border-slate-300 px-2 py-1 text-sm" />
+    <form onSubmit={(e) => void onSubmit(e)} className="hidden w-72 shrink-0 space-y-2 rounded-lg bg-subtle p-2 sm:block">
+      <input name="name" autoFocus aria-label="List name" placeholder="List name" maxLength={120} className="w-full rounded-md border border-input px-2 py-1 text-sm" />
       <div className="flex gap-2">
-        <button type="submit" className="tap rounded-md bg-blue-600 px-3 py-1 text-sm font-medium text-white">
+        <button type="submit" className="tap rounded-md bg-primary px-3 py-1 text-sm font-medium text-inverse-foreground">
           Add list
         </button>
-        <button type="button" onClick={() => setOpen(false)} className="tap px-2 text-sm text-slate-600">
+        <button type="button" onClick={() => setOpen(false)} className="tap px-2 text-sm text-secondary-foreground">
           Cancel
         </button>
       </div>
     </form>
   ) : (
-    <button type="button" onClick={() => setOpen(true)} className="tap hidden w-72 shrink-0 rounded-lg bg-slate-200/60 px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-200 sm:block">
+    <button type="button" onClick={() => setOpen(true)} className="tap hidden w-72 shrink-0 rounded-lg bg-muted/60 px-3 py-2 text-left text-sm text-secondary-foreground hover:bg-muted sm:block">
       + Add list
     </button>
   );
@@ -306,25 +301,25 @@ function ArchivedCards({ boardId, cardHref }: { boardId: string; cardHref: (id: 
   });
   return (
     <div className="relative">
-      <button type="button" aria-expanded={open} onClick={() => setOpen((o) => !o)} className="tap rounded px-2 py-1 text-sm text-slate-600 hover:bg-slate-100">
+      <button type="button" aria-expanded={open} onClick={() => setOpen((o) => !o)} className="tap rounded px-2 py-1 text-sm text-secondary-foreground hover:bg-subtle">
         Archived
       </button>
       {open ? (
-        <div className="absolute right-0 z-30 mt-1 max-h-96 w-72 overflow-y-auto rounded-md border border-slate-200 bg-white p-2 shadow-lg">
+        <div className="absolute right-0 z-30 mt-1 max-h-96 w-72 overflow-y-auto rounded-md border border-border bg-surface p-2 shadow-lg">
           {archived.isPending ? (
             <Spinner />
           ) : archived.data?.data.length ? (
             <ul className="space-y-1">
               {archived.data.data.map((c) => (
                 <li key={c.id}>
-                  <Link href={cardHref(c.id)} onClick={() => setOpen(false)} className="tap block truncate rounded px-2 py-1 text-sm hover:bg-slate-100">
+                  <Link href={cardHref(c.id)} onClick={() => setOpen(false)} className="tap block truncate rounded px-2 py-1 text-sm hover:bg-subtle">
                     #{c.number} {c.title}
                   </Link>
                 </li>
               ))}
             </ul>
           ) : (
-            <p className="p-2 text-sm text-slate-500">No archived cards.</p>
+            <p className="p-2 text-sm text-muted-foreground">No archived cards.</p>
           )}
         </div>
       ) : null}

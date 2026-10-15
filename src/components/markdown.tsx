@@ -16,7 +16,7 @@ export function Markdown({ source }: { source: string }) {
         components={{
           a: ({ href, children }) =>
             href?.startsWith('user:') ? (
-              <span data-testid="mention-chip" data-user-id={href.slice(5)} className="rounded bg-blue-100 px-1 font-medium text-blue-800">
+              <span data-testid="mention-chip" data-user-id={href.slice(5)} className="rounded bg-primary-muted px-1 font-medium text-primary-text">
                 {children}
               </span>
             ) : (

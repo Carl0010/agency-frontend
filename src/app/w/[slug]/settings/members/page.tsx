@@ -63,32 +63,32 @@ export default function MembersPage() {
       <div className="mb-6 flex flex-wrap items-baseline justify-between gap-2">
         <h1 className="text-2xl font-semibold">Members</h1>
         {seats.data ? (
-          <p data-testid="seat-meter" className={`text-sm font-medium ${full ? 'text-amber-700' : 'text-slate-600'}`}>
+          <p data-testid="seat-meter" className={`text-sm font-medium ${full ? 'text-warning-text' : 'text-secondary-foreground'}`}>
             {seats.data.used} of {seats.data.included} seats used
           </p>
         ) : null}
       </div>
 
       {canManage ? (
-        <form onSubmit={(e) => void onInvite(e)} className="mb-6 rounded-lg border border-slate-200 bg-white p-4">
+        <form onSubmit={(e) => void onInvite(e)} className="mb-6 rounded-lg border border-border bg-surface p-4">
           <h2 className="mb-3 font-medium">Invite a teammate</h2>
           <FormError message={inviteError} />
           <div className="mt-2 grid gap-2 sm:grid-cols-[1fr_auto_auto]">
             <Input name="email" type="email" placeholder="name@agency.com" aria-label="Email" required />
-            <select name="role" aria-label="Role" defaultValue="member" className="tap rounded-md border border-slate-300 bg-white px-2 text-sm">
+            <select name="role" aria-label="Role" defaultValue="member" className="tap rounded-md border border-input bg-surface px-2 text-sm">
               <option value="member">Member</option>
               <option value="admin">Admin</option>
             </select>
             <Button type="submit">Send invite</Button>
           </div>
-          <p className="mt-2 text-xs text-slate-500">A pending invite holds a seat until it is accepted or revoked.</p>
+          <p className="mt-2 text-xs text-muted-foreground">A pending invite holds a seat until it is accepted or revoked.</p>
         </form>
       ) : null}
 
       {members.isPending ? (
         <Spinner />
       ) : (
-        <ul className="divide-y divide-slate-200 rounded-lg border border-slate-200 bg-white">
+        <ul className="divide-y divide-border rounded-lg border border-border bg-surface">
           {sorted.map((m) => {
             const isOwner = m.role === 'owner';
             const isSelf = m.userId === user?.id;
@@ -98,9 +98,9 @@ export default function MembersPage() {
                 <Avatar person={{ id: m.userId, name: m.name, avatarUrl: m.avatarUrl, active: m.status !== 'deactivated' }} size={32} />
                 <div className="min-w-0 flex-1">
                   <p className="truncate font-medium">
-                    {m.name} {isSelf ? <span className="text-slate-500">(you)</span> : null}
+                    {m.name} {isSelf ? <span className="text-muted-foreground">(you)</span> : null}
                   </p>
-                  <p className="truncate text-sm text-slate-500">
+                  <p className="truncate text-sm text-muted-foreground">
                     {m.email}
                     {m.status === 'invited' ? ' · invite pending' : m.status === 'deactivated' ? ' · deactivated' : ''}
                   </p>
@@ -126,13 +126,13 @@ export default function MembersPage() {
                     aria-label={`Role for ${m.name}`}
                     value={m.role}
                     onChange={(e) => act.mutate(() => api.patch(`/workspaces/${ws.id}/members/${m.userId}`, { role: e.target.value }))}
-                    className="tap rounded-md border border-slate-300 bg-white px-2 py-1 text-sm"
+                    className="tap rounded-md border border-input bg-surface px-2 py-1 text-sm"
                   >
                     <option value="member">Member</option>
                     <option value="admin">Admin</option>
                   </select>
                 ) : (
-                  <span className="text-sm capitalize text-slate-600">{m.role}</span>
+                  <span className="text-sm capitalize text-secondary-foreground">{m.role}</span>
                 )}
                 {canManage && m.status === 'invited' && !isGuest ? (
                   <Button variant="secondary" onClick={() => act.mutate(() => api.del(`/workspaces/${ws.id}/members/invites/${m.membershipId}`))}>

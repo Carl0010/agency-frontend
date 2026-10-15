@@ -2,6 +2,7 @@
 
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
+import { Icon } from './icon';
 import { useEffect, useState } from 'react';
 import { api } from '@/lib/api';
 import { countSession, dismissExplainer, enablePush, explainerDismissed, pushSupported, subscribeThisBrowser } from '@/lib/push';
@@ -12,8 +13,8 @@ import { useWorkspace } from '@/lib/workspace';
 
 export const unreadKey = (workspaceId: string) => ['notifications', workspaceId, 'unread-count'] as const;
 
-/** Header bell with the unread count; live via `notification.created` / `notification.read`. */
-export function NotificationBell() {
+/** Sidebar inbox with the unread count; live via `notification.created` / `notification.read`. */
+export function NotificationBell({ active, onNavigate }: { active?: boolean; onNavigate?: () => void }) {
   const ws = useWorkspace();
   const qc = useQueryClient();
   const count = useQuery({
@@ -30,11 +31,13 @@ export function NotificationBell() {
       href={`/w/${ws.slug}/inbox`}
       aria-label={n ? `Inbox, ${n} unread` : 'Inbox'}
       data-testid="notification-bell"
-      className="tap relative flex items-center rounded px-2 text-slate-600 hover:bg-slate-100"
+      aria-current={active ? 'page' : undefined}
+      onClick={onNavigate}
+      className="ui-nav-link tap"
     >
-      <span aria-hidden>🔔</span>
+      <Icon name="inbox" /><span>Inbox</span>
       {n ? (
-        <span data-testid="unread-badge" className="absolute -right-0.5 top-0.5 min-w-4 rounded-full bg-red-600 px-1 text-center text-[10px] font-semibold leading-4 text-white">
+        <span data-testid="unread-badge" className="ml-auto min-w-5 rounded-full bg-primary px-1 text-center text-caption font-semibold leading-4 text-inverse-foreground">
           {n > 99 ? '99+' : n}
         </span>
       ) : null}
@@ -64,7 +67,7 @@ export function PushExplainer() {
 
   if (!show || !user) return null;
   return (
-    <div role="region" aria-label="Enable notifications" data-testid="push-explainer" className="flex flex-wrap items-center gap-2 border-b border-blue-100 bg-blue-50 px-3 py-2 text-sm text-blue-900">
+    <div role="region" aria-label="Enable notifications" data-testid="push-explainer" className="flex flex-wrap items-center gap-2 border-b border-primary-border bg-primary-subtle px-3 py-2 text-sm text-primary-text">
       <span className="min-w-0 flex-1">Get a desktop notification when someone mentions you or assigns you a card — even when this tab is closed.</span>
       <button
         type="button"
@@ -78,7 +81,7 @@ export function PushExplainer() {
               setShow(false);
             });
         }}
-        className="tap rounded-md bg-blue-600 px-3 text-sm font-medium text-white"
+        className="tap rounded-md bg-primary px-3 text-sm font-medium text-inverse-foreground"
       >
         Enable notifications
       </button>
@@ -88,7 +91,7 @@ export function PushExplainer() {
           dismissExplainer(user.id);
           setShow(false);
         }}
-        className="tap rounded-md px-2 text-sm text-blue-800 hover:bg-blue-100"
+        className="tap rounded-md px-2 text-sm text-primary-text hover:bg-primary-muted"
       >
         Not now
       </button>

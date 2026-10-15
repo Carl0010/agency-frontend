@@ -94,8 +94,11 @@ test('AC26 a brand-new user reaches a board with ≥ 6 real cards in under 3 min
   await expect(mark).toContainText('Add a card');
   await mark.getByRole('button', { name: 'Next' }).click();
   await expect(mark).toContainText('Open a card');
+  // Chat moved to navigation; the final step must still have a mobile anchor.
+  await page.setViewportSize({ width: 390, height: 844 });
   await mark.getByRole('button', { name: 'Next' }).click();
   await expect(mark).toContainText('Open the client channel');
+  await expect(page.getByRole('button', { name: 'Open navigation' })).toBeVisible();
   await mark.getByRole('button', { name: 'Done' }).click();
   await expect(mark).toHaveCount(0);
   await page.reload();
@@ -104,6 +107,7 @@ test('AC26 a brand-new user reaches a board with ≥ 6 real cards in under 3 min
   await expect(page.getByTestId('coach-mark')).toHaveCount(0);
 
   // AC20: step 3 was skipped, so the chip offers to finish it (3/4).
+  await page.setViewportSize({ width: 1280, height: 720 });
   await expect(page.getByTestId('setup-chip')).toContainText('Finish setup (3/4)');
 });
 

@@ -1,0 +1,95 @@
+/* Agency UI foundations. Change values here; components consume semantic roles.
+   Palette rationale and usage: docs/frontend/DESIGN_SYSTEM.md. Light mode only. */
+@theme {
+  --font-sans: var(--font-geist), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, 'SF Mono', Menlo, monospace;
+
+  --color-background: #f7f8f5;
+  --color-surface: #ffffff;
+  --color-subtle: #f0f2ee;
+  --color-muted: #e7ebe5;
+  --color-foreground: #202822;
+  --color-secondary-foreground: #46534a;
+  --color-muted-foreground: #626f65;
+  --color-disabled-foreground: #78847b;
+  --color-inverse: #26372d;
+  --color-inverse-foreground: #ffffff;
+  --color-border: #dbe1d9;
+  --color-border-subtle: #e9ede6;
+  --color-input: #859287;
+  --color-border-hover: #65776a;
+
+  --color-primary: #196747;
+  --color-primary-hover: #145539;
+  --color-primary-active: #10452f;
+  --color-primary-foreground: #ffffff;
+  --color-primary-subtle: #edf5ee;
+  --color-primary-muted: #dcecdf;
+  --color-primary-border: #a7c9b0;
+  --color-primary-text: #174e36;
+  --color-ring: #196747;
+
+  --color-danger: #b43737;
+  --color-danger-hover: #982c2c;
+  --color-danger-active: #7d2525;
+  --color-danger-subtle: #fff1ef;
+  --color-danger-muted: #f9deda;
+  --color-danger-border: #eab5ae;
+  --color-danger-text: #942e2e;
+  --color-success: #247348;
+  --color-success-subtle: #edf7ef;
+  --color-success-muted: #d9eddf;
+  --color-success-border: #acd0b7;
+  --color-success-text: #235c3b;
+  --color-warning: #9a5c0d;
+  --color-warning-subtle: #fff6e6;
+  --color-warning-muted: #f8e9c8;
+  --color-warning-border: #e4c88f;
+  --color-warning-text: #805012;
+  --color-info: #275f97;
+  --color-info-subtle: #edf4fc;
+  --color-info-border: #b7d0eb;
+  --color-info-text: #244f79;
+  --color-highlight: #fae8a6;
+  --color-highlight-foreground: #644517;
+  --color-overlay: #18261e;
+
+  /* User-selected content colors are distinct from brand and status roles. */
+  --color-label-grey: #7c877f;
+  --color-label-red: #c65a54;
+  --color-label-orange: #c77e37;
+  --color-label-yellow: #d0aa3f;
+  --color-label-green: #4b9560;
+  --color-label-teal: #3c938d;
+  --color-label-blue: #548bc0;
+  --color-label-purple: #9270b0;
+  --color-label-pink: #bd7196;
+  --color-label-brown: #8c694c;
+  --color-avatar-1: #93483f;
+  --color-avatar-2: #805c24;
+  --color-avatar-3: #3c7050;
+  --color-avatar-4: #426c8a;
+  --color-avatar-5: #795581;
+  --color-avatar-6: #346e68;
+
+  --radius-sm: 0.25rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
+  --radius-2xl: 1rem;
+  --shadow-sm: 0 1px 2px rgb(32 40 34 / 0.04);
+  --shadow-md: 0 3px 10px -3px rgb(32 40 34 / 0.12);
+  --shadow-lg: 0 12px 32px -8px rgb(32 40 34 / 0.18), 0 2px 6px rgb(32 40 34 / 0.04);
+  --shadow-xl: 0 24px 60px -16px rgb(32 40 34 / 0.25);
+  --text-caption: 0.75rem;
+  --text-caption--line-height: 1rem;
+  --text-label: 0.8125rem;
+  --text-label--line-height: 1.25rem;
+  --text-body: 0.875rem;
+  --text-body--line-height: 1.5rem;
+  --text-body-lg: 0.9375rem;
+  --text-body-lg--line-height: 1.5rem;
+  --text-page: 1.5rem;
+  --text-page--line-height: 2rem;
+  --ease-ui: cubic-bezier(0.2, 0, 0, 1);
+}

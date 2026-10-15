@@ -27,7 +27,7 @@ export const TOUR_STEPS: TourStep[] = [
   { anchor: 'project', title: 'Open a client project', body: 'Each client gets a board, a client chat and a team-only channel.', counted: false },
   { anchor: 'add-card', title: 'Add a card', body: 'Cards are the work: a deliverable, a task, a round of feedback.', counted: true },
   { anchor: 'card', title: 'Open a card', body: 'Details, checklists, files and the comment thread live inside.', counted: true },
-  { anchor: 'client-channel', title: 'Open the client channel', body: 'Chat with your client here instead of email. They only see what you share.', counted: true },
+  { anchor: 'client-channel', title: 'Open the client channel', body: 'Choose Chat under your project in navigation. Clients only see what you share.', counted: true },
 ];
 
 const PROGRESS_KEY = 'agency:tourStep';
@@ -50,7 +50,12 @@ interface Placement {
 /** The first step at or after `from` whose anchor is on screen now. */
 function locate(from: number): Placement | null {
   for (let i = from; i < TOUR_STEPS.length; i++) {
-    const el = document.querySelector<HTMLElement>(`[data-tour="${TOUR_STEPS[i]!.anchor}"]`);
+    // Desktop and drawer anchors can coexist; use the visible one. On mobile,
+    // the navigation opener introduces Chat before the drawer is opened.
+    const el = Array.from(document.querySelectorAll<HTMLElement>(`[data-tour="${TOUR_STEPS[i]!.anchor}"]`)).find((anchor) => {
+      const rect = anchor.getBoundingClientRect();
+      return rect.width > 0 && rect.height > 0 && rect.bottom > 0 && rect.top < window.innerHeight;
+    });
     if (!el) continue;
     const r = el.getBoundingClientRect();
     if (r.width === 0 && r.height === 0) continue;
@@ -115,12 +120,12 @@ export function CoachMarks() {
       role="dialog"
       aria-label={`Tour: ${step.title}`}
       data-testid="coach-mark"
-      className="fixed z-50 w-72 rounded-lg border border-blue-200 bg-white p-3 shadow-lg"
+      className="fixed z-50 w-72 rounded-lg border border-primary-border bg-surface p-3 shadow-lg"
       style={{ top: place.top, left: place.left }}
     >
-      <p className="text-xs font-medium text-blue-700">{step.counted ? `Step ${counted} of ${COUNTED}` : 'Getting started'}</p>
+      <p className="text-xs font-medium text-primary">{step.counted ? `Step ${counted} of ${COUNTED}` : 'Getting started'}</p>
       <p className="mt-0.5 font-semibold">{step.title}</p>
-      <p className="mt-1 text-sm text-slate-600">{step.body}</p>
+      <p className="mt-1 text-sm text-secondary-foreground">{step.body}</p>
       <div className="mt-3 flex justify-between">
         <Button variant="ghost" onClick={() => void done()}>
           Skip tour

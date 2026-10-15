@@ -21,8 +21,8 @@ export default function PortalIndex() {
   return (
     <main className="mx-auto max-w-md p-8 text-center">
       <h1 className="text-lg font-semibold">Nothing has been shared with you yet</h1>
-      <p className="mt-2 text-sm text-slate-600">When an agency shares a project with you, it will appear here.</p>
-      <Link className="mt-4 inline-block text-sm text-blue-700" href="/">
+      <p className="mt-2 text-sm text-secondary-foreground">When an agency shares a project with you, it will appear here.</p>
+      <Link className="mt-4 inline-block text-sm text-primary" href="/">
         Go home
       </Link>
     </main>

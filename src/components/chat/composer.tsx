@@ -1,5 +1,6 @@
 'use client';
 
+import { Icon } from '@/components/icon';
 import { useEffect, useMemo, useRef, useState, type DragEvent } from 'react';
 import { putWithProgress } from '@/components/card/attachments';
 import { MentionInput } from '@/components/card/mention-input';
@@ -99,14 +100,14 @@ export function Composer({
       }}
       onDragLeave={() => setOver(false)}
       onDrop={onDrop}
-      className={`border-t border-slate-200 bg-white p-2 ${over ? 'ring-2 ring-blue-300' : ''}`}
+      className={`border-t border-border bg-surface p-2 ${over ? 'ring-2 ring-primary-border' : ''}`}
     >
       {files.length ? (
         <ul className="mb-1 flex flex-wrap gap-1 text-xs">
           {files.map((f, i) => (
-            <li key={`${f.name}-${i}`} className="flex items-center gap-1 rounded bg-slate-100 px-2 py-0.5">
-              📎 {f.name}
-              <button type="button" aria-label={`Remove ${f.name}`} onClick={() => setFiles((all) => all.filter((_, j) => j !== i))} className="text-slate-500">
+            <li key={`${f.name}-${i}`} className="flex items-center gap-1 rounded bg-subtle px-2 py-0.5">
+              <Icon name="attachment" /> {f.name}
+              <button type="button" aria-label={`Remove ${f.name}`} onClick={() => setFiles((all) => all.filter((_, j) => j !== i))} className="text-muted-foreground">
                 ✕
               </button>
             </li>
@@ -117,14 +118,14 @@ export function Composer({
         <div className="min-w-0 flex-1">
           <MentionInput value={body} onChange={setBody} onSubmit={() => void send()} label={label} placeholder={placeholder} enterToSend rows={2} onTyping={typing} />
         </div>
-        <button type="button" aria-label="Attach files" onClick={() => input.current?.click()} className="tap rounded px-2 text-slate-500 hover:bg-slate-100">
-          📎
+        <button type="button" aria-label="Attach files" onClick={() => input.current?.click()} className="tap rounded px-2 text-muted-foreground hover:bg-subtle">
+          <Icon name="attachment" />
         </button>
         <button
           type="button"
           onClick={() => void send()}
           disabled={sending || (!body.trim() && files.length === 0)}
-          className="tap rounded-md bg-blue-600 px-3 text-sm font-medium text-white disabled:bg-blue-300"
+          className="tap rounded-md bg-primary px-3 text-sm font-medium text-inverse-foreground disabled:bg-primary-border"
         >
           Send
         </button>
@@ -187,7 +188,7 @@ export function TypingLine({ names }: { names: string[] }) {
           ? `${names[0]} and ${names[1]} are typing…`
           : 'Several people are typing…';
   return (
-    <p aria-live="polite" data-testid="typing-indicator" className="h-5 px-3 text-xs text-slate-500">
+    <p aria-live="polite" data-testid="typing-indicator" className="h-5 px-3 text-xs text-muted-foreground">
       {text}
     </p>
   );

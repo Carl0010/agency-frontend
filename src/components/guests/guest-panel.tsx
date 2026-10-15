@@ -24,7 +24,7 @@ export function GuestsButton({ projectId }: { projectId: string }) {
         type="button"
         data-testid="guests-button"
         onClick={() => setOpen(true)}
-        className="tap flex items-center rounded px-2 text-sm text-slate-600 hover:bg-slate-50"
+        className="tap flex items-center rounded px-2 text-sm text-secondary-foreground hover:bg-background"
       >
         Share with client
       </button>
@@ -77,23 +77,23 @@ function GuestPanel({ projectId, onClose }: { projectId: string; onClose: () => 
   }
 
   return (
-    <div className="fixed inset-0 z-40 flex items-start justify-center bg-slate-900/40 p-4 pt-16" onClick={onClose}>
+    <div className="fixed inset-0 z-40 flex items-start justify-center bg-inverse/40 p-4 pt-16" onClick={onClose}>
       <div
         role="dialog"
         aria-modal="true"
         aria-label="Guests"
         data-testid="guest-panel"
-        className="w-full max-w-lg space-y-4 rounded-lg bg-white p-4 shadow-xl"
+        className="w-full max-w-lg space-y-4 rounded-lg bg-surface p-4 shadow-xl"
         onClick={(e) => e.stopPropagation()}
         onKeyDown={(e) => e.key === 'Escape' && onClose()}
       >
         <header className="flex items-center justify-between">
           <h2 className="font-semibold">Share with your client</h2>
-          <button type="button" aria-label="Close" onClick={onClose} className="tap rounded px-2 text-slate-500 hover:bg-slate-100">
+          <button type="button" aria-label="Close" onClick={onClose} className="tap rounded px-2 text-muted-foreground hover:bg-subtle">
             ✕
           </button>
         </header>
-        <p className="text-sm text-slate-600">
+        <p className="text-sm text-secondary-foreground">
           Guests see this project&apos;s board and its Client chat — never the Team channel, other projects or who is assigned. Guests don&apos;t use a seat.
         </p>
         <form className="flex flex-wrap gap-2" onSubmit={(e) => void invite(e)}>
@@ -110,7 +110,7 @@ function GuestPanel({ projectId, onClose }: { projectId: string; onClose: () => 
             aria-label="Access"
             value={access}
             onChange={(e) => setAccess(e.target.value as GuestAccess)}
-            className="tap rounded-md border border-slate-300 bg-white px-2 text-sm"
+            className="tap rounded-md border border-input bg-surface px-2 text-sm"
           >
             <option value="comment">{ACCESS_LABEL.comment}</option>
             <option value="read">{ACCESS_LABEL.read}</option>
@@ -119,13 +119,13 @@ function GuestPanel({ projectId, onClose }: { projectId: string; onClose: () => 
             Invite
           </Button>
         </form>
-        <ul className="divide-y divide-slate-100" aria-label="Project guests">
+        <ul className="divide-y divide-border-subtle" aria-label="Project guests">
           {(guests.data?.data ?? []).map((g) => (
             <li key={g.userId} className="flex items-center gap-2 py-2" data-testid="guest-row">
               <Avatar person={{ id: g.userId, name: g.name, avatarUrl: g.avatarUrl }} size={28} />
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-medium">{g.name}</p>
-                <p className="truncate text-xs text-slate-500">
+                <p className="truncate text-xs text-muted-foreground">
                   {g.email}
                   {g.status === 'invited' ? ' · invited' : ''}
                 </p>
@@ -134,7 +134,7 @@ function GuestPanel({ projectId, onClose }: { projectId: string; onClose: () => 
                 aria-label={`Access for ${g.name}`}
                 value={g.access}
                 onChange={(e) => void change(g, e.target.value as GuestAccess)}
-                className="tap rounded-md border border-slate-300 bg-white px-2 text-sm"
+                className="tap rounded-md border border-input bg-surface px-2 text-sm"
               >
                 <option value="comment">{ACCESS_LABEL.comment}</option>
                 <option value="read">{ACCESS_LABEL.read}</option>
@@ -144,7 +144,7 @@ function GuestPanel({ projectId, onClose }: { projectId: string; onClose: () => 
               </Button>
             </li>
           ))}
-          {guests.data && guests.data.data.length === 0 ? <li className="py-2 text-sm text-slate-500">No guests yet.</li> : null}
+          {guests.data && guests.data.data.length === 0 ? <li className="py-2 text-sm text-muted-foreground">No guests yet.</li> : null}
         </ul>
       </div>
     </div>

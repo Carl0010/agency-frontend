@@ -1,6 +1,7 @@
 import js from '@eslint/js';
 import reactHooks from 'eslint-plugin-react-hooks';
 import tseslint from 'typescript-eslint';
+import designSystem from './design-system-eslint.mjs';
 
 export default tseslint.config(
   js.configs.recommended,
@@ -15,5 +16,10 @@ export default tseslint.config(
       '@typescript-eslint/no-misused-promises': ['error', { checksVoidReturn: { attributes: false } }],
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
     },
+  },
+  {
+    files: ['src/**/*.ts', 'src/**/*.tsx'],
+    plugins: { 'design-system': designSystem },
+    rules: { 'design-system/semantic-colors': 'error' },
   },
 );

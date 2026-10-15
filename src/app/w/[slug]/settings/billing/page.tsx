@@ -18,12 +18,12 @@ import { useWorkspace } from '@/lib/workspace';
  */
 
 const STATUS: Record<SubscriptionStatus, { label: string; tone: string }> = {
-  trialing: { label: 'Trial', tone: 'bg-blue-100 text-blue-800' },
-  active: { label: 'Active', tone: 'bg-green-100 text-green-800' },
-  past_due: { label: 'Past due', tone: 'bg-amber-100 text-amber-900' },
-  unpaid: { label: 'Read-only', tone: 'bg-red-100 text-red-800' },
-  canceled: { label: 'Canceled', tone: 'bg-red-100 text-red-800' },
-  incomplete: { label: 'Incomplete', tone: 'bg-slate-200 text-slate-700' },
+  trialing: { label: 'Trial', tone: 'bg-primary-muted text-primary-text' },
+  active: { label: 'Active', tone: 'bg-success-muted text-success-text' },
+  past_due: { label: 'Past due', tone: 'bg-warning-muted text-warning-text' },
+  unpaid: { label: 'Read-only', tone: 'bg-danger-muted text-danger-text' },
+  canceled: { label: 'Canceled', tone: 'bg-danger-muted text-danger-text' },
+  incomplete: { label: 'Incomplete', tone: 'bg-muted text-secondary-foreground' },
 };
 
 const money = (cents: number, currency: string) =>
@@ -62,7 +62,7 @@ function BillingScreen() {
     return (
       <main className="mx-auto max-w-3xl p-4 sm:p-8">
         <h1 className="mb-4 text-2xl font-semibold">Billing</h1>
-        <p data-testid="billing-owner-only" className="rounded-lg border border-slate-200 bg-white p-4 text-slate-700">
+        <p data-testid="billing-owner-only" className="rounded-lg border border-border bg-surface p-4 text-secondary-foreground">
           Only the workspace owner can manage billing.
         </p>
       </main>
@@ -78,7 +78,7 @@ function BillingScreen() {
       <h1 className="text-2xl font-semibold">Billing</h1>
       <FormError message={go.error ? errorMessage(go.error) : null} />
 
-      <section className="rounded-lg border border-slate-200 bg-white p-4" aria-label="Plan">
+      <section className="rounded-lg border border-border bg-surface p-4" aria-label="Plan">
         <div className="flex flex-wrap items-center gap-3">
           <h2 className="text-lg font-semibold">{b.plan.name}</h2>
           <span data-testid="billing-status" className={`rounded-full px-2 py-0.5 text-xs font-medium ${status.tone}`}>
@@ -86,21 +86,21 @@ function BillingScreen() {
           </span>
           <span className="ml-auto text-lg font-semibold">
             {money(b.plan.amountCents, b.plan.currency)}
-            <span className="text-sm font-normal text-slate-500"> / {b.plan.interval}</span>
+            <span className="text-sm font-normal text-muted-foreground"> / {b.plan.interval}</span>
           </span>
         </div>
-        <p className="mt-1 text-sm text-slate-600">
+        <p className="mt-1 text-sm text-secondary-foreground">
           Up to {b.plan.seatsIncluded} seats (owner, admins, members) · unlimited client guests · unlimited projects.
         </p>
         <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
           <div>
-            <dt className="text-slate-500">Seats</dt>
-            <dd data-testid="billing-seats" className={b.seats.full ? 'font-medium text-amber-700' : ''}>
+            <dt className="text-muted-foreground">Seats</dt>
+            <dd data-testid="billing-seats" className={b.seats.full ? 'font-medium text-warning-text' : ''}>
               {b.seats.used} of {b.seats.included} seats used
             </dd>
           </div>
           <div>
-            <dt className="text-slate-500">{b.notice.trialPill ? 'Trial' : 'Next charge'}</dt>
+            <dt className="text-muted-foreground">{b.notice.trialPill ? 'Trial' : 'Next charge'}</dt>
             <dd data-testid="billing-next">
               {b.notice.trialPill
                 ? `${b.notice.trialPill.daysLeft} days left${b.trialEndsAt ? ` · ends ${day(b.trialEndsAt)}` : ''}`
@@ -113,10 +113,10 @@ function BillingScreen() {
           </div>
         </dl>
         {b.notice.trialPill && b.nextCharge ? (
-          <p className="mt-2 text-sm text-slate-600">Billing is set up. The first charge lands when the trial ends.</p>
+          <p className="mt-2 text-sm text-secondary-foreground">Billing is set up. The first charge lands when the trial ends.</p>
         ) : null}
         {b.dataDeleteAfter ? (
-          <p className="mt-2 text-sm text-red-800">Canceled. Data is kept until {day(b.dataDeleteAfter)} — reactivate any time before then.</p>
+          <p className="mt-2 text-sm text-danger-text">Canceled. Data is kept until {day(b.dataDeleteAfter)} — reactivate any time before then.</p>
         ) : null}
         <div className="mt-4 flex flex-wrap gap-2">
           {b.hasPaymentMethod ? (
@@ -146,24 +146,24 @@ function BillingScreen() {
             </Button>
           ) : null}
         </div>
-        {!b.configured ? <p className="mt-2 text-xs text-slate-500">Billing is not configured on this server.</p> : null}
-        <p className="mt-2 text-xs text-slate-500">Card details are entered on Stripe and never touch our servers.</p>
+        {!b.configured ? <p className="mt-2 text-xs text-muted-foreground">Billing is not configured on this server.</p> : null}
+        <p className="mt-2 text-xs text-muted-foreground">Card details are entered on Stripe and never touch our servers.</p>
       </section>
 
-      <section className="rounded-lg border border-slate-200 bg-white p-4" aria-label="Invoices">
+      <section className="rounded-lg border border-border bg-surface p-4" aria-label="Invoices">
         <h2 className="mb-2 font-semibold">Invoices</h2>
         {b.invoices.length === 0 ? (
-          <p className="text-sm text-slate-600">No invoices yet.</p>
+          <p className="text-sm text-secondary-foreground">No invoices yet.</p>
         ) : (
-          <ul className="divide-y divide-slate-100 text-sm">
+          <ul className="divide-y divide-border-subtle text-sm">
             {b.invoices.map((i) => (
               <li key={i.id} className="flex flex-wrap items-center gap-3 py-2">
-                <span className="w-28 text-slate-600">{day(i.createdAt)}</span>
+                <span className="w-28 text-secondary-foreground">{day(i.createdAt)}</span>
                 <span className="flex-1">{i.number ?? i.id}</span>
                 <span>{money(i.amountCents, i.currency)}</span>
-                <span className="w-16 capitalize text-slate-600">{i.status ?? ''}</span>
+                <span className="w-16 capitalize text-secondary-foreground">{i.status ?? ''}</span>
                 {i.hostedUrl ? (
-                  <a className="text-blue-700 hover:underline" href={i.hostedUrl} target="_blank" rel="noreferrer">
+                  <a className="text-primary hover:underline" href={i.hostedUrl} target="_blank" rel="noreferrer">
                     View
                   </a>
                 ) : null}
@@ -173,9 +173,9 @@ function BillingScreen() {
         )}
       </section>
 
-      <section className="rounded-lg border border-slate-200 bg-white p-4" aria-label="Export">
+      <section className="rounded-lg border border-border bg-surface p-4" aria-label="Export">
         <h2 className="mb-1 font-semibold">Export your data</h2>
-        <p className="mb-3 text-sm text-slate-600">Every project, card, comment and message — on any plan state, including read-only.</p>
+        <p className="mb-3 text-sm text-secondary-foreground">Every project, card, comment and message — on any plan state, including read-only.</p>
         <ExportButtons ws={ws} />
       </section>
     </main>

@@ -88,7 +88,7 @@ export default function ImportPage() {
   return (
     <main className="mx-auto max-w-3xl p-4 sm:p-8">
       <h1 className="mb-1 text-2xl font-semibold">Import from Trello</h1>
-      <p className="mb-6 text-sm text-slate-600">Bring a Trello board over as a project. Nothing is written until you confirm.</p>
+      <p className="mb-6 text-sm text-secondary-foreground">Bring a Trello board over as a project. Nothing is written until you confirm.</p>
       <div className="mb-4 space-y-2">
         <FormError message={error ?? (preview.error ? errorMessage(preview.error) : null)} />
       </div>
@@ -113,19 +113,19 @@ export default function ImportPage() {
         />
       ) : (
         <div className="grid gap-3 sm:grid-cols-2">
-          <section className="rounded-lg border border-slate-200 bg-white p-4">
+          <section className="rounded-lg border border-border bg-surface p-4">
             <h2 className="font-medium">Upload CSV</h2>
-            <p className="mb-3 mt-1 text-sm text-slate-600">
+            <p className="mb-3 mt-1 text-sm text-secondary-foreground">
               Trello → board menu → Print, export and share → Export as CSV. Up to 20 MB. Attachments come over as links.
             </p>
-            <label className="tap inline-flex cursor-pointer items-center rounded-md bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700">
+            <label className="tap inline-flex cursor-pointer items-center rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-inverse-foreground hover:bg-primary-hover">
               Choose CSV file
               <input type="file" accept=".csv,text/csv" className="sr-only" aria-label="Trello CSV export" onChange={onFile} />
             </label>
           </section>
-          <section className="rounded-lg border border-slate-200 bg-white p-4">
+          <section className="rounded-lg border border-border bg-surface p-4">
             <h2 className="font-medium">Connect Trello</h2>
-            <p className="mb-3 mt-1 text-sm text-slate-600">
+            <p className="mb-3 mt-1 text-sm text-secondary-foreground">
               Read-only access. Brings comments with their authors and dates, and copies uploaded files.
             </p>
             <Button onClick={() => connect.mutate()} disabled={connect.isPending}>
@@ -149,10 +149,10 @@ function BoardPicker({ workspaceId, token, onPick, onDisconnect }: { workspaceId
   });
 
   return (
-    <section className="rounded-lg border border-slate-200 bg-white p-4">
+    <section className="rounded-lg border border-border bg-surface p-4">
       <div className="mb-3 flex items-baseline justify-between gap-2">
         <h2 className="font-medium">Pick a board</h2>
-        <button type="button" className="text-sm text-slate-600 hover:text-slate-900" onClick={onDisconnect}>
+        <button type="button" className="text-sm text-secondary-foreground hover:text-foreground" onClick={onDisconnect}>
           Use a CSV instead
         </button>
       </div>
@@ -166,15 +166,15 @@ function BoardPicker({ workspaceId, token, onPick, onDisconnect }: { workspaceId
           </Button>
         </div>
       ) : boards.data.data.length === 0 ? (
-        <p className="text-sm text-slate-600">No open boards on this Trello account.</p>
+        <p className="text-sm text-secondary-foreground">No open boards on this Trello account.</p>
       ) : (
-        <ul className="divide-y divide-slate-200" data-testid="trello-boards">
+        <ul className="divide-y divide-border" data-testid="trello-boards">
           {boards.data.data.map((b) => (
             <li key={b.id} className="flex items-center justify-between gap-3 py-2">
               <span className="min-w-0">
                 <span className="block truncate font-medium">{b.name}</span>
                 {b.dateLastActivity ? (
-                  <span className="block text-xs text-slate-500">Last active {new Date(b.dateLastActivity).toLocaleDateString()}</span>
+                  <span className="block text-xs text-muted-foreground">Last active {new Date(b.dateLastActivity).toLocaleDateString()}</span>
                 ) : null}
               </span>
               <Button variant="secondary" onClick={() => onPick(b.id)}>

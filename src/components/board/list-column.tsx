@@ -5,6 +5,8 @@ import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-
 import { CSS } from '@dnd-kit/utilities';
 import { useQueryClient } from '@tanstack/react-query';
 import { useState, type FormEvent, type KeyboardEvent } from 'react';
+import { Icon } from '@/components/icon';
+import { Button, Input, Textarea } from '@/components/ui';
 import { useToast } from '@/components/toast';
 import { api, errorMessage } from '@/lib/api';
 import { upsertCard, upsertList } from '@/lib/board-state';
@@ -60,7 +62,7 @@ export function ListColumn({ list, cards, board, now, cardHref, dndDisabled, cla
       aria-label={`List ${list.name}`}
       data-testid="list-column"
       data-list-id={list.id}
-      className={`max-h-full w-full shrink-0 flex-col rounded-xl bg-slate-200/50 sm:w-72 ${sortable.isDragging ? 'opacity-40' : ''} ${className}`}
+      className={`max-h-full w-full shrink-0 flex-col rounded-xl border border-border-subtle bg-subtle sm:w-72 ${sortable.isDragging ? 'opacity-40' : ''} ${className}`}
     >
       <header className="flex items-center gap-1 px-2 pt-2">
         <button
@@ -69,12 +71,12 @@ export function ListColumn({ list, cards, board, now, cardHref, dndDisabled, cla
           {...sortable.listeners}
           aria-label={`Move list ${list.name}`}
           disabled={dndDisabled}
-          className="tap hidden cursor-grab rounded px-1 text-slate-400 hover:bg-slate-200 hover:text-slate-700 disabled:cursor-default sm:block"
+          className="tap hidden cursor-grab rounded px-1 text-muted-foreground hover:bg-muted hover:text-secondary-foreground disabled:cursor-default sm:block"
         >
-          ⠿
+          <Icon name="grip" className="size-3.5" />
         </button>
         {editing ? (
-          <input
+          <Input
             autoFocus
             defaultValue={list.name}
             aria-label="List name"
@@ -84,28 +86,28 @@ export function ListColumn({ list, cards, board, now, cardHref, dndDisabled, cla
               if (e.key === 'Enter') e.currentTarget.blur();
               if (e.key === 'Escape') setEditing(false);
             }}
-            className="min-w-0 flex-1 rounded border border-blue-400 px-1 text-sm font-semibold"
+            className="min-w-0 flex-1 rounded border border-ring px-1 text-sm font-semibold"
           />
         ) : (
           <h2 className="min-w-0 flex-1">
-            <button type="button" onClick={() => setEditing(true)} className="tap w-full truncate rounded px-1 text-left text-[13px] font-semibold tracking-tight hover:bg-slate-200">
+            <button type="button" onClick={() => setEditing(true)} className="tap w-full truncate rounded px-1 text-left text-label font-semibold tracking-tight hover:bg-muted">
               {list.name}
             </button>
           </h2>
         )}
-        <span className="text-xs text-slate-500" aria-label={`${list.cards.length} cards`}>
+        <span className="text-xs text-muted-foreground" aria-label={`${list.cards.length} cards`}>
           {cards.length === list.cards.length ? list.cards.length : `${cards.length}/${list.cards.length}`}
         </span>
         <div className="relative">
-          <button type="button" aria-label={`List actions for ${list.name}`} aria-expanded={menu} onClick={() => setMenu((m) => !m)} className="tap rounded px-1.5 text-slate-500 hover:bg-slate-200">
-            ⋯
+          <button type="button" aria-label={`List actions for ${list.name}`} aria-expanded={menu} onClick={() => setMenu((m) => !m)} className="tap rounded px-1.5 text-muted-foreground hover:bg-muted">
+            <Icon name="more" />
           </button>
           {menu ? (
-            <div className="absolute right-0 z-20 mt-1 w-40 rounded-md border border-slate-200 bg-white py-1 text-sm shadow-lg">
-              <button type="button" className="tap block w-full px-3 py-1.5 text-left hover:bg-slate-100" onClick={() => { setMenu(false); setEditing(true); }}>
+            <div className="absolute right-0 z-20 mt-1 w-40 rounded-md border border-border bg-surface py-1 text-sm shadow-lg">
+              <button type="button" className="tap block w-full px-3 py-1.5 text-left hover:bg-subtle" onClick={() => { setMenu(false); setEditing(true); }}>
                 Rename
               </button>
-              <button type="button" className="tap block w-full px-3 py-1.5 text-left text-red-700 hover:bg-slate-100" onClick={() => void archive()}>
+              <button type="button" className="tap block w-full px-3 py-1.5 text-left text-danger-text hover:bg-subtle" onClick={() => void archive()}>
                 Archive list
               </button>
             </div>
@@ -163,15 +165,15 @@ function AddCard({ listId, boardId, at }: { listId: string; boardId: string; at:
         onClick={() => setOpen(true)}
         data-testid={`add-card-${at}`}
         data-tour={at === 'end' ? 'add-card' : undefined}
-        className={`tap mx-2 rounded px-2 py-1 text-left text-sm text-slate-600 hover:bg-slate-200 ${at === 'start' ? 'my-1 hidden sm:block' : 'my-2'}`}
+        className={`tap mx-2 rounded px-2 py-1 text-left text-sm text-secondary-foreground hover:bg-muted ${at === 'start' ? 'my-1 hidden sm:block' : 'my-2'}`}
       >
-        + Add card
+        <span className="inline-flex items-center gap-2"><Icon name="plus" />Add card</span>
       </button>
     );
   }
   return (
     <form onSubmit={(e) => void submit(e)} className="mx-2 my-1 space-y-1">
-      <textarea
+      <Textarea
         autoFocus
         rows={2}
         value={title}
@@ -180,15 +182,15 @@ function AddCard({ listId, boardId, at }: { listId: string; boardId: string; at:
         placeholder="Card title — Enter to add"
         onChange={(e) => setTitle(e.target.value)}
         onKeyDown={onKeyDown}
-        className="w-full resize-none rounded-md border border-slate-300 p-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none"
+        className="min-h-20 resize-none"
       />
       <div className="flex gap-2">
-        <button type="submit" disabled={busy} className="tap rounded-lg bg-blue-600 px-3 py-1 text-sm font-medium text-white shadow-sm hover:bg-blue-700">
+        <Button type="submit" disabled={busy} size="sm">
           Add
-        </button>
-        <button type="button" onClick={() => setOpen(false)} className="tap rounded-md px-2 text-sm text-slate-600 hover:bg-slate-200">
+        </Button>
+        <Button variant="ghost" size="sm" onClick={() => setOpen(false)}>
           Cancel
-        </button>
+        </Button>
       </div>
     </form>
   );

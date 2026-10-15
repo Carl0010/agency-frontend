@@ -1,144 +1,77 @@
 @import 'tailwindcss';
+@import '../styles/tokens.css';
 
-@theme {
-  --font-sans: var(--font-geist), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --font-mono: var(--font-geist-mono), ui-monospace, 'SF Mono', Menlo, monospace;
-
-  /* One warm neutral family. Every `slate-*` utility in the app resolves to it. */
-  --color-slate-50: #faf9f6;
-  --color-slate-100: #f3f1ec;
-  --color-slate-200: #e8e5de;
-  --color-slate-300: #d5d1c7;
-  --color-slate-400: #8f8a7f;
-  --color-slate-500: #6f6a60;
-  --color-slate-600: #57534a;
-  --color-slate-700: #403d36;
-  --color-slate-800: #2b2925;
-  --color-slate-900: #1b1a17;
-  --color-slate-950: #100f0d;
-
-  /* One accent: a deep, slightly grey green. Every `blue-*` utility resolves to it. */
-  --color-blue-50: #eff6f3;
-  --color-blue-100: #dbece5;
-  --color-blue-200: #b8d8cc;
-  --color-blue-300: #8dbcaa;
-  --color-blue-400: #5f9b86;
-  --color-blue-500: #3f806b;
-  --color-blue-600: #2c6a58;
-  --color-blue-700: #24574a;
-  --color-blue-800: #1d463b;
-  --color-blue-900: #17382f;
-  --color-blue-950: #0d211b;
-
-  --radius-md: 0.5rem;
-  --radius-lg: 0.75rem;
-  --radius-xl: 1rem;
-
-  /* Shadows are tinted with the neutral hue instead of pure black. */
-  --shadow-sm: 0 1px 2px rgb(43 41 37 / 0.06), 0 0 0 1px rgb(43 41 37 / 0.04);
-  --shadow-md: 0 2px 6px -1px rgb(43 41 37 / 0.08), 0 1px 3px rgb(43 41 37 / 0.05);
-  --shadow-lg: 0 12px 28px -8px rgb(43 41 37 / 0.18), 0 2px 6px rgb(43 41 37 / 0.06);
-  --shadow-xl: 0 24px 56px -12px rgb(43 41 37 / 0.28), 0 4px 12px rgb(43 41 37 / 0.08);
+@layer base {
+  html, body { height: 100%; }
+  html { color-scheme: light; }
+  body {
+    @apply bg-background font-sans text-body text-foreground antialiased;
+    font-feature-settings: 'ss01', 'cv11';
+    text-rendering: optimizeLegibility;
+  }
+  ::selection { background: var(--color-primary-muted); color: var(--color-primary-text); }
+  h1, h2, h3 { letter-spacing: -0.025em; text-wrap: balance; }
+  p { text-wrap: pretty; }
+  time, kbd, [data-testid='comment-count'], [data-testid='checklist-badge'] { font-variant-numeric: tabular-nums; }
+  :focus-visible { outline: 2px solid var(--color-ring); outline-offset: 3px; }
+  button:not(:disabled), [role='button']:not([aria-disabled='true']), a, input, select, textarea {
+    transition: background-color 150ms var(--ease-ui), color 150ms var(--ease-ui), border-color 150ms var(--ease-ui), box-shadow 150ms var(--ease-ui);
+  }
+  button:not(:disabled), [role='button']:not([aria-disabled='true']) { cursor: pointer; }
+  button:disabled, input:disabled, select:disabled, textarea:disabled { cursor: not-allowed; }
+  input:not([type='checkbox'], [type='radio'], [type='hidden']), select, textarea {
+    background-color: var(--color-surface);
+    color: var(--color-foreground);
+    border-color: var(--color-input);
+    border-radius: var(--radius-md);
+    accent-color: var(--color-primary);
+  }
+  input::placeholder, textarea::placeholder { color: var(--color-muted-foreground); opacity: 1; }
+  input[type='checkbox'], input[type='radio'] { accent-color: var(--color-primary); }
 }
 
-html,
-body {
-  height: 100%;
+@layer components {
+  .tap { min-height: 2rem; }
+  .ui-button {
+    @apply inline-flex min-h-9 shrink-0 items-center justify-center gap-2 rounded-md px-3 text-label font-medium;
+  }
+  .ui-button:disabled { opacity: 0.5; }
+  .ui-input {
+    @apply min-h-9 w-full rounded-md border border-input bg-surface px-3 py-2 text-body shadow-sm;
+  }
+  .ui-input:hover:not(:disabled) { border-color: var(--color-border-hover); }
+  .ui-input:focus { border-color: var(--color-ring); box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-ring) 14%, transparent); outline: none; }
+  .ui-input:disabled { background: var(--color-subtle); color: var(--color-disabled-foreground); }
+  .ui-input[aria-invalid='true'] { border-color: var(--color-danger); }
+  .ui-input[aria-invalid='true']:focus { box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-danger) 14%, transparent); }
+  .ui-panel { @apply rounded-xl border border-border bg-surface; }
+  .ui-page { @apply mx-auto w-full max-w-5xl px-4 py-6 sm:px-8 sm:py-8; }
+  .ui-nav-link { @apply flex min-h-8 items-center gap-2 rounded-md px-2.5 py-1 text-label text-secondary-foreground hover:bg-subtle hover:text-foreground; }
+  .ui-nav-link[aria-current='page'] { @apply bg-primary-subtle font-medium text-primary-text; }
+  .ui-tab { @apply inline-flex min-h-8 items-center justify-center gap-2 rounded-md px-3 py-1 text-label text-secondary-foreground hover:bg-subtle; }
+  .ui-tab[aria-current='page'], .ui-tab[aria-selected='true'] { @apply bg-primary-subtle font-medium text-primary-text; }
 }
 
-body {
-  @apply bg-slate-50 text-slate-900 antialiased;
-  font-feature-settings: 'ss01', 'cv11';
-  text-rendering: optimizeLegibility;
-}
-
-::selection {
-  background: var(--color-blue-200);
-  color: var(--color-slate-950);
-}
-
-h1,
-h2,
-h3 {
-  letter-spacing: -0.015em;
-  text-wrap: balance;
-}
-
-p {
-  text-wrap: pretty;
-}
-
-/* Counts, dates and ids line up in columns. */
-time,
-kbd,
-[data-testid='comment-count'],
-[data-testid='checklist-badge'] {
-  font-variant-numeric: tabular-nums;
-}
-
-button:not(:disabled),
-[role='button'] {
-  transition:
-    background-color 150ms ease,
-    color 150ms ease,
-    border-color 150ms ease,
-    box-shadow 150ms ease,
-    transform 120ms ease;
-}
-
-button:not(:disabled):active {
-  transform: translateY(1px) scale(0.985);
-}
-
-:focus-visible {
-  outline-color: var(--color-blue-600);
+@media (max-width: 639px) {
+  .tap, .ui-button, .ui-nav-link, .ui-tab { min-height: 44px; min-width: 44px; }
+  input:not([type='checkbox'], [type='radio'], [type='hidden']), select, textarea { min-height: 44px; }
+  input[type='checkbox'], input[type='radio'] { min-height: 44px; min-width: 44px; }
+  /* iOS should focus fields without zooming the viewport. */
+  input, select, textarea { font-size: 16px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  button:not(:disabled):active {
-    transform: none;
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
 
-/* Touch targets ≥ 44px on small screens (AC23). */
-@media (max-width: 639px) {
-  .tap {
-    min-height: 44px;
-    min-width: 44px;
-  }
-  /* Form controls are targets too, including inline-edit fields and checkboxes. */
-  input:not([type='checkbox'], [type='radio'], [type='hidden']),
-  select,
-  textarea {
-    min-height: 44px;
-  }
-  input[type='checkbox'],
-  input[type='radio'] {
-    min-height: 44px;
-    min-width: 44px;
-  }
-}
-
-.prose-sm p {
-  margin: 0.25rem 0;
-}
-.prose-sm ul {
-  list-style: disc;
-  padding-left: 1.25rem;
-}
-.prose-sm ol {
-  list-style: decimal;
-  padding-left: 1.25rem;
-}
-.prose-sm h1,
-.prose-sm h2,
-.prose-sm h3 {
-  font-weight: 600;
-  margin: 0.5rem 0 0.25rem;
-}
-.prose-sm a {
-  @apply text-blue-700 underline;
-}
-.prose-sm code {
-  @apply rounded bg-slate-100 px-1 text-[0.85em];
-}
+.prose-sm p { margin: 0.25rem 0; }
+.prose-sm ul { list-style: disc; padding-left: 1.25rem; }
+.prose-sm ol { list-style: decimal; padding-left: 1.25rem; }
+.prose-sm h1, .prose-sm h2, .prose-sm h3 { font-weight: 600; margin: 0.5rem 0 0.25rem; }
+.prose-sm a { @apply text-primary underline decoration-primary-border underline-offset-2; }
+.prose-sm code { @apply rounded bg-subtle px-1 text-[0.85em]; }

@@ -47,7 +47,7 @@ export function Checklists({ cardId, checklists }: { cardId: string; checklists:
       ))}
       {adding ? (
         <form onSubmit={(e) => void create(e)} className="flex gap-2">
-          <input name="title" autoFocus defaultValue="Checklist" aria-label="Checklist title" maxLength={200} className="tap flex-1 rounded-md border border-slate-300 px-2 text-sm" />
+          <input name="title" autoFocus defaultValue="Checklist" aria-label="Checklist title" maxLength={200} className="tap flex-1 rounded-md border border-input px-2 text-sm" />
           <Button type="submit">Add</Button>
           <Button variant="ghost" onClick={() => setAdding(false)}>Cancel</Button>
         </form>
@@ -103,7 +103,7 @@ function ChecklistView({
               if (e.key === 'Enter') e.currentTarget.blur();
               if (e.key === 'Escape') setEditingTitle(false);
             }}
-            className="flex-1 rounded border border-blue-400 px-1 text-sm font-semibold"
+            className="flex-1 rounded border border-ring px-1 text-sm font-semibold"
           />
         ) : (
           <h3 className="flex-1">
@@ -112,7 +112,7 @@ function ChecklistView({
             </button>
           </h3>
         )}
-        <span data-testid="checklist-progress" className="text-xs text-slate-500">
+        <span data-testid="checklist-progress" className="text-xs text-muted-foreground">
           {done}/{items.length}
         </span>
         <IconButton label={`Move ${checklist.title} up`} onClick={moveUp}>↑</IconButton>
@@ -124,8 +124,8 @@ function ChecklistView({
           ✕
         </IconButton>
       </div>
-      <div className="h-1.5 overflow-hidden rounded-full bg-slate-200" role="progressbar" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100} aria-label={`${checklist.title} progress`}>
-        <div className={`h-full ${pct === 100 ? 'bg-green-500' : 'bg-blue-500'}`} style={{ width: `${pct}%` }} />
+      <div className="h-1.5 overflow-hidden rounded-full bg-muted" role="progressbar" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100} aria-label={`${checklist.title} progress`}>
+        <div className={`h-full ${pct === 100 ? 'bg-success' : 'bg-primary'}`} style={{ width: `${pct}%` }} />
       </div>
       <ul className="space-y-1">
         {items.map((item, i) => (
@@ -145,7 +145,7 @@ function ChecklistView({
           placeholder="Add an item"
           aria-label={`Add an item to ${checklist.title}`}
           maxLength={1000}
-          className="tap flex-1 rounded-md border border-slate-300 px-2 py-1 text-sm"
+          className="tap flex-1 rounded-md border border-input px-2 py-1 text-sm"
         />
         <Button type="submit" variant="secondary" disabled={!newItem.trim()}>Add</Button>
       </form>
@@ -172,7 +172,7 @@ function ChecklistItemRow({
         checked={item.doneAt !== null}
         aria-label={item.text}
         onChange={(e) => void run(() => api.patch(`/checklist-items/${item.id}`, { done: e.target.checked }))}
-        className="tap h-4 w-4 accent-blue-600"
+        className="tap h-4 w-4 accent-primary"
       />
       {editing ? (
         <input
@@ -189,10 +189,10 @@ function ChecklistItemRow({
             if (e.key === 'Enter') e.currentTarget.blur();
             if (e.key === 'Escape') setEditing(false);
           }}
-          className="flex-1 rounded border border-blue-400 px-1 text-sm"
+          className="flex-1 rounded border border-ring px-1 text-sm"
         />
       ) : (
-        <button type="button" onClick={() => setEditing(true)} className={`tap flex-1 text-left text-sm ${item.doneAt ? 'text-slate-400 line-through' : ''}`}>
+        <button type="button" onClick={() => setEditing(true)} className={`tap flex-1 text-left text-sm ${item.doneAt ? 'text-muted-foreground line-through' : ''}`}>
           {item.text}
         </button>
       )}
@@ -213,7 +213,7 @@ function IconButton({ label, onClick, children }: { label: string; onClick?: () 
       title={label}
       disabled={!onClick}
       onClick={() => void onClick?.()}
-      className="tap rounded px-1.5 text-xs text-slate-500 hover:bg-slate-100 hover:text-slate-800 disabled:invisible"
+      className="tap rounded px-1.5 text-xs text-muted-foreground hover:bg-subtle hover:text-foreground disabled:invisible"
     >
       {children}
     </button>

@@ -112,10 +112,10 @@ export function MentionInput({
         }}
         onSelect={(e) => setCaret(e.currentTarget.selectionStart)}
         onKeyDown={onKeyDown}
-        className="w-full rounded-md border border-slate-300 p-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
+        className="w-full rounded-md border border-input p-2 text-sm focus:border-ring focus:outline-none focus:ring-2 focus:ring-primary-border"
       />
       {options.length ? (
-        <ul role="listbox" aria-label="Mention a teammate" data-testid="mention-options" className="absolute bottom-full left-0 z-30 mb-1 w-64 rounded-md border border-slate-200 bg-white py-1 shadow-lg">
+        <ul role="listbox" aria-label="Mention a teammate" data-testid="mention-options" className="absolute bottom-full left-0 z-30 mb-1 w-64 rounded-md border border-border bg-surface py-1 shadow-lg">
           {options.map((m, i) => (
             <li
               key={m.userId}
@@ -125,7 +125,7 @@ export function MentionInput({
                 e.preventDefault();
                 choose(m);
               }}
-              className={`tap flex cursor-pointer items-center gap-2 px-3 py-1.5 text-sm ${i === highlight ? 'bg-blue-50' : ''}`}
+              className={`tap flex cursor-pointer items-center gap-2 px-3 py-1.5 text-sm ${i === highlight ? 'bg-primary-subtle' : ''}`}
             >
               <Avatar person={{ id: m.userId, name: m.name, avatarUrl: m.avatarUrl }} size={22} />
               {m.name}

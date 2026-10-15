@@ -5,16 +5,14 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState, type FormEvent } from 'react';
 import { FormError } from '@/components/auth-card';
-import { Button, Input, Spinner } from '@/components/ui';
+import { Button, Input, Spinner, PageHeader, EmptyState } from '@/components/ui';
 import { api, errorMessage } from '@/lib/api';
 import type { Page, Project } from '@/lib/types';
 import { useWorkspace } from '@/lib/workspace';
+import { PROJECT_DOT } from '@/lib/content-colors';
+import { Icon } from '@/components/icon';
 import { formText } from '@/lib/form';
-
-const PROJECT_DOT: Record<string, string> = {
-  slate: 'bg-slate-500', red: 'bg-red-500', orange: 'bg-orange-500', amber: 'bg-amber-500',
-  green: 'bg-green-600', teal: 'bg-teal-600', blue: 'bg-blue-600', violet: 'bg-violet-600',
-};
+import { channelsKey } from '@/lib/unread';
 
 export default function ProjectsPage() {
   const ws = useWorkspace();
@@ -28,7 +26,10 @@ export default function ProjectsPage() {
   const create = useMutation({
     mutationFn: (body: { name: string; clientName?: string }) => api.post<Project>(`/workspaces/${ws.id}/projects`, body),
     onSuccess: async (p) => {
-      await qc.invalidateQueries({ queryKey: ['projects', ws.id] });
+      await Promise.all([
+        qc.invalidateQueries({ queryKey: ['projects', ws.id] }),
+        qc.invalidateQueries({ queryKey: channelsKey(ws.id) }),
+      ]);
       router.push(`/w/${ws.slug}/p/${p.id}/b/${p.defaultBoardId}`);
     },
   });
@@ -42,20 +43,15 @@ export default function ProjectsPage() {
 
   const canCreate = ws.role !== 'guest';
   return (
-    <main className="mx-auto max-w-4xl p-4 sm:p-8">
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Clients</h1>
-        {canCreate && !creating ? (
-          <div className="flex items-center gap-2">
-            <Link href={`/w/${ws.slug}/import`} className="tap inline-flex items-center rounded-md px-3 text-sm font-medium text-slate-700 hover:bg-slate-100">
-              Import from Trello
-            </Link>
-            <Button onClick={() => setCreating(true)}>New project</Button>
-          </div>
-        ) : null}
-      </div>
+    <main className="ui-page">
+      <PageHeader title="Clients" description="Every client, project, and next step. In one place." actions={
+        canCreate && !creating ? <>
+          <Link href={`/w/${ws.slug}/import`} className="ui-button tap text-secondary-foreground hover:bg-subtle"><Icon name="import" />Import from Trello</Link>
+          <Button onClick={() => setCreating(true)}><Icon name="plus" />New project</Button>
+        </> : null
+      } />
       {creating ? (
-        <form onSubmit={onSubmit} className="mb-6 grid gap-3 rounded-lg border border-slate-200 bg-white p-4 sm:grid-cols-[1fr_1fr_auto]">
+        <form onSubmit={onSubmit} className="mb-6 grid gap-3 rounded-lg border border-border bg-surface p-4 sm:grid-cols-[1fr_1fr_auto]">
           <div className="sm:col-span-3">
             <FormError message={create.error ? errorMessage(create.error) : null} />
           </div>
@@ -76,21 +72,22 @@ export default function ProjectsPage() {
               <Link
                 href={`/w/${ws.slug}/p/${p.id}/b/${p.defaultBoardId}`}
                 data-tour="project"
-                className="flex items-center gap-3 rounded-lg border border-slate-200 bg-white p-4 hover:border-blue-300 hover:shadow-sm"
+                className="group flex min-h-24 items-center gap-4 rounded-xl border border-border bg-surface p-5 transition-shadow hover:border-primary-border hover:shadow-md"
               >
-                <span className={`h-3 w-3 shrink-0 rounded-full ${PROJECT_DOT[p.color] ?? 'bg-slate-500'}`} />
+                <span className={`h-3 w-3 shrink-0 rounded-full ${PROJECT_DOT[p.color] ?? 'bg-muted-foreground'}`} />
                 <span className="min-w-0">
                   <span className="block truncate font-medium">{p.name}</span>
-                  <span className="block truncate text-sm text-slate-500">
+                  <span className="block truncate text-sm text-muted-foreground">
                     {p.clientName ?? 'No client'} · {p.key}
                   </span>
                 </span>
+                <Icon name="arrow" className="ml-auto size-4 shrink-0 text-muted-foreground group-hover:text-primary" />
               </Link>
             </li>
           ))}
         </ul>
       ) : (
-        <p className="text-slate-600">No projects yet. Create one for your first client.</p>
+        <EmptyState title="Your client work starts here" description="Create a project for your first client, or bring an existing board over from Trello." action={canCreate ? <Button onClick={() => setCreating(true)}><Icon name="plus" />New project</Button> : undefined} />
       )}
     </main>
   );

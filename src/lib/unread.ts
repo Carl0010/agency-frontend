@@ -11,7 +11,7 @@ export const channelsKey = (workspaceId: string) => ['channels', workspaceId] as
 
 /**
  * Every channel in the workspace with the caller's unread count (AC5): drives
- * the dots on the project rail and the Chat/Team tabs. Kept live by the
+ * the dots on sidebar projects and their Chat/Team destinations. Kept live by the
  * per-user `channel.activity` / `channel.read` events, so a read in one
  * session clears the dot in every other session of the same user.
  */

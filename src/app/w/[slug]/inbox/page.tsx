@@ -4,6 +4,7 @@ import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/components/toast';
+import { Icon, type IconName } from '@/components/icon';
 import { Button, Spinner } from '@/components/ui';
 import { api, errorMessage } from '@/lib/api';
 import { useUserEvent } from '@/lib/realtime';
@@ -12,13 +13,8 @@ import type { AppNotification, NotificationFeed, NotificationType } from '@/lib/
 import { useNow } from '@/lib/use-now';
 import { useWorkspace } from '@/lib/workspace';
 
-const ICON: Record<NotificationType, string> = {
-  mention: '@',
-  assignment: '👤',
-  due_soon: '⏰',
-  due_now: '⏰',
-  new_message: '💬',
-  thread_reply: '↩',
+const ICON: Record<NotificationType, IconName> = {
+  mention: 'mention', assignment: 'person', due_soon: 'clock', due_now: 'clock', new_message: 'comment', thread_reply: 'reply',
 };
 
 /**
@@ -65,9 +61,9 @@ export default function InboxPage() {
     <main className="mx-auto max-w-3xl p-4">
       <div className="mb-3 flex items-center gap-2">
         <h1 className="text-xl font-semibold">Inbox</h1>
-        {unread ? <span className="rounded-full bg-red-100 px-2 text-xs font-medium text-red-800">{unread} unread</span> : null}
+        {unread ? <span className="rounded-full bg-primary-subtle px-2 text-xs font-medium text-primary-text">{unread} unread</span> : null}
         <div className="ml-auto flex gap-2">
-          <Link href={`/w/${ws.slug}/settings/notifications`} className="tap flex items-center px-2 text-sm text-slate-600 hover:underline">
+          <Link href={`/w/${ws.slug}/settings/notifications`} className="tap flex items-center px-2 text-sm text-secondary-foreground hover:underline">
             Preferences
           </Link>
           <Button variant="secondary" disabled={!unread} onClick={() => void markRead({ before: new Date().toISOString() })}>
@@ -78,15 +74,15 @@ export default function InboxPage() {
       {feed.isPending ? (
         <Spinner />
       ) : feed.error ? (
-        <p className="text-slate-600">{errorMessage(feed.error)}</p>
+        <p className="text-secondary-foreground">{errorMessage(feed.error)}</p>
       ) : items.length === 0 ? (
-        <p className="rounded-md border border-dashed border-slate-300 p-6 text-center text-sm text-slate-500">Nothing here yet.</p>
+        <p className="rounded-md border border-dashed border-input p-6 text-center text-sm text-muted-foreground">Nothing here yet.</p>
       ) : (
-        <ul className="divide-y divide-slate-100 rounded-md border border-slate-200 bg-white" aria-label="Notifications">
+        <ul className="divide-y divide-border-subtle rounded-md border border-border bg-surface" aria-label="Notifications">
           {items.map((n) => (
-            <li key={n.id} data-testid="notification" data-unread={n.readAt ? 'false' : 'true'} className={`flex items-start gap-3 px-3 py-2 ${n.readAt ? '' : 'bg-blue-50/60'}`}>
+            <li key={n.id} data-testid="notification" data-unread={n.readAt ? 'false' : 'true'} className={`flex items-start gap-3 px-3 py-2 ${n.readAt ? '' : 'bg-primary-subtle/60'}`}>
               <span aria-hidden className="mt-0.5 w-5 shrink-0 text-center">
-                {ICON[n.type]}
+                <Icon name={ICON[n.type]} />
               </span>
               <a
                 href={n.url}
@@ -97,9 +93,9 @@ export default function InboxPage() {
                 }}
                 className="min-w-0 flex-1"
               >
-                <span className={`block truncate text-sm ${n.readAt ? 'text-slate-700' : 'font-semibold text-slate-900'}`}>{n.title}</span>
-                <span className="block truncate text-sm text-slate-600">{n.body}</span>
-                <span className="block truncate text-xs text-slate-500">
+                <span className={`block truncate text-sm ${n.readAt ? 'text-secondary-foreground' : 'font-semibold text-foreground'}`}>{n.title}</span>
+                <span className="block truncate text-sm text-secondary-foreground">{n.body}</span>
+                <span className="block truncate text-xs text-muted-foreground">
                   {n.context} · {timeAgo(n.createdAt, now)}
                 </span>
               </a>
@@ -108,7 +104,7 @@ export default function InboxPage() {
                   type="button"
                   aria-label={`Mark "${n.title}" read`}
                   onClick={() => void markRead({ ids: [n.id] })}
-                  className="tap shrink-0 rounded px-2 text-xs text-blue-700 hover:bg-blue-100"
+                  className="tap shrink-0 rounded px-2 text-xs text-primary hover:bg-primary-muted"
                 >
                   Mark read
                 </button>

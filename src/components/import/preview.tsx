@@ -58,43 +58,43 @@ export function ImportPreviewScreen({
 
   return (
     <form onSubmit={onSubmit} className="space-y-4" data-testid="import-preview">
-      <section className="rounded-lg border border-slate-200 bg-white p-4">
+      <section className="rounded-lg border border-border bg-surface p-4">
         <h2 className="font-medium">{preview.boardName ?? 'Trello board'}</h2>
-        <p className="mt-1 text-slate-800" data-testid="import-summary">
+        <p className="mt-1 text-foreground" data-testid="import-summary">
           {preview.summary}
         </p>
         {preview.counts.archivedCards > 0 ? (
-          <p className="mt-1 text-sm text-slate-600">Includes {preview.counts.archivedCards} archived cards, which arrive archived.</p>
+          <p className="mt-1 text-sm text-secondary-foreground">Includes {preview.counts.archivedCards} archived cards, which arrive archived.</p>
         ) : null}
         {preview.notices.length ? (
-          <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-600">
+          <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-secondary-foreground">
             {preview.notices.map((n) => (
               <li key={n}>{n}</li>
             ))}
           </ul>
         ) : null}
         {preview.limit ? (
-          <p role="alert" data-testid="import-limit" className="mt-3 rounded-md bg-red-50 px-3 py-2 text-sm text-red-800">
+          <p role="alert" data-testid="import-limit" className="mt-3 rounded-md bg-danger-subtle px-3 py-2 text-sm text-danger-text">
             {preview.limit.message} Split the board in Trello, then import each part.
           </p>
         ) : null}
       </section>
 
       {preview.members.length ? (
-        <section className="rounded-lg border border-slate-200 bg-white p-4" data-testid="member-mapping">
+        <section className="rounded-lg border border-border bg-surface p-4" data-testid="member-mapping">
           <h2 className="font-medium">Members</h2>
-          <p className="mb-3 mt-1 text-sm text-slate-600">
+          <p className="mb-3 mt-1 text-sm text-secondary-foreground">
             Match Trello members to your team so their cards stay assigned. Anyone left unassigned is not invited and takes no seat.
             {unmatched ? ` ${unmatched} not matched yet.` : ''}
           </p>
-          <ul className="divide-y divide-slate-200">
+          <ul className="divide-y divide-border">
             {preview.members.map((m) => {
               const chosen = choices[m.externalId] ?? '';
               return (
                 <li key={m.externalId} data-testid="member-map-row" className="flex flex-wrap items-center justify-between gap-2 py-2">
                   <span className="min-w-0">
                     <span className="block truncate font-medium">{m.name}</span>
-                    <span className="block text-xs text-slate-500">
+                    <span className="block text-xs text-muted-foreground">
                       {chosen && chosen === m.userId ? howLabel[m.how ?? 'null'] : chosen ? 'chosen' : 'not matched'}
                     </span>
                   </span>
@@ -102,7 +102,7 @@ export function ImportPreviewScreen({
                     aria-label={`Match ${m.name}`}
                     value={chosen}
                     onChange={(e) => setChoices({ ...choices, [m.externalId]: e.target.value })}
-                    className="tap rounded-md border border-slate-300 bg-white px-2 text-sm"
+                    className="tap rounded-md border border-input bg-surface px-2 text-sm"
                   >
                     <option value="">Leave unassigned</option>
                     {assignable.map((a) => (
@@ -118,7 +118,7 @@ export function ImportPreviewScreen({
         </section>
       ) : null}
 
-      <section className="rounded-lg border border-slate-200 bg-white p-4">
+      <section className="rounded-lg border border-border bg-surface p-4">
         <h2 className="mb-2 font-medium">Import into</h2>
         <div className="space-y-2 text-sm">
           <label className="flex items-center gap-2">
@@ -143,7 +143,7 @@ export function ImportPreviewScreen({
               required
               value={projectId}
               onChange={(e) => setProjectId(e.target.value)}
-              className="tap w-full rounded-md border border-slate-300 bg-white px-2 text-sm"
+              className="tap w-full rounded-md border border-input bg-surface px-2 text-sm"
             >
               <option value="">Choose a project…</option>
               {openProjects.map((p) => (
@@ -153,11 +153,11 @@ export function ImportPreviewScreen({
               ))}
             </select>
           ) : null}
-          <p className="text-xs text-slate-500">Importing the same board again updates what it brought in; it never duplicates cards or moves ones you have moved.</p>
+          <p className="text-xs text-muted-foreground">Importing the same board again updates what it brought in; it never duplicates cards or moves ones you have moved.</p>
         </div>
       </section>
 
-      <details className="rounded-lg border border-slate-200 bg-white p-4">
+      <details className="rounded-lg border border-border bg-surface p-4">
         <summary className="cursor-pointer font-medium">What Trello data won’t come over</summary>
         <DropReport drops={preview.dropped} />
       </details>

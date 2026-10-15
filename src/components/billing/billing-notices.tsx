@@ -29,7 +29,7 @@ export function useBilling(ws: Workspace) {
 const fmtDate = (iso: string) => new Date(iso).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
 
 /** "14 days left in trial · Add billing" — amber at ≤ 3 days (§8.2). */
-export function TrialPill({ ws }: { ws: Workspace }) {
+export function TrialPill({ ws, onNavigate }: { ws: Workspace; onNavigate?: () => void }) {
   const billing = useBilling(ws);
   const pill = billing.data?.notice.trialPill;
   if (!pill) return null;
@@ -37,9 +37,10 @@ export function TrialPill({ ws }: { ws: Workspace }) {
   return (
     <Link
       href={`/w/${ws.slug}/settings/billing`}
+      onClick={onNavigate}
       data-testid="trial-pill"
       data-amber={pill.amber ? 'true' : 'false'}
-      className={`tap hidden items-center rounded-full px-2.5 text-xs font-medium sm:inline-flex ${pill.amber ? 'bg-amber-100 text-amber-900' : 'bg-slate-100 text-slate-700'}`}
+      className={`tap flex items-center rounded-md px-2.5 text-caption font-medium ${pill.amber ? 'bg-warning-muted text-warning-text' : 'bg-subtle text-secondary-foreground'}`}
     >
       {text}
       {billing.data?.hasPaymentMethod ? '' : ' · Add billing'}
@@ -74,9 +75,9 @@ export function ExportButtons({ ws, variant = 'secondary' }: { ws: Workspace; va
 
 function Banner({ tone, children, testId }: { tone: 'info' | 'warn' | 'danger'; children: ReactNode; testId: string }) {
   const tones = {
-    info: 'border-blue-200 bg-blue-50 text-blue-900',
-    warn: 'border-amber-200 bg-amber-50 text-amber-900',
-    danger: 'border-red-200 bg-red-50 text-red-900',
+    info: 'border-info-border bg-info-subtle text-info-text',
+    warn: 'border-warning-border bg-warning-subtle text-warning-text',
+    danger: 'border-danger-border bg-danger-subtle text-danger-text',
   }[tone];
   return (
     <div role="status" data-testid={testId} className={`flex flex-wrap items-center gap-3 border-b px-4 py-2 text-sm ${tones}`}>

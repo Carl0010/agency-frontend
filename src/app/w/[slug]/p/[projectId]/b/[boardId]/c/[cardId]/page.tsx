@@ -10,10 +10,10 @@ export default function CardPage() {
   const boardHref = `/w/${slug}/p/${projectId}/b/${boardId}`;
   return (
     <main className="mx-auto max-w-5xl p-4 sm:p-8">
-      <Link href={boardHref} className="tap mb-4 inline-flex items-center text-sm text-blue-700">
+      <Link href={boardHref} className="tap mb-4 inline-flex items-center text-sm text-primary">
         ← Back to board
       </Link>
-      <div className="rounded-xl border border-slate-200 bg-white p-4 sm:p-6">
+      <div className="rounded-xl border border-border bg-surface p-4 sm:p-6">
         <CardDetail cardId={cardId} boardHref={boardHref} />
       </div>
     </main>

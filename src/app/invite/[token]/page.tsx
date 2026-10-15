@@ -55,7 +55,7 @@ export default function InvitePage() {
     const expired = preview.error instanceof ApiError && preview.error.status === 410;
     return (
       <AuthCard title={expired ? 'This invite has expired' : 'Invite not found'}>
-        <p className="text-sm text-slate-700">
+        <p className="text-sm text-secondary-foreground">
           {expired
             ? 'Invites are valid for 14 days. Ask the person who invited you to send a new one.'
             : 'This invite link is not valid. It may have been revoked or already used.'}
@@ -68,7 +68,7 @@ export default function InvitePage() {
   const guest = inv.role === 'guest';
   const heading = guest ? `${inv.workspaceName} shared ${inv.projectNames.join(', ') || 'a project'} with you` : `Join ${inv.workspaceName}`;
   const intro = (
-    <p className="mb-4 text-sm text-slate-600">
+    <p className="mb-4 text-sm text-secondary-foreground">
       {inv.inviterName ?? 'Someone'} invited <strong>{inv.email}</strong>{' '}
       {guest ? 'to follow the project as a guest.' : `as ${inv.role === 'admin' ? 'an admin' : 'a member'}.`}
     </p>
@@ -112,7 +112,7 @@ export default function InvitePage() {
       ) : (
         <p className="text-sm">
           {user ? `You're signed in as ${user.email}. ` : ''}
-          <Link className="font-medium text-blue-700" href={`/login?next=${encodeURIComponent(`/invite/${token}`)}`}>
+          <Link className="font-medium text-primary" href={`/login?next=${encodeURIComponent(`/invite/${token}`)}`}>
             Log in as {inv.email}
           </Link>{' '}
           to accept.

@@ -27,7 +27,7 @@ export default function ResetPage() {
     <AuthCard title="Choose a new password">
       {done ? (
         <p className="text-sm">
-          Password updated. You were signed out everywhere. <Link className="text-blue-700" href="/login">Log in</Link>
+          Password updated. You were signed out everywhere. <Link className="text-primary" href="/login">Log in</Link>
         </p>
       ) : (
         <form onSubmit={onSubmit} className="space-y-4">

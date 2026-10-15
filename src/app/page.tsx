@@ -19,12 +19,12 @@ export default function Home() {
   return (
     <main className="mx-auto flex min-h-full max-w-2xl flex-col items-center justify-center gap-6 px-6 text-center">
       <h1 className="text-4xl font-bold tracking-tight">Client work, one place.</h1>
-      <p className="text-lg text-slate-600">Boards, cards and comments for agencies of five. Built to replace Trello + Slack.</p>
+      <p className="text-lg text-secondary-foreground">Boards, cards and comments for agencies of five. Built to replace Trello + Slack.</p>
       <div className="flex gap-3">
-        <Link href="/signup" className="tap rounded-md bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700">
+        <Link href="/signup" className="tap rounded-md bg-primary px-4 py-2 font-medium text-inverse-foreground hover:bg-primary-hover">
           Start free trial
         </Link>
-        <Link href="/login" className="tap rounded-md border border-slate-300 bg-white px-4 py-2 font-medium hover:bg-slate-50">
+        <Link href="/login" className="tap rounded-md border border-input bg-surface px-4 py-2 font-medium hover:bg-background">
           Log in
         </Link>
       </div>

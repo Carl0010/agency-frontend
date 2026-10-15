@@ -77,7 +77,7 @@ function SearchScreen() {
         <Button type="submit">Search</Button>
       </form>
       <div className="mb-4 flex flex-wrap items-center gap-2 text-sm" aria-label="Filters">
-        <select aria-label="Type" value={typeFilter[0] ?? ''} onChange={(e) => set({ type: e.target.value || null })} className="tap rounded-md border border-slate-300 px-2">
+        <select aria-label="Type" value={typeFilter[0] ?? ''} onChange={(e) => set({ type: e.target.value || null })} className="tap rounded-md border border-input px-2">
           <option value="">All types</option>
           {TYPES.map((t) => (
             <option key={t} value={t}>
@@ -85,7 +85,7 @@ function SearchScreen() {
             </option>
           ))}
         </select>
-        <select aria-label="Project" value={project ?? ''} onChange={(e) => set({ project: e.target.value || null })} className="tap rounded-md border border-slate-300 px-2">
+        <select aria-label="Project" value={project ?? ''} onChange={(e) => set({ project: e.target.value || null })} className="tap rounded-md border border-input px-2">
           <option value="">All projects</option>
           {(projects.data?.data ?? []).map((p) => (
             <option key={p.id} value={p.id}>
@@ -93,7 +93,7 @@ function SearchScreen() {
             </option>
           ))}
         </select>
-        <select aria-label="Author" value={author ?? ''} onChange={(e) => set({ author: e.target.value || null })} className="tap rounded-md border border-slate-300 px-2">
+        <select aria-label="Author" value={author ?? ''} onChange={(e) => set({ author: e.target.value || null })} className="tap rounded-md border border-input px-2">
           <option value="">Anyone</option>
           {(members.data?.data ?? [])
             .filter((m) => m.status !== 'invited')
@@ -104,10 +104,10 @@ function SearchScreen() {
             ))}
         </select>
         <label className="flex items-center gap-1">
-          From <input type="date" value={from ?? ''} onChange={(e) => set({ from: e.target.value || null })} className="tap rounded-md border border-slate-300 px-2" />
+          From <input type="date" value={from ?? ''} onChange={(e) => set({ from: e.target.value || null })} className="tap rounded-md border border-input px-2" />
         </label>
         <label className="flex items-center gap-1">
-          To <input type="date" value={to ?? ''} onChange={(e) => set({ to: e.target.value || null })} className="tap rounded-md border border-slate-300 px-2" />
+          To <input type="date" value={to ?? ''} onChange={(e) => set({ to: e.target.value || null })} className="tap rounded-md border border-input px-2" />
         </label>
         <label className="flex items-center gap-1">
           <input type="checkbox" checked={params.get('archived') === '1'} onChange={(e) => set({ archived: e.target.checked ? '1' : null })} />
@@ -115,14 +115,14 @@ function SearchScreen() {
         </label>
       </div>
       {!q ? (
-        <p className="text-sm text-slate-500">Search cards, comments and messages across every project.</p>
+        <p className="text-sm text-muted-foreground">Search cards, comments and messages across every project.</p>
       ) : results.isPending ? (
         <Spinner label="Searching…" />
       ) : results.error ? (
-        <p className="text-slate-600">{errorMessage(results.error)}</p>
+        <p className="text-secondary-foreground">{errorMessage(results.error)}</p>
       ) : (
         <>
-          <p className="mb-3 text-sm text-slate-600" data-testid="search-counts">
+          <p className="mb-3 text-sm text-secondary-foreground" data-testid="search-counts">
             {TYPES.map((t) => `${TYPE_LABEL[t]} (${countLabel(results.data.groups[t])})`).join(' · ')}
             {results.data.fallback ? ' — no exact matches; showing cards with similar titles' : ''}
           </p>
@@ -131,14 +131,14 @@ function SearchScreen() {
             if (g.items.length === 0) return null;
             return (
               <section key={t} className="mb-5" aria-label={TYPE_LABEL[t]}>
-                <h2 className="mb-1 text-sm font-semibold text-slate-700">
+                <h2 className="mb-1 text-sm font-semibold text-secondary-foreground">
                   {TYPE_LABEL[t]} ({countLabel(g)})
                 </h2>
-                <ul className="divide-y divide-slate-100 rounded-md border border-slate-200 bg-white">
+                <ul className="divide-y divide-border-subtle rounded-md border border-border bg-surface">
                   {g.items.map((hit) => (
                     <li key={hit.id} data-testid="search-result">
-                      <Link href={hit.url} className="block px-3 py-2 hover:bg-slate-50">
-                        <div className="flex items-baseline gap-2 text-xs text-slate-500">
+                      <Link href={hit.url} className="block px-3 py-2 hover:bg-background">
+                        <div className="flex items-baseline gap-2 text-xs text-muted-foreground">
                           <span className="truncate">{hit.projectName}</span>
                           {hit.author ? <span>· {hit.author.name}</span> : null}
                           <span className="ml-auto shrink-0">{timeAgo(hit.createdAt, now)}</span>
@@ -154,7 +154,7 @@ function SearchScreen() {
                     Next {TYPE_LABEL[t].toLowerCase()}
                   </Button>
                 ) : g.nextOffset !== null ? (
-                  <button type="button" className="mt-1 text-sm text-blue-700 hover:underline" onClick={() => set({ type: t })}>
+                  <button type="button" className="mt-1 text-sm text-primary hover:underline" onClick={() => set({ type: t })}>
                     More {TYPE_LABEL[t].toLowerCase()}…
                   </button>
                 ) : null}

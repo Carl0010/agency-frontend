@@ -30,8 +30,9 @@ test('import: CSV upload → preview + mapping → progress → summary and repo
   const rows = preview.getByTestId('member-map-row');
   await expect(rows).toHaveCount(4);
   await page.goto(`/w/${slug}/projects`);
-  await expect(page.getByRole('link', { name: /Acme site rebuild/ })).toBeVisible();
-  await expect(page.getByRole('link', { name: /Acme Website Relaunch/ })).toHaveCount(0);
+  const projectList = page.getByRole('main');
+  await expect(projectList.getByRole('link', { name: /Acme site rebuild/ })).toBeVisible();
+  await expect(projectList.getByRole('link', { name: /Acme Website Relaunch/ })).toHaveCount(0);
 
   // Back to the wizard: map one Trello member to the owner, leave the others unassigned (AC24).
   await page.goto(`/w/${slug}/import`);
@@ -57,6 +58,9 @@ test('import: CSV upload → preview + mapping → progress → summary and repo
   await page.getByRole('link', { name: 'Open Acme Website Relaunch' }).click();
   await expect(page).toHaveURL(/\/w\/[^/]+\/p\/[^/]+\/b\/[^/]+$/);
   await expect(list(page, 'Backlog')).toBeVisible();
+  const sidebar = page.getByRole('complementary', { name: 'Workspace sidebar' });
+  await expect(sidebar.getByRole('link', { name: 'Acme Website Relaunch', exact: true })).toBeVisible();
+  await expect(sidebar.getByRole('link', { name: 'Board', exact: true })).toHaveAttribute('aria-current', 'page');
 });
 
 /**

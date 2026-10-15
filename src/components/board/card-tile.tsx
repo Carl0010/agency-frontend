@@ -4,6 +4,7 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, type KeyboardEvent } from 'react';
+import { Icon } from '@/components/icon';
 import { DuePill } from '@/components/due-pill';
 import { Avatar, LABEL_BG } from '@/components/ui';
 import type { CardTile as Tile } from '@/lib/types';
@@ -15,32 +16,32 @@ export function CardTileView({ card, projectKey, now, dragging }: { card: Tile; 
     card.dueAt || card.assignees.length || card.checklistTotal || card.commentCount || card.attachmentCount || card.hasDescription;
   return (
     <div
-      className={`rounded-lg bg-white p-3 text-sm shadow-sm transition-shadow ${dragging ? 'rotate-1 shadow-xl ring-2 ring-blue-500' : 'hover:shadow-md'}`}
+      className={`rounded-lg border border-border bg-surface p-3 text-body shadow-sm transition-shadow ${dragging ? 'rotate-1 shadow-xl ring-2 ring-ring' : 'hover:border-primary-border hover:shadow-md'}`}
     >
       {card.labels.length ? (
         <div className="mb-1.5 flex flex-wrap gap-1">
           {card.labels.map((l) => (
-            <span key={l.id} title={l.name} className={`h-2 w-8 rounded-full ${LABEL_BG[l.color] ?? 'bg-slate-400'}`} />
+            <span key={l.id} title={l.name} className={`h-2 w-8 rounded-full ${LABEL_BG[l.color] ?? 'bg-disabled-foreground'}`} />
           ))}
         </div>
       ) : null}
-      <p className="line-clamp-2 break-words font-medium leading-snug text-slate-900">{card.title}</p>
+      <p className="line-clamp-2 break-words font-medium leading-snug text-foreground">{card.title}</p>
       {hasMeta ? (
-        <div className="mt-2.5 flex flex-wrap items-center gap-2.5 text-xs text-slate-500">
+        <div className="mt-2.5 flex flex-wrap items-center gap-2.5 text-xs text-muted-foreground">
           <DuePill dueAt={card.dueAt} dueCompletedAt={card.dueCompletedAt} now={now} />
-          {card.hasDescription ? <span title="Has description" aria-label="Has description">≡</span> : null}
+          {card.hasDescription ? <span title="Has description" aria-label="Has description"><Icon name="description" className="size-3.5" /></span> : null}
           {card.checklistTotal ? (
             <span
               data-testid="checklist-badge"
-              className={card.checklistDone === card.checklistTotal ? 'font-medium text-green-700' : ''}
+              className={`inline-flex items-center gap-1 ${card.checklistDone === card.checklistTotal ? 'font-medium text-success-text' : ''}`}
               title="Checklist items"
             >
-              ☑ {card.checklistDone}/{card.checklistTotal}
+              <Icon name="checklist" className="size-3.5" /> {card.checklistDone}/{card.checklistTotal}
             </span>
           ) : null}
-          {card.commentCount ? <span data-testid="comment-count" title="Comments">💬 {card.commentCount}</span> : null}
-          {card.attachmentCount ? <span title="Attachments">📎 {card.attachmentCount}</span> : null}
-          <span className="ml-auto font-mono text-[11px] text-slate-400">
+          {card.commentCount ? <span data-testid="comment-count" title="Comments" className="inline-flex items-center gap-1"><Icon name="comment" className="size-3.5" /> {card.commentCount}</span> : null}
+          {card.attachmentCount ? <span title="Attachments" className="inline-flex items-center gap-1"><Icon name="attachment" className="size-3.5" /> {card.attachmentCount}</span> : null}
+          <span className="ml-auto font-mono text-caption text-muted-foreground">
             {projectKey}-{card.number}
           </span>
           {card.assignees.length ? (
@@ -49,7 +50,7 @@ export function CardTileView({ card, projectKey, now, dragging }: { card: Tile; 
                 <Avatar key={a.id} person={a} size={22} />
               ))}
               {extra > 0 ? (
-                <span className="inline-flex h-[22px] items-center rounded-full bg-slate-200 px-1.5 text-[10px] font-semibold ring-2 ring-white">
+                <span className="inline-flex h-[22px] items-center rounded-full bg-muted px-1.5 text-caption font-semibold ring-2 ring-surface">
                   +{extra}
                 </span>
               ) : null}
@@ -95,7 +96,7 @@ export function SortableCard({ card, projectKey, now, href, disabled }: { card: 
       data-testid="card-tile"
       data-tour="card"
       data-card-id={card.id}
-      className={`tap shrink-0 cursor-pointer rounded-lg focus-visible:outline-2 focus-visible:outline-blue-600 ${isDragging ? 'opacity-40' : ''}`}
+      className={`tap shrink-0 cursor-pointer rounded-lg focus-visible:outline-2 focus-visible:outline-ring ${isDragging ? 'opacity-40' : ''}`}
     >
       <CardTileView card={card} projectKey={projectKey} now={now} />
     </div>

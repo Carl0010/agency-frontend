@@ -14,10 +14,10 @@ export function dueState(dueAt: string | null, dueCompletedAt: string | null, no
 }
 
 export const DUE_CLASSES: Record<DueState, string> = {
-  later: 'bg-slate-100 text-slate-700',
-  soon: 'bg-amber-100 text-amber-800',
-  overdue: 'bg-red-100 text-red-800',
-  done: 'bg-green-100 text-green-800',
+  later: 'bg-subtle text-secondary-foreground',
+  soon: 'bg-warning-muted text-warning-text',
+  overdue: 'bg-danger-muted text-danger-text',
+  done: 'bg-success-muted text-success-text',
 };
 
 export function formatDue(dueAt: string, now: Date): string {

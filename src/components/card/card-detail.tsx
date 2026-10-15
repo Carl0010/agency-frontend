@@ -43,7 +43,7 @@ export function CardDetail({ cardId, boardHref }: { cardId: string; boardHref: s
 
   if (card.isPending) return <Spinner />;
   if (card.error) {
-    return <p className="p-8 text-center text-slate-600">{card.error instanceof ApiError && card.error.status === 404 ? 'This card does not exist or you cannot see it.' : errorMessage(card.error)}</p>;
+    return <p className="p-8 text-center text-secondary-foreground">{card.error instanceof ApiError && card.error.status === 404 ? 'This card does not exist or you cannot see it.' : errorMessage(card.error)}</p>;
   }
   const c = card.data;
 
@@ -51,7 +51,7 @@ export function CardDetail({ cardId, boardHref }: { cardId: string; boardHref: s
     <div className="flex flex-col gap-6 lg:flex-row" data-testid="card-detail">
       <div className="min-w-0 space-y-6 lg:w-[65%]">
         {c.archivedAt ? (
-          <div role="status" className="flex items-center justify-between rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-900">
+          <div role="status" className="flex items-center justify-between rounded-md bg-warning-subtle px-3 py-2 text-sm text-warning-text">
             This card is archived.
             <Button variant="secondary" onClick={() => void mutate(() => api.post<CardTile>(`/cards/${c.id}/restore`))}>
               Restore
@@ -59,7 +59,7 @@ export function CardDetail({ cardId, boardHref }: { cardId: string; boardHref: s
           </div>
         ) : null}
         <header>
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-muted-foreground">
             <span>{c.listName}</span> · <span data-testid="card-key">{c.key}-{c.number}</span>
           </p>
           <Title card={c} onSave={(title) => mutate(() => api.patch<CardTile>(`/cards/${c.id}`, { title }))} />
@@ -86,8 +86,8 @@ export function CardDetail({ cardId, boardHref }: { cardId: string; boardHref: s
       </div>
 
       <aside className="space-y-4 text-sm lg:w-[35%]">
-        <p className="text-slate-600">
-          Created by <span className="font-medium text-slate-800">{c.createdBy.name}</span>
+        <p className="text-secondary-foreground">
+          Created by <span className="font-medium text-foreground">{c.createdBy.name}</span>
           {!c.createdBy.active ? ' (deactivated)' : ''} · {timeAgo(c.createdAt, now)}
         </p>
         <MoveToList card={c} onMove={(listId) => mutate(() => api.patch<CardTile>(`/cards/${c.id}/move`, { listId, beforeCardId: null }))} />
@@ -117,7 +117,7 @@ export function CardDetail({ cardId, boardHref }: { cardId: string; boardHref: s
 function Field({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div>
-      <p className="mb-1 text-xs font-medium text-slate-500">{label}</p>
+      <p className="mb-1 text-xs font-medium text-muted-foreground">{label}</p>
       {children}
     </div>
   );
@@ -144,13 +144,13 @@ function Title({ card, onSave }: { card: Detail; onSave: (title: string) => Prom
             setEditing(false);
           }
         }}
-        className="mt-1 w-full rounded border border-blue-400 px-1 text-xl font-semibold"
+        className="mt-1 w-full rounded border border-ring px-1 text-xl font-semibold"
       />
     );
   }
   return (
     <h1 className="mt-1 text-xl font-semibold">
-      <button type="button" onClick={() => setEditing(true)} className="tap w-full break-words text-left hover:bg-slate-50" data-testid="card-title">
+      <button type="button" onClick={() => setEditing(true)} className="tap w-full break-words text-left hover:bg-background" data-testid="card-title">
         {card.title}
       </button>
     </h1>
@@ -161,11 +161,11 @@ function Popover({ label, children }: { label: string; children: (close: () => v
   const [open, setOpen] = useState(false);
   return (
     <div className="relative inline-block">
-      <button type="button" aria-label={label} aria-expanded={open} onClick={() => setOpen((o) => !o)} className="tap flex h-7 w-7 items-center justify-center rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200">
+      <button type="button" aria-label={label} aria-expanded={open} onClick={() => setOpen((o) => !o)} className="tap flex h-7 w-7 items-center justify-center rounded-full bg-subtle text-secondary-foreground hover:bg-muted">
         +
       </button>
       {open ? (
-        <div className="absolute left-0 z-30 mt-1 w-64 rounded-md border border-slate-200 bg-white p-2 shadow-lg" onKeyDown={(e) => e.key === 'Escape' && (e.stopPropagation(), setOpen(false))}>
+        <div className="absolute left-0 z-30 mt-1 w-64 rounded-md border border-border bg-surface p-2 shadow-lg" onKeyDown={(e) => e.key === 'Escape' && (e.stopPropagation(), setOpen(false))}>
           {children(() => setOpen(false))}
         </div>
       ) : null}
@@ -188,7 +188,7 @@ function Assignees({ card, onToggle }: { card: Detail; onToggle: (userId: string
           <ul className="space-y-0.5">
             {assignable.map((m) => (
               <li key={m.userId}>
-                <label className="tap flex cursor-pointer items-center gap-2 rounded px-2 py-1 text-sm hover:bg-slate-50">
+                <label className="tap flex cursor-pointer items-center gap-2 rounded px-2 py-1 text-sm hover:bg-background">
                   <input type="checkbox" checked={assigned.has(m.userId)} onChange={(e) => void onToggle(m.userId, e.target.checked)} />
                   <Avatar person={{ id: m.userId, name: m.name, avatarUrl: m.avatarUrl }} size={22} />
                   {m.name}
@@ -226,7 +226,7 @@ function Labels({ card, onToggle }: { card: Detail; onToggle: (labelId: string, 
   return (
     <div className="flex flex-wrap items-center gap-1">
       {card.labels.map((l) => (
-        <span key={l.id} className={`rounded px-2 py-0.5 text-xs font-medium text-white ${LABEL_BG[l.color] ?? 'bg-slate-400'}`}>
+        <span key={l.id} className={`rounded px-2 py-0.5 text-xs font-medium text-inverse-foreground ${LABEL_BG[l.color] ?? 'bg-disabled-foreground'}`}>
           {l.name}
         </span>
       ))}
@@ -236,24 +236,24 @@ function Labels({ card, onToggle }: { card: Detail; onToggle: (labelId: string, 
             <ul className="space-y-0.5">
               {(labels.data?.data ?? []).map((l) => (
                 <li key={l.id}>
-                  <label className="tap flex cursor-pointer items-center gap-2 rounded px-2 py-1 text-sm hover:bg-slate-50">
+                  <label className="tap flex cursor-pointer items-center gap-2 rounded px-2 py-1 text-sm hover:bg-background">
                     <input type="checkbox" checked={on.has(l.id)} onChange={(e) => void onToggle(l.id, e.target.checked)} />
-                    <span className={`h-3 w-3 rounded-full ${LABEL_BG[l.color] ?? 'bg-slate-400'}`} />
+                    <span className={`h-3 w-3 rounded-full ${LABEL_BG[l.color] ?? 'bg-disabled-foreground'}`} />
                     {l.name}
                   </label>
                 </li>
               ))}
             </ul>
-            <form onSubmit={(e) => void create(e)} className="flex gap-1 border-t border-slate-100 pt-2">
-              <input name="name" required maxLength={60} placeholder="New label" aria-label="New label name" className="min-w-0 flex-1 rounded border border-slate-300 px-1 text-sm" />
-              <select name="color" aria-label="Label colour" defaultValue="blue" className="rounded border border-slate-300 text-sm">
+            <form onSubmit={(e) => void create(e)} className="flex gap-1 border-t border-border-subtle pt-2">
+              <input name="name" required maxLength={60} placeholder="New label" aria-label="New label name" className="min-w-0 flex-1 rounded border border-input px-1 text-sm" />
+              <select name="color" aria-label="Label colour" defaultValue="blue" className="rounded border border-input text-sm">
                 {LABEL_COLORS.map((col) => (
                   <option key={col} value={col}>
                     {col}
                   </option>
                 ))}
               </select>
-              <button type="submit" className="rounded bg-blue-600 px-2 text-sm text-white">
+              <button type="submit" className="rounded bg-primary px-2 text-sm text-inverse-foreground">
                 Add
               </button>
             </form>
@@ -277,7 +277,7 @@ function Due({ card, now, onSave }: { card: Detail; now: Date; onSave: (patch: {
           const v = e.target.value ? new Date(e.target.value).toISOString() : null;
           if (v !== card.dueAt) void onSave({ dueAt: v });
         }}
-        className="tap rounded-md border border-slate-300 px-1 py-0.5 text-sm"
+        className="tap rounded-md border border-input px-1 py-0.5 text-sm"
       />
       {card.dueAt ? (
         <>
@@ -285,7 +285,7 @@ function Due({ card, now, onSave }: { card: Detail; now: Date; onSave: (patch: {
             <input type="checkbox" checked={card.dueCompletedAt !== null} onChange={(e) => void onSave({ dueCompletedAt: e.target.checked ? new Date().toISOString() : null })} />
             Done
           </label>
-          <button type="button" className="tap text-xs text-slate-500 underline" onClick={() => void onSave({ dueAt: null, dueCompletedAt: null })}>
+          <button type="button" className="tap text-xs text-muted-foreground underline" onClick={() => void onSave({ dueAt: null, dueCompletedAt: null })}>
             Remove
           </button>
         </>
@@ -323,7 +323,7 @@ function Description({ card, onSave }: { card: Detail; onSave: (d: string | null
 
   return (
     <section aria-label="Description" className="space-y-1">
-      <h2 className="text-sm font-semibold text-slate-700">Description</h2>
+      <h2 className="text-sm font-semibold text-secondary-foreground">Description</h2>
       {editing ? (
         <div className="space-y-2">
           <textarea
@@ -343,22 +343,22 @@ function Description({ card, onSave }: { card: Detail; onSave: (d: string | null
               }
               if (e.key === 'Escape') e.stopPropagation();
             }}
-            className="w-full rounded-md border border-slate-300 p-2 font-mono text-sm focus:border-blue-500 focus:outline-none"
+            className="w-full rounded-md border border-input p-2 font-mono text-sm focus:border-ring focus:outline-none"
           />
           <div className="flex items-center gap-2">
             <Button onClick={() => void save()}>Save</Button>
             <Button variant="ghost" onClick={close}>
               Cancel
             </Button>
-            <span className="text-xs text-slate-500">Markdown · ⌘↵ to save</span>
+            <span className="text-xs text-muted-foreground">Markdown · ⌘↵ to save</span>
           </div>
         </div>
       ) : card.description ? (
-        <div role="button" tabIndex={0} onClick={begin} onKeyDown={(e) => e.key === 'Enter' && begin()} className="tap cursor-text rounded p-1 hover:bg-slate-50" data-testid="description">
+        <div role="button" tabIndex={0} onClick={begin} onKeyDown={(e) => e.key === 'Enter' && begin()} className="tap cursor-text rounded p-1 hover:bg-background" data-testid="description">
           <Markdown source={card.description} />
         </div>
       ) : (
-        <button type="button" onClick={begin} className="tap w-full rounded-md bg-slate-50 p-3 text-left text-sm text-slate-500 hover:bg-slate-100">
+        <button type="button" onClick={begin} className="tap w-full rounded-md bg-background p-3 text-left text-sm text-muted-foreground hover:bg-subtle">
           Add a description…
         </button>
       )}
@@ -370,12 +370,12 @@ function MoveToList({ card, onMove }: { card: Detail; onMove: (listId: string) =
   const board = useQuery({ queryKey: ['board', card.boardId], queryFn: () => api.get<Board>(`/boards/${card.boardId}`) });
   return (
     <label className="block">
-      <span className="mb-1 block text-xs font-medium text-slate-500">List</span>
+      <span className="mb-1 block text-xs font-medium text-muted-foreground">List</span>
       <select
         value={card.listId}
         aria-label="Move to list"
         onChange={(e) => void onMove(e.target.value)}
-        className="tap w-full rounded-md border border-slate-300 bg-white px-2 py-1 text-sm"
+        className="tap w-full rounded-md border border-input bg-surface px-2 py-1 text-sm"
       >
         {(board.data?.lists ?? [{ id: card.listId, name: card.listName }]).map((l) => (
           <option key={l.id} value={l.id}>

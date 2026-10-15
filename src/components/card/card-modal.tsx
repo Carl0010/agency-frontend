@@ -27,7 +27,7 @@ function Modal({ cardId, boardHref }: { cardId: string; boardHref: string }) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-stretch justify-center bg-black/40 sm:items-start sm:overflow-y-auto sm:p-8"
+      className="fixed inset-0 z-50 flex items-stretch justify-center bg-overlay/40 sm:items-start sm:overflow-y-auto sm:p-8"
       onMouseDown={(e) => e.target === e.currentTarget && close()}
       onKeyDown={(e) => {
         if (e.key === 'Escape') close();
@@ -40,9 +40,9 @@ function Modal({ cardId, boardHref }: { cardId: string; boardHref: string }) {
         aria-label="Card"
         tabIndex={-1}
         data-testid="card-modal"
-        className="relative h-full w-full overflow-y-auto bg-white p-4 outline-none sm:h-auto sm:max-w-5xl sm:rounded-xl sm:p-6 sm:shadow-xl"
+        className="relative h-full w-full overflow-y-auto bg-surface p-4 outline-none sm:h-auto sm:max-w-5xl sm:rounded-xl sm:p-6 sm:shadow-xl"
       >
-        <button type="button" aria-label="Close card" onClick={close} className="tap absolute right-2 top-2 z-10 rounded-full px-2 text-xl text-slate-500 hover:bg-slate-100">
+        <button type="button" aria-label="Close card" onClick={close} className="tap absolute right-2 top-2 z-10 rounded-full px-2 text-xl text-muted-foreground hover:bg-subtle">
           ×
         </button>
         <CardDetail cardId={cardId} boardHref={boardHref} />

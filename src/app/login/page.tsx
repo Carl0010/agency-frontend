@@ -47,7 +47,7 @@ function LoginForm() {
       title="Log in"
       footer={
         <>
-          New here? <Link className="font-medium text-blue-700" href="/signup">Create an account</Link>
+          New here? <Link className="font-medium text-primary" href="/signup">Create an account</Link>
         </>
       }
     >
@@ -63,8 +63,8 @@ function LoginForm() {
           {busy ? 'Logging in…' : 'Log in'}
         </Button>
         <div className="flex justify-between text-sm">
-          <Link className="text-blue-700" href="/forgot">Forgot password?</Link>
-          <a className="text-blue-700" href={`/api/v1/auth/google${next ? `?next=${encodeURIComponent(next)}` : ''}`}>
+          <Link className="text-primary" href="/forgot">Forgot password?</Link>
+          <a className="text-primary" href={`/api/v1/auth/google${next ? `?next=${encodeURIComponent(next)}` : ''}`}>
             Continue with Google
           </a>
         </div>

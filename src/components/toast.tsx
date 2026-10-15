@@ -32,7 +32,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
             role={t.tone === 'error' ? 'alert' : 'status'}
             data-testid="toast"
             className={`pointer-events-auto max-w-md rounded-md px-4 py-2 text-sm shadow-lg ${
-              t.tone === 'error' ? 'bg-red-700 text-white' : 'bg-slate-800 text-white'
+              t.tone === 'error' ? 'bg-danger text-inverse-foreground' : 'bg-inverse text-inverse-foreground'
             }`}
           >
             {t.text}

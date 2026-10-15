@@ -77,7 +77,7 @@ export default function OnboardingPage() {
           <li
             key={label}
             aria-current={step === i + 1 ? 'step' : undefined}
-            className={`rounded-full px-2 py-1 ${step === i + 1 ? 'bg-blue-100 text-blue-800' : ws.setup!.stepsDone[i] ? 'bg-green-50 text-green-800' : 'bg-slate-100 text-slate-500'}`}
+            className={`rounded-full px-2 py-1 ${step === i + 1 ? 'bg-primary-muted text-primary-text' : ws.setup!.stepsDone[i] ? 'bg-success-subtle text-success-text' : 'bg-subtle text-muted-foreground'}`}
           >
             {ws.setup!.stepsDone[i] ? '✓ ' : `${i + 1}. `}
             {label}
@@ -89,7 +89,7 @@ export default function OnboardingPage() {
   const later = (
     <button
       type="button"
-      className="text-slate-600 underline-offset-2 hover:underline"
+      className="text-secondary-foreground underline-offset-2 hover:underline"
       onClick={() => void finish((f) => `/w/${f.slug}/projects`)}
     >
       Finish setup later
@@ -227,7 +227,7 @@ function ProjectStep({ ws, header, footer, onDone, onSkip }: StepProps & { onDon
       <form onSubmit={(e) => void onSubmit(e)} className="space-y-4">
         <FormError message={error} />
         {existing ? (
-          <p className="rounded-md bg-green-50 px-3 py-2 text-sm text-green-800">Your first project is set up.</p>
+          <p className="rounded-md bg-success-subtle px-3 py-2 text-sm text-success-text">Your first project is set up.</p>
         ) : (
           <>
             <Field label="Project name" hint="e.g. “Acme — Q4 site rebuild”">
@@ -301,7 +301,7 @@ function InviteStep({ ws, header, footer, onDone, onSkip }: StepProps & { onDone
       {header}
       <form onSubmit={(e) => void onSubmit(e)} className="space-y-3">
         {seats.data ? (
-          <p data-testid="seat-meter" className={`text-sm font-medium ${full ? 'text-amber-700' : 'text-slate-600'}`}>
+          <p data-testid="seat-meter" className={`text-sm font-medium ${full ? 'text-warning-text' : 'text-secondary-foreground'}`}>
             {seats.data.used} of {seats.data.included} seats used
             {full ? ' — your plan is full' : ''}
           </p>
@@ -322,15 +322,15 @@ function InviteStep({ ws, header, footer, onDone, onSkip }: StepProps & { onDone
                 value={row.role}
                 disabled={row.sent}
                 onChange={(e) => update(row.key, { role: e.target.value as InviteRow['role'] })}
-                className="tap rounded-md border border-slate-300 bg-white px-2 text-sm"
+                className="tap rounded-md border border-input bg-surface px-2 text-sm"
               >
                 <option value="member">Member</option>
                 <option value="admin">Admin</option>
               </select>
             </div>
-            {row.sent ? <p className="text-xs text-green-700">Invite sent.</p> : null}
+            {row.sent ? <p className="text-xs text-success-text">Invite sent.</p> : null}
             {row.error ? (
-              <p role="alert" className="text-xs text-red-700">
+              <p role="alert" className="text-xs text-danger-text">
                 {row.error}
               </p>
             ) : null}
@@ -339,13 +339,13 @@ function InviteStep({ ws, header, footer, onDone, onSkip }: StepProps & { onDone
         {rows.length < MAX_ROWS && !full ? (
           <button
             type="button"
-            className="text-sm font-medium text-blue-700 hover:underline"
+            className="text-sm font-medium text-primary hover:underline"
             onClick={() => setRows((rs) => [...rs, { key: Date.now(), email: '', role: 'member', error: null, sent: false }])}
           >
             + Add another
           </button>
         ) : null}
-        <p className="text-xs text-slate-500">Client guests are free and don&apos;t use a seat — invite them from a project later.</p>
+        <p className="text-xs text-muted-foreground">Client guests are free and don&apos;t use a seat — invite them from a project later.</p>
         <StepButtons busy={busy} label="Send invites" onSkip={onSkip} disabled={!rows.some((r) => r.email.trim() && !r.sent)} />
       </form>
     </AuthCard>
@@ -399,24 +399,24 @@ function WorkStep({
 
   const importTrello = () => run('import', () => finish((f) => `/w/${f.slug}/import`));
 
-  const card = 'flex flex-col items-start gap-1 rounded-lg border border-slate-200 bg-white p-4 text-left hover:border-blue-300 hover:shadow-sm disabled:opacity-60';
+  const card = 'flex flex-col items-start gap-1 rounded-lg border border-border bg-surface p-4 text-left hover:border-primary-border hover:shadow-sm disabled:opacity-60';
   return (
     <AuthCard title="Bring your work over" footer={footer} wide>
       {header}
       <FormError message={error} />
       {picking ? (
         <div className="space-y-3">
-          <p className="text-sm text-slate-600">Pick a starting board. You can rename, move or delete anything afterwards.</p>
+          <p className="text-sm text-secondary-foreground">Pick a starting board. You can rename, move or delete anything afterwards.</p>
           {templates.isPending ? <Spinner /> : null}
           <div className="grid gap-3 sm:grid-cols-3">
             {(templates.data?.data ?? []).map((t) => (
               <button key={t.id} type="button" className={card} disabled={busy !== null} onClick={() => void applyTemplate(t)} aria-label={`Use the ${t.name} template`}>
                 <span className="font-medium">{t.name}</span>
-                <span className="text-sm text-slate-600">{t.description}</span>
-                <span className="mt-1 text-xs text-slate-500">
+                <span className="text-sm text-secondary-foreground">{t.description}</span>
+                <span className="mt-1 text-xs text-muted-foreground">
                   {t.lists.length} lists · {t.cardCount} example cards
                 </span>
-                {busy === t.id ? <span className="text-xs text-blue-700">Setting up…</span> : null}
+                {busy === t.id ? <span className="text-xs text-primary">Setting up…</span> : null}
               </button>
             ))}
           </div>
@@ -428,15 +428,15 @@ function WorkStep({
         <div className="grid gap-3 sm:grid-cols-3">
           <button type="button" className={card} disabled={busy !== null} onClick={() => void importTrello()}>
             <span className="font-medium">Import from Trello</span>
-            <span className="text-sm text-slate-600">Bring a board over with its lists, cards, checklists and comments.</span>
+            <span className="text-sm text-secondary-foreground">Bring a board over with its lists, cards, checklists and comments.</span>
           </button>
           <button type="button" className={card} disabled={busy !== null} onClick={() => setPicking(true)}>
             <span className="font-medium">Start from a template</span>
-            <span className="text-sm text-slate-600">Client onboarding, Design sprint or Website build — with example cards.</span>
+            <span className="text-sm text-secondary-foreground">Client onboarding, Design sprint or Website build — with example cards.</span>
           </button>
           <button type="button" className={card} disabled={busy !== null} onClick={() => void startEmpty()}>
             <span className="font-medium">Start empty</span>
-            <span className="text-sm text-slate-600">A clean board with To do, In progress and Done.</span>
+            <span className="text-sm text-secondary-foreground">A clean board with To do, In progress and Done.</span>
           </button>
         </div>
       )}

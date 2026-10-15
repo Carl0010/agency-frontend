@@ -1,48 +1,88 @@
 'use client';
 
-import type { ButtonHTMLAttributes, InputHTMLAttributes, ReactNode } from 'react';
+import type { ButtonHTMLAttributes, InputHTMLAttributes, TextareaHTMLAttributes, SelectHTMLAttributes, HTMLAttributes, ReactNode } from 'react';
+import { AVATAR_COLORS } from '@/lib/content-colors';
+import { Icon, type IconName } from './icon';
+export { LABEL_BG } from '@/lib/content-colors';
+
 import type { PersonRef } from '@/lib/types';
 
 export function Button({
-  variant = 'primary',
-  className = '',
-  ...props
-}: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: 'primary' | 'secondary' | 'ghost' | 'danger' }) {
+  variant = 'primary', size = 'default', className = '', ...props
+}: ButtonHTMLAttributes<HTMLButtonElement> & {
+  variant?: 'primary' | 'secondary' | 'ghost' | 'danger';
+  size?: 'default' | 'sm' | 'icon';
+}) {
   const styles = {
-    primary: 'bg-blue-600 text-white shadow-sm hover:bg-blue-700 disabled:bg-blue-300 disabled:shadow-none',
-    secondary: 'border border-slate-300 bg-white text-slate-800 shadow-sm hover:border-slate-400 hover:bg-slate-50 disabled:text-slate-400 disabled:shadow-none',
-    ghost: 'text-slate-700 hover:bg-slate-200/70 disabled:text-slate-400',
-    danger: 'bg-red-600 text-white hover:bg-red-700 disabled:bg-red-300',
+    primary: 'bg-primary text-primary-foreground shadow-sm hover:bg-primary-hover active:bg-primary-active',
+    secondary: 'border border-input bg-surface text-foreground shadow-sm hover:border-border-hover hover:bg-subtle active:bg-muted',
+    ghost: 'text-secondary-foreground hover:bg-subtle hover:text-foreground active:bg-muted',
+    danger: 'bg-danger text-inverse-foreground hover:bg-danger-hover active:bg-danger-active',
   }[variant];
-  return (
-    <button
-      type="button"
-      className={`tap inline-flex items-center justify-center gap-1.5 rounded-lg px-3.5 py-1.5 text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 ${styles} ${className}`}
-      {...props}
-    />
-  );
+  const sizes = { default: '', sm: 'min-h-8 px-2.5', icon: 'size-9 p-0' }[size];
+  return <button type="button" className={`ui-button tap disabled:pointer-events-none ${styles} ${sizes} ${className}`} {...props} />;
 }
 
 export function Input({ className = '', ...props }: InputHTMLAttributes<HTMLInputElement>) {
+  return <input className={`ui-input tap ${className}`} {...props} />;
+}
+
+export function Textarea({ className = '', ...props }: TextareaHTMLAttributes<HTMLTextAreaElement>) {
+  return <textarea className={`ui-input min-h-24 resize-y ${className}`} {...props} />;
+}
+
+export function Select({ className = '', ...props }: SelectHTMLAttributes<HTMLSelectElement>) {
+  return <select className={`ui-input tap ${className}`} {...props} />;
+}
+
+export function Panel({ className = '', ...props }: HTMLAttributes<HTMLDivElement>) {
+  return <div className={`ui-panel ${className}`} {...props} />;
+}
+
+export function PageHeader({ title, description, actions }: { title: string; description?: string; actions?: ReactNode }) {
   return (
-    <input
-      className={`tap w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm placeholder:text-slate-400 transition-shadow hover:border-slate-400 focus:border-blue-600 focus:outline-none focus:ring-4 focus:ring-blue-600/15 ${className}`}
-      {...props}
-    />
+    <header className="mb-7 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="min-w-0"><h1 className="text-page font-semibold tracking-tight">{title}</h1>
+        {description ? <p className="mt-1 text-body text-muted-foreground">{description}</p> : null}
+      </div>
+      {actions ? <div className="flex shrink-0 flex-wrap items-center gap-2">{actions}</div> : null}
+    </header>
   );
+}
+
+export function EmptyState({ title, description, icon = 'board', action }: { title: string; description: string; icon?: IconName; action?: ReactNode }) {
+  return (
+    <div className="ui-panel flex flex-col items-center px-6 py-14 text-center">
+      <span className="mb-4 flex size-11 items-center justify-center rounded-xl border border-border bg-subtle text-secondary-foreground"><Icon name={icon} className="size-5" /></span>
+      <h2 className="text-body-lg font-semibold">{title}</h2>
+      <p className="mt-1 max-w-sm text-body text-muted-foreground">{description}</p>
+      {action ? <div className="mt-5">{action}</div> : null}
+    </div>
+  );
+}
+
+const BADGE_TONES = {
+  neutral: 'bg-subtle text-secondary-foreground',
+  primary: 'bg-primary-subtle text-primary-text',
+  success: 'bg-success-subtle text-success-text',
+  warning: 'bg-warning-subtle text-warning-text',
+  danger: 'bg-danger-subtle text-danger-text',
+  info: 'bg-info-subtle text-info-text',
+};
+
+export function Badge({ tone = 'neutral', className = '', ...props }: HTMLAttributes<HTMLSpanElement> & { tone?: keyof typeof BADGE_TONES }) {
+  return <span className={`inline-flex items-center gap-1 rounded-sm px-2 py-0.5 text-caption font-medium ${BADGE_TONES[tone]} ${className}`} {...props} />;
 }
 
 export function Field({ label, children, hint }: { label: string; children: ReactNode; hint?: ReactNode }) {
   return (
     <label className="block space-y-1">
-      <span className="text-[13px] font-medium text-slate-700">{label}</span>
+      <span className="text-label font-medium text-secondary-foreground">{label}</span>
       {children}
-      {hint ? <span className="block text-xs text-slate-500">{hint}</span> : null}
+      {hint ? <span className="block text-xs text-muted-foreground">{hint}</span> : null}
     </label>
   );
 }
-
-const AVATAR_COLORS = ['bg-[#9a4b43]', 'bg-[#a0722c]', 'bg-[#4a7a5c]', 'bg-[#4a6f8a]', 'bg-[#7a5a85]', 'bg-[#3f7a77]'];
 
 function initials(name: string): string {
   return name
@@ -57,13 +97,13 @@ export function Avatar({ person, size = 24 }: { person: Pick<PersonRef, 'id' | '
   const color = AVATAR_COLORS[[...person.id].reduce((n, ch) => n + ch.charCodeAt(0), 0) % AVATAR_COLORS.length];
   const style = { width: size, height: size, fontSize: Math.max(9, size * 0.4) };
   return person.avatarUrl ? (
-    <img src={person.avatarUrl} alt={person.name} title={person.name} style={style} className="rounded-md object-cover ring-2 ring-white" />
+    <img src={person.avatarUrl} alt={person.name} title={person.name} style={style} className="rounded-full object-cover ring-2 ring-surface" />
   ) : (
     <span
       title={person.active === false ? `${person.name} (deactivated)` : person.name}
       style={style}
-      className={`inline-flex items-center justify-center rounded-md font-semibold tracking-tight text-white ring-2 ring-white ${
-        person.active === false ? 'bg-slate-400' : color
+      className={`inline-flex items-center justify-center rounded-full font-semibold tracking-tight text-inverse-foreground ring-2 ring-surface ${
+        person.active === false ? 'bg-disabled-foreground' : color
       }`}
     >
       {initials(person.name)}
@@ -73,29 +113,16 @@ export function Avatar({ person, size = 24 }: { person: Pick<PersonRef, 'id' | '
 
 export function Spinner({ label = 'Loading…' }: { label?: string }) {
   return (
-    <div role="status" className="flex items-center justify-center p-8 text-sm text-slate-500">
+    <div role="status" className="flex items-center justify-center p-8 text-sm text-muted-foreground">
       {label}
     </div>
   );
 }
 
-export const LABEL_BG: Record<string, string> = {
-  grey: 'bg-slate-400',
-  red: 'bg-red-500',
-  orange: 'bg-orange-500',
-  yellow: 'bg-yellow-400',
-  green: 'bg-green-500',
-  teal: 'bg-teal-500',
-  blue: 'bg-blue-500',
-  purple: 'bg-purple-500',
-  pink: 'bg-pink-500',
-  brown: 'bg-amber-800',
-};
-
 /** The `Guest` chip (§3.4, §3.6): on guest-authored comments and messages, and in the portal header with the access level. */
 export function GuestChip({ access }: { access?: 'read' | 'comment' }) {
   return (
-    <span data-testid="guest-chip" className="inline-flex items-center rounded bg-amber-100 px-1.5 py-0.5 text-[11px] font-medium text-amber-900">
+    <span data-testid="guest-chip" className="inline-flex items-center rounded-sm bg-subtle px-2 py-0.5 text-caption font-medium text-secondary-foreground">
       Guest{access ? ` · ${access === 'comment' ? 'Can comment' : 'View only'}` : ''}
     </span>
   );

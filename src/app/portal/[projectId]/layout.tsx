@@ -35,8 +35,8 @@ export default function PortalProjectLayout({ children }: { children: ReactNode 
     return (
       <main className="mx-auto max-w-md p-8 text-center" data-testid="portal-not-found">
         <h1 className="text-lg font-semibold">Project not found</h1>
-        <p className="mt-2 text-sm text-slate-600">It does not exist, or it is no longer shared with you.</p>
-        <Link className="mt-4 inline-block text-sm text-blue-700" href="/portal">
+        <p className="mt-2 text-sm text-secondary-foreground">It does not exist, or it is no longer shared with you.</p>
+        <Link className="mt-4 inline-block text-sm text-primary" href="/portal">
           Your projects
         </Link>
       </main>
@@ -55,25 +55,25 @@ export default function PortalProjectLayout({ children }: { children: ReactNode 
     <WorkspaceContext.Provider value={ws.data}>
       <PortalContext.Provider value={{ project, projects: others }}>
         <div className="flex h-full flex-col" data-testid="portal-layout">
-          <header className="flex shrink-0 flex-wrap items-center gap-x-3 gap-y-1 border-b border-slate-200 bg-white px-3 py-2">
-            <span className="flex h-7 w-7 items-center justify-center rounded bg-slate-800 text-xs font-bold text-white" aria-hidden>
+          <header className="flex shrink-0 flex-wrap items-center gap-x-3 gap-y-1 border-b border-border bg-surface px-3 py-2">
+            <span className="flex h-7 w-7 items-center justify-center rounded bg-inverse text-xs font-bold text-inverse-foreground" aria-hidden>
               {project.workspaceName.slice(0, 1).toUpperCase()}
             </span>
-            <span className="text-sm font-semibold text-slate-700" data-testid="portal-agency">
+            <span className="text-sm font-semibold text-secondary-foreground" data-testid="portal-agency">
               {project.workspaceName}
             </span>
-            <span className="text-slate-300">/</span>
+            <span className="text-muted-foreground">/</span>
             <div className="min-w-0">
               <h1 className="truncate font-semibold">{project.name}</h1>
-              {project.clientName ? <p className="truncate text-xs text-slate-500">{project.clientName}</p> : null}
+              {project.clientName ? <p className="truncate text-xs text-muted-foreground">{project.clientName}</p> : null}
             </div>
             <GuestChip access={project.access} />
             {others.length > 1 ? (
-              <label className="flex items-center gap-1 text-sm text-slate-600">
+              <label className="flex items-center gap-1 text-sm text-secondary-foreground">
                 <span className="sr-only">Switch project</span>
                 <select
                   data-testid="portal-switcher"
-                  className="tap rounded-md border border-slate-300 bg-white px-2 text-sm"
+                  className="tap rounded-md border border-input bg-surface px-2 text-sm"
                   value={project.id}
                   onChange={(e) => router.push(`/portal/${e.target.value}`)}
                 >
@@ -91,7 +91,7 @@ export default function PortalProjectLayout({ children }: { children: ReactNode 
                   key={t.href}
                   href={t.href}
                   aria-current={t.current ? 'page' : undefined}
-                  className={`tap flex items-center rounded px-2 ${t.current ? 'bg-slate-100 font-medium' : 'text-slate-600 hover:bg-slate-50'}`}
+                  className={`tap flex items-center rounded px-2 ${t.current ? 'bg-subtle font-medium' : 'text-secondary-foreground hover:bg-background'}`}
                 >
                   {t.label}
                 </Link>
@@ -99,7 +99,7 @@ export default function PortalProjectLayout({ children }: { children: ReactNode 
             </nav>
             <div className="ml-auto flex items-center gap-2">
               {user ? <Avatar person={{ ...user, active: true }} size={28} /> : null}
-              <button type="button" className="tap px-2 text-sm text-slate-600 hover:text-slate-900" onClick={() => void signOut().then(() => router.replace('/login'))}>
+              <button type="button" className="tap px-2 text-sm text-secondary-foreground hover:text-foreground" onClick={() => void signOut().then(() => router.replace('/login'))}>
                 Log out
               </button>
             </div>

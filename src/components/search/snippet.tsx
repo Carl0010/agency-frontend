@@ -3,10 +3,10 @@ import type { SearchHit } from '@/lib/types';
 /** Server-highlighted snippet parts, rendered as text nodes — never as HTML. */
 export function Snippet({ parts }: { parts: SearchHit['snippet'] }) {
   return (
-    <span className="text-sm text-slate-600">
+    <span className="text-sm text-secondary-foreground">
       {parts.map((p, i) =>
         p.hit ? (
-          <mark key={i} className="rounded bg-yellow-200 px-0.5 text-slate-900">
+          <mark key={i} className="rounded bg-highlight px-0.5 text-highlight-foreground">
             {p.text}
           </mark>
         ) : (

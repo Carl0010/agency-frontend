@@ -12,7 +12,7 @@ import { countLabel, Snippet, TYPE_LABEL } from './snippet';
 
 const ORDER: SearchType[] = ['card', 'comment', 'message'];
 export const DEBOUNCE_MS = 250;
-/** Header search button → palette, without prop drilling. */
+/** Sidebar search action → palette, without prop drilling. */
 export const OPEN_EVENT = 'agency:open-search';
 
 function useDebounced<T>(value: T, ms: number): T {
@@ -44,6 +44,9 @@ export function CommandPalette() {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
         setOpen((o) => !o);
+      } else if (e.key === 'Escape') {
+        // Escape also works during the frame before the input receives focus.
+        setOpen(false);
       }
     };
     const onOpen = () => setOpen(true);
@@ -101,8 +104,8 @@ export function CommandPalette() {
   }
 
   return (
-    <div className="fixed inset-0 z-[90] flex items-start justify-center bg-black/30 p-4 pt-[10vh]" role="dialog" aria-modal="true" aria-label="Search" onMouseDown={() => setOpen(false)}>
-      <div className="w-full max-w-xl overflow-hidden rounded-lg bg-white shadow-2xl" onMouseDown={(e) => e.stopPropagation()} data-testid="command-palette">
+    <div className="fixed inset-0 z-[90] flex items-start justify-center bg-overlay/30 p-4 pt-[10vh]" role="dialog" aria-modal="true" aria-label="Search" onMouseDown={() => setOpen(false)}>
+      <div className="w-full max-w-xl overflow-hidden rounded-lg bg-surface shadow-2xl" onMouseDown={(e) => e.stopPropagation()} data-testid="command-palette">
         <input
           ref={input}
           value={q}
@@ -113,18 +116,18 @@ export function CommandPalette() {
           onKeyDown={onKeyDown}
           aria-label="Search cards, comments and messages"
           placeholder='Search… try "exact phrase" or -exclude'
-          className="w-full border-b border-slate-200 px-4 py-3 text-base outline-none"
+          className="w-full border-b border-border px-4 py-3 text-base outline-none"
         />
         <div className="max-h-[60vh] overflow-y-auto">
           {debounced.length < 2 ? (
-            <p className="p-4 text-sm text-slate-500">Type at least 2 characters.</p>
+            <p className="p-4 text-sm text-muted-foreground">Type at least 2 characters.</p>
           ) : results.isPending ? (
-            <p className="p-4 text-sm text-slate-500">Searching…</p>
+            <p className="p-4 text-sm text-muted-foreground">Searching…</p>
           ) : results.data && items.length === 0 ? (
-            <p className="p-4 text-sm text-slate-500">No results for “{debounced}”.</p>
+            <p className="p-4 text-sm text-muted-foreground">No results for “{debounced}”.</p>
           ) : results.data ? (
             <>
-              <p className="px-4 pt-2 text-xs text-slate-500" data-testid="search-counts">
+              <p className="px-4 pt-2 text-xs text-muted-foreground" data-testid="search-counts">
                 {ORDER.map((t) => `${TYPE_LABEL[t]} (${countLabel(results.data.groups[t])})`).join(' · ')}
                 {results.data.fallback ? ' · showing close matches' : ''}
               </p>
@@ -137,9 +140,9 @@ export function CommandPalette() {
                     data-testid="search-result"
                     onMouseEnter={() => setActive(i)}
                     onClick={(e) => go(hit, e.metaKey || e.ctrlKey)}
-                    className={`cursor-pointer border-b border-slate-100 px-4 py-2 ${i === active ? 'bg-blue-50' : ''}`}
+                    className={`cursor-pointer border-b border-border-subtle px-4 py-2 ${i === active ? 'bg-primary-subtle' : ''}`}
                   >
-                    <div className="flex items-baseline gap-2 text-xs text-slate-500">
+                    <div className="flex items-baseline gap-2 text-xs text-muted-foreground">
                       <span className="font-medium uppercase">{hit.type}</span>
                       <span className="truncate">{hit.projectName}</span>
                       <span className="ml-auto shrink-0">{timeAgo(hit.createdAt, now)}</span>
@@ -149,12 +152,12 @@ export function CommandPalette() {
                   </li>
                 ))}
               </ul>
-              <button type="button" onClick={() => go(undefined, false)} className="w-full px-4 py-2 text-left text-sm text-blue-700 hover:bg-slate-50">
+              <button type="button" onClick={() => go(undefined, false)} className="w-full px-4 py-2 text-left text-sm text-primary hover:bg-background">
                 See all results for “{debounced}”
               </button>
             </>
           ) : (
-            <p className="p-4 text-sm text-red-700">Search failed.</p>
+            <p className="p-4 text-sm text-danger-text">Search failed.</p>
           )}
         </div>
       </div>
