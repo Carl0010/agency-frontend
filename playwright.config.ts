@@ -1,13 +1,15 @@
 import { defineConfig, devices } from '@playwright/test';
 
 /**
- * Smoke path against a real API + Postgres + S3 (docker compose).
- * Locally, already-running `dev:api` / `dev:web` servers are reused; in CI
- * both are started here. `PW_CHANNEL=chrome` uses an installed Chrome
+ * Smoke path against a real API + Postgres + S3 from the backend repository
+ * (agency-mvp), checked out at BACKEND_DIR (default: ../agency-mvp, a sibling
+ * clone). Locally, already-running API and web servers are reused; in CI both
+ * are started here. `PW_CHANNEL=chrome` uses an installed Chrome
  * instead of the downloaded Chromium.
  */
 const CI = Boolean(process.env.CI);
 const WEB = 'http://localhost:3200';
+const BACKEND_DIR = process.env.BACKEND_DIR ?? '../agency-mvp';
 
 export default defineConfig({
   testDir: './e2e',
@@ -25,7 +27,7 @@ export default defineConfig({
   webServer: [
     {
       command: 'npm run start -w apps/api',
-      cwd: '../..',
+      cwd: BACKEND_DIR,
       // No auth → 401, which Playwright counts as "up".
       url: 'http://127.0.0.1:4100/api/v1/me',
       reuseExistingServer: !CI,

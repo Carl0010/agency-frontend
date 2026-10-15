@@ -11,7 +11,8 @@ import { list, signupToBoard } from './helpers';
  * row is proven in the API's own tests; this checks the screens drive them.
  */
 
-const FIXTURE = path.resolve(__dirname, '../../api/test/fixtures/trello/board.csv');
+// A copy of the backend's Trello fixture (agency-mvp: apps/api/test/fixtures/trello/board.csv).
+const FIXTURE = path.resolve(__dirname, 'fixtures/trello-board.csv');
 
 test('import: CSV upload → preview + mapping → progress → summary and report.csv', async ({ browser }) => {
   const { page, account } = await signupToBoard(browser);

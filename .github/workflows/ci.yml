@@ -1,0 +1,100 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Lint
+        run: npm run lint
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Unit tests
+        run: npm test
+      - name: Build
+        run: npm run build
+
+  # Journeys against the real backend. The backend repository is private, so this job needs a
+  # read-only token for it in the BACKEND_REPO_TOKEN secret; without one it is skipped, not failed.
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    # Local fixture values for a throwaway CI stack, not secrets.
+    env:
+      BACKEND_DIR: backend
+      HAS_BACKEND_TOKEN: ${{ secrets.BACKEND_REPO_TOKEN != '' }}
+      PORT: 4100
+      DATABASE_URL: postgres://agency:agency@127.0.0.1:55433/agency
+      WEB_ORIGIN: http://localhost:3200
+      API_PUBLIC_URL: http://localhost:4100
+      JWT_ACCESS_SECRET: ci-only-access-secret-0123456789abcdef
+      S3_ENDPOINT: http://127.0.0.1:58333
+      S3_REGION: us-east-1
+      S3_BUCKET: agency-attachments
+      S3_ACCESS_KEY_ID: local-dev-access
+      S3_SECRET_ACCESS_KEY: local-dev-secret-not-for-prod
+      S3_FORCE_PATH_STYLE: 'true'
+      SCAN_CALLBACK_SECRET: ci-scan-callback-secret
+      MAIL_TRANSPORT: log
+    steps:
+      - name: Skip without backend access
+        if: env.HAS_BACKEND_TOKEN != 'true'
+        run: echo "::notice::BACKEND_REPO_TOKEN is not set; skipping end-to-end journeys."
+      - uses: actions/checkout@v4
+        if: env.HAS_BACKEND_TOKEN == 'true'
+      - uses: actions/checkout@v4
+        if: env.HAS_BACKEND_TOKEN == 'true'
+        with:
+          repository: Carl0010/agency-mvp
+          token: ${{ secrets.BACKEND_REPO_TOKEN }}
+          path: backend
+      - uses: actions/setup-node@v4
+        if: env.HAS_BACKEND_TOKEN == 'true'
+        with:
+          node-version: 22
+      - name: Install
+        if: env.HAS_BACKEND_TOKEN == 'true'
+        run: npm ci && npm ci --prefix backend
+      - name: Start Postgres and S3, migrate, build the API
+        if: env.HAS_BACKEND_TOKEN == 'true'
+        working-directory: backend
+        run: docker compose up -d --wait && npm run db:migrate && npm run build -w apps/api
+      - name: Build
+        if: env.HAS_BACKEND_TOKEN == 'true'
+        run: npm run build
+      - name: Install Chromium
+        if: env.HAS_BACKEND_TOKEN == 'true'
+        run: npx playwright install --with-deps chromium
+      - name: Playwright journeys
+        if: env.HAS_BACKEND_TOKEN == 'true'
+        run: npm run test:e2e
+      # Slice 4 AC26: cold signup → board with ≥ 6 cards, timed by onboarding.spec.ts.
+      - name: Record signup-to-board time
+        if: always() && env.HAS_BACKEND_TOKEN == 'true'
+        run: |
+          f=test-results/metrics/signup-to-board.json
+          if [ -f "$f" ]; then
+            echo "### Signup → populated board: $(node -p "(require('./$f').value/1000).toFixed(1)")s (budget 180s)" >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - uses: actions/upload-artifact@v4
+        if: failure() && env.HAS_BACKEND_TOKEN == 'true'
+        with:
+          name: playwright-report
+          path: |
+            playwright-report
+            test-results

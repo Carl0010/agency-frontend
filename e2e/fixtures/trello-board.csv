@@ -1,0 +1,67 @@
+Card ID,Card Name,Card URL,Card Description,Labels,Card Members,Due Date,Due Complete,Attachment Links,Comment Count,Comments,Checklists,List ID,List Name,Board ID,Board Name,Archived,Vote Count,Start Date
+5f1a2b3c4d5e6f7a8b000401,Write homepage copy,https://trello.com/c/fx0001,"Tone: friendly, short.
+
+- hero
+- features","Urgent (red), green","Dana Scully, Fox Mulder",2026-11-20T17:00:00.000Z,false,,9,"Dana Scully: Comment 1 from Dana Scully on card 1
+
+Dana Scully: Comment 4 from Dana Scully on card 1
+
+Dana Scully: Comment 7 from Dana Scully on card 1
+
+Dana Scully: Comment 10 from Dana Scully on card 1
+
+Fox Mulder: Comment 13 from Fox Mulder on card 1
+
+Fox Mulder: Comment 16 from Fox Mulder on card 1
+
+Walter Skinner: Comment 19 from Walter Skinner on card 1
+
+Walter Skinner: Comment 22 from Walter Skinner on card 1
+
+Walter Skinner: Comment 25 from Walter Skinner on card 1","Copy: Hero headline (complete)
+Copy: Feature bullets (complete)
+Copy: Footer legal (incomplete)",5f1a2b3c4d5e6f7a8b000100,Backlog,5f1a2b3c4d5e6f7a8b9c0d1e,Acme Website Relaunch,false,0,
+5f1a2b3c4d5e6f7a8b000402,Pick colour palette,https://trello.com/c/fx0002,,"Design (blue), sky_dark",Walter Skinner,2026-10-01T09:00:00.000Z,true,,0,,,5f1a2b3c4d5e6f7a8b000100,Backlog,5f1a2b3c4d5e6f7a8b9c0d1e,Acme Website Relaunch,false,0,
+5f1a2b3c4d5e6f7a8b000403,Old hero concept,https://trello.com/c/fx0003,,Design (blue),,,false,,0,,,5f1a2b3c4d5e6f7a8b000100,Backlog,5f1a2b3c4d5e6f7a8b9c0d1e,Acme Website Relaunch,true,0,
+5f1a2b3c4d5e6f7a8b00040b,Card template: client brief,https://trello.com/c/fx0011,,,,,false,,0,,,5f1a2b3c4d5e6f7a8b000100,Backlog,5f1a2b3c4d5e6f7a8b9c0d1e,Acme Website Relaunch,false,0,
+5f1a2b3c4d5e6f7a8b000404,Build header,https://trello.com/c/fx0004,,,"Fox Mulder, Carol Danvers",,false,"https://trello.com/1/cards/5f1a2b3c4d5e6f7a8b000404/attachments/5f1a2b3c4d5e6f7a8b000500/download/header.png
+https://www.figma.com/file/abc123/Header
+https://trello.com/1/cards/5f1a2b3c4d5e6f7a8b000404/attachments/5f1a2b3c4d5e6f7a8b000502/download/raw-footage.mov",8,"Dana Scully: Comment 2 from Dana Scully on card 4
+
+Dana Scully: Comment 5 from Dana Scully on card 4
+
+Dana Scully: Comment 8 from Dana Scully on card 4
+
+Fox Mulder: Comment 11 from Fox Mulder on card 4
+
+Fox Mulder: Comment 14 from Fox Mulder on card 4
+
+Fox Mulder: Comment 17 from Fox Mulder on card 4
+
+Walter Skinner: Comment 20 from Walter Skinner on card 4
+
+Walter Skinner: Comment 23 from Walter Skinner on card 4",,5f1a2b3c4d5e6f7a8b000101,Doing,5f1a2b3c4d5e6f7a8b9c0d1e,Acme Website Relaunch,false,0,
+5f1a2b3c4d5e6f7a8b000405,"Rebuild the pricing page so that every plan, add-on and discount is explained in plain words Rebuild the pricing page so that every plan, add-on and discount is explained in plain words Rebuild the pricing page so that every plan, add-on and discount is explained in plain words Rebuild the pricing page so that every plan, add-on and discount is explained in plain words Rebuild the pricing page so that every plan, add-on and discount is explained in plain words Rebuild the pricing page so that ev",https://trello.com/c/fx0005,,,Dana Scully,,false,,0,,,5f1a2b3c4d5e6f7a8b000101,Doing,5f1a2b3c4d5e6f7a8b9c0d1e,Acme Website Relaunch,false,0,
+5f1a2b3c4d5e6f7a8b000406,Plan launch event,https://trello.com/c/fx0006,,,,2026-12-01T12:00:00.000Z,false,,0,,,5f1a2b3c4d5e6f7a8b000101,Doing,5f1a2b3c4d5e6f7a8b9c0d1e,Acme Website Relaunch,false,3,2026-10-20T09:00:00.000Z
+5f1a2b3c4d5e6f7a8b00040c,Collect testimonials,https://trello.com/c/fx0012,,,,,false,,0,,,5f1a2b3c4d5e6f7a8b000101,Doing,5f1a2b3c4d5e6f7a8b9c0d1e,Acme Website Relaunch,false,0,
+5f1a2b3c4d5e6f7a8b000407,Launch checklist,https://trello.com/c/fx0007,,Urgent (red),"Dana Scully, Fox Mulder, Walter Skinner",,false,,8,"Dana Scully: Comment 3 from Dana Scully on card 7
+
+Dana Scully: Comment 6 from Dana Scully on card 7
+
+Dana Scully: Comment 9 from Dana Scully on card 7
+
+Fox Mulder: Comment 12 from Fox Mulder on card 7
+
+Fox Mulder: Comment 15 from Fox Mulder on card 7
+
+Fox Mulder: Comment 18 from Fox Mulder on card 7
+
+Walter Skinner: Comment 21 from Walter Skinner on card 7
+
+Walter Skinner: Comment 24 from Walter Skinner on card 7","Before launch: DNS cut-over (incomplete)
+Before launch: Smoke test (complete)
+After launch: Announce (incomplete)
+After launch: Monitor errors (incomplete)",5f1a2b3c4d5e6f7a8b000102,Done,5f1a2b3c4d5e6f7a8b9c0d1e,Acme Website Relaunch,false,0,
+5f1a2b3c4d5e6f7a8b000408,Set up analytics,https://trello.com/c/fx0008,,,,2026-09-15T12:00:00.000Z,true,,0,,,5f1a2b3c4d5e6f7a8b000102,Done,5f1a2b3c4d5e6f7a8b9c0d1e,Acme Website Relaunch,false,1,2026-09-01T09:00:00.000Z
+5f1a2b3c4d5e6f7a8b00040a,Retired FAQ page,https://trello.com/c/fx0010,,,,,false,,0,,,5f1a2b3c4d5e6f7a8b000102,Done,5f1a2b3c4d5e6f7a8b9c0d1e,Acme Website Relaunch,true,0,
+5f1a2b3c4d5e6f7a8b000409,Parked idea: chatbot,https://trello.com/c/fx0009,,,,,false,,0,,,5f1a2b3c4d5e6f7a8b000103,Old ideas,5f1a2b3c4d5e6f7a8b9c0d1e,Acme Website Relaunch,false,0,
