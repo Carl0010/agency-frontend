@@ -64,7 +64,7 @@ export function ListColumn({ list, cards, board, now, cardHref, dndDisabled, cla
       data-list-id={list.id}
       className={`max-h-full w-full shrink-0 flex-col rounded-xl border border-border-subtle bg-subtle sm:w-72 ${sortable.isDragging ? 'opacity-40' : ''} ${className}`}
     >
-      <header className="flex items-center gap-1 px-2 pt-2">
+      <header className="flex items-center gap-1 px-2 py-2">
         <button
           type="button"
           {...sortable.attributes}
@@ -114,7 +114,6 @@ export function ListColumn({ list, cards, board, now, cardHref, dndDisabled, cla
           ) : null}
         </div>
       </header>
-      <AddCard listId={list.id} boardId={board.id} at="start" />
       <div ref={drop.setNodeRef} className="flex min-h-10 flex-col gap-2 overflow-y-auto px-2 pb-1">
         <SortableContext items={cards.map((c) => c.id)} strategy={verticalListSortingStrategy}>
           {cards.map((c) => (
@@ -122,12 +121,12 @@ export function ListColumn({ list, cards, board, now, cardHref, dndDisabled, cla
           ))}
         </SortableContext>
       </div>
-      <AddCard listId={list.id} boardId={board.id} at="end" />
+      <AddCard listId={list.id} boardId={board.id} />
     </section>
   );
 }
 
-function AddCard({ listId, boardId, at }: { listId: string; boardId: string; at: 'start' | 'end' }) {
+function AddCard({ listId, boardId }: { listId: string; boardId: string }) {
   const qc = useQueryClient();
   const toast = useToast();
   const [open, setOpen] = useState(false);
@@ -140,7 +139,7 @@ function AddCard({ listId, boardId, at }: { listId: string; boardId: string; at:
     if (!t || busy) return;
     setBusy(true);
     try {
-      const tile = await api.post<CardTile>(`/lists/${listId}/cards`, { title: t, at });
+      const tile = await api.post<CardTile>(`/lists/${listId}/cards`, { title: t, at: 'end' });
       qc.setQueryData<Board>(['board', boardId], (b) => (b ? upsertCard(b, tile) : b));
       setTitle('');
     } catch (err) {
@@ -163,9 +162,9 @@ function AddCard({ listId, boardId, at }: { listId: string; boardId: string; at:
       <button
         type="button"
         onClick={() => setOpen(true)}
-        data-testid={`add-card-${at}`}
-        data-tour={at === 'end' ? 'add-card' : undefined}
-        className={`tap mx-2 rounded px-2 py-1 text-left text-sm text-secondary-foreground hover:bg-muted ${at === 'start' ? 'my-1 hidden sm:block' : 'my-2'}`}
+        data-testid="add-card-end"
+        data-tour="add-card"
+        className="tap mx-2 my-2 rounded px-2 py-1 text-left text-sm text-secondary-foreground hover:bg-muted"
       >
         <span className="inline-flex items-center gap-2"><Icon name="plus" />Add card</span>
       </button>
