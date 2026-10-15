@@ -121,7 +121,7 @@ text to avoid iOS zoom. Small avatar initials are a limited exception to the
   Default maximum width is 1024px; forms/settings may use a narrower max width.
 - `PageHeader` puts the title/description on the left and actions on the right,
   stacking naturally on small screens. Use one primary action per action group.
-- Use one 256px workspace sidebar and 288px board lanes on desktop. Below 640px,
+- Use one 256px workspace sidebar and 320px board lanes on desktop. Below 640px,
   preserve the existing one-list-at-a-time board behavior.
 - Follow [navigation ownership](NAVIGATION.md): workspace and project destinations
   live in the sidebar; headers keep location and local actions. Do not add a
@@ -134,6 +134,42 @@ text to avoid iOS zoom. Small avatar initials are a limited exception to the
 - Prefer borders to shadows. `shadow-sm` for subtle controls/cards, `shadow-md`
   for hover elevation, `shadow-lg` for menus/dialogs, `shadow-xl` for drag overlays.
   Avoid decorative gradients, glass effects and shadow stacks in workspace chrome.
+
+## Kanban dimensions and hierarchy
+
+The board uses a deliberate hierarchy rather than one compact size for every
+piece of information. Reuse the semantic type and color tokens above.
+
+| Element | Type / dimensions | Purpose |
+| --- | --- | --- |
+| Project title | 20px / 28px, semibold | Main heading; client and board counts beneath at 13px / 20px |
+| List heading | 14px / 20px, semibold | Stable header with a separate count badge and action target |
+| Card title | 15px / 24px, medium | Up to three visible lines; full title in the control label and tooltip |
+| Labels and facts | 12px / 16px | Readable label names, due state, checklist/file/comment counts |
+| Card footer | 12px / 16px key; 24px avatars | Identity and ownership in a separate row, even for simple cards |
+| Desktop list | 320px wide; at least 256px tall | Enough text width and a useful empty/drop area |
+| Board gutter | 16px mobile / 24px desktop | Aligns project header, filtering and lists |
+| Between lists / cards | 16px / 12px | Clear grouping without compressing card content |
+| Inside a card | 16px | Common text and metadata inset |
+| Controls | 36px desktop; at least 44px below 640px | Aligned toolbar and accessible mobile touch targets |
+
+Keep list headings and the bottom Add card control outside the list's scrolling
+card area. Long lists scroll internally; users can still identify the list and
+create a card. Empty lists say **No cards yet**; filtered lists with no matches
+say **No matching cards**. Keep one Add card control per list, at the bottom.
+
+User-selected label colors appear as dots beside their readable names on a
+neutral chip. Do not put low-contrast text on arbitrary label fills. Card facts
+wrap independently from the footer so dates, counts, keys and assignees cannot
+compete for one row. Plain cards still show their key.
+
+The project header wraps as the available board pane narrows, including when
+the card drawer is open. Filters use the shared input and consistent control
+heights. Preserve the single selected list below 640px and horizontal board
+scrolling on larger screens; never widen the document to fit every list.
+
+`e2e/board-ux.spec.ts` checks a populated board at 1440px, 1024px and 390px,
+including metadata bounds and access to list headings and bottom actions.
 
 ## Components and interactions
 

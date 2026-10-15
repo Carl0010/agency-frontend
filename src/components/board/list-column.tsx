@@ -62,16 +62,16 @@ export function ListColumn({ list, cards, board, now, cardHref, dndDisabled, cla
       aria-label={`List ${list.name}`}
       data-testid="list-column"
       data-list-id={list.id}
-      className={`max-h-full w-full shrink-0 flex-col rounded-xl border border-border-subtle bg-subtle sm:w-72 ${sortable.isDragging ? 'opacity-40' : ''} ${className}`}
+      className={`max-h-full min-h-64 w-full shrink-0 flex-col rounded-xl border border-border bg-subtle sm:w-80 ${sortable.isDragging ? 'opacity-40' : ''} ${className}`}
     >
-      <header className="flex items-center gap-1 px-2 py-2">
+      <header className="flex shrink-0 items-center gap-2 px-3 py-3">
         <button
           type="button"
           {...sortable.attributes}
           {...sortable.listeners}
           aria-label={`Move list ${list.name}`}
           disabled={dndDisabled}
-          className="tap hidden cursor-grab rounded px-1 text-muted-foreground hover:bg-muted hover:text-secondary-foreground disabled:cursor-default sm:block"
+          className="tap hidden min-h-9 w-8 shrink-0 cursor-grab items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-secondary-foreground disabled:cursor-default disabled:opacity-40 sm:inline-flex"
         >
           <Icon name="grip" className="size-3.5" />
         </button>
@@ -86,20 +86,20 @@ export function ListColumn({ list, cards, board, now, cardHref, dndDisabled, cla
               if (e.key === 'Enter') e.currentTarget.blur();
               if (e.key === 'Escape') setEditing(false);
             }}
-            className="min-w-0 flex-1 rounded border border-ring px-1 text-sm font-semibold"
+            className="min-w-0 flex-1 rounded border border-ring px-2 py-1.5 text-sm font-semibold"
           />
         ) : (
           <h2 className="min-w-0 flex-1">
-            <button type="button" onClick={() => setEditing(true)} className="tap w-full truncate rounded px-1 text-left text-label font-semibold tracking-tight hover:bg-muted">
+            <button type="button" onClick={() => setEditing(true)} title={list.name} className="tap min-h-9 w-full truncate rounded-md text-left text-sm font-semibold tracking-normal hover:bg-muted">
               {list.name}
             </button>
           </h2>
         )}
-        <span className="text-xs text-muted-foreground" aria-label={`${list.cards.length} cards`}>
+        <span className="inline-flex h-6 min-w-6 shrink-0 items-center justify-center rounded-md border border-border bg-surface px-1.5 text-caption font-medium text-secondary-foreground" aria-label={`${cards.length} of ${list.cards.length} cards`}>
           {cards.length === list.cards.length ? list.cards.length : `${cards.length}/${list.cards.length}`}
         </span>
         <div className="relative">
-          <button type="button" aria-label={`List actions for ${list.name}`} aria-expanded={menu} onClick={() => setMenu((m) => !m)} className="tap rounded px-1.5 text-muted-foreground hover:bg-muted">
+          <button type="button" aria-label={`List actions for ${list.name}`} aria-expanded={menu} onClick={() => setMenu((m) => !m)} className="tap inline-flex min-h-9 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-muted active:bg-surface">
             <Icon name="more" />
           </button>
           {menu ? (
@@ -114,7 +114,8 @@ export function ListColumn({ list, cards, board, now, cardHref, dndDisabled, cla
           ) : null}
         </div>
       </header>
-      <div ref={drop.setNodeRef} className="flex min-h-10 flex-col gap-2 overflow-y-auto px-2 pb-1">
+      <div ref={drop.setNodeRef} data-testid="list-cards" className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto overscroll-contain px-3 pb-1">
+        {cards.length === 0 ? <p className="rounded-lg border border-dashed border-border px-3 py-6 text-center text-caption text-muted-foreground">{list.cards.length ? 'No matching cards' : 'No cards yet'}</p> : null}
         <SortableContext items={cards.map((c) => c.id)} strategy={verticalListSortingStrategy}>
           {cards.map((c) => (
             <SortableCard key={c.id} card={c} projectKey={board.project.key} now={now} href={cardHref(c.id)} disabled={dndDisabled} />
@@ -164,14 +165,14 @@ function AddCard({ listId, boardId }: { listId: string; boardId: string }) {
         onClick={() => setOpen(true)}
         data-testid="add-card-end"
         data-tour="add-card"
-        className="tap mx-2 my-2 rounded px-2 py-1 text-left text-sm text-secondary-foreground hover:bg-muted"
+        className="tap mx-3 mb-3 mt-2 min-h-9 shrink-0 rounded-md px-3 py-2 text-left text-label font-medium text-secondary-foreground hover:bg-muted active:bg-surface"
       >
         <span className="inline-flex items-center gap-2"><Icon name="plus" />Add card</span>
       </button>
     );
   }
   return (
-    <form onSubmit={(e) => void submit(e)} className="mx-2 my-1 space-y-1">
+    <form onSubmit={(e) => void submit(e)} className="mx-3 mb-3 mt-2 shrink-0 space-y-2">
       <Textarea
         autoFocus
         rows={2}
