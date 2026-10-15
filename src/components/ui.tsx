@@ -1,6 +1,6 @@
 'use client';
 
-import type { ButtonHTMLAttributes, InputHTMLAttributes, TextareaHTMLAttributes, SelectHTMLAttributes, HTMLAttributes, ReactNode } from 'react';
+import type { ButtonHTMLAttributes, InputHTMLAttributes, TextareaHTMLAttributes, SelectHTMLAttributes, HTMLAttributes, ReactNode, Ref } from 'react';
 import { AVATAR_COLORS } from '@/lib/content-colors';
 import { Icon, type IconName } from './icon';
 export { LABEL_BG } from '@/lib/content-colors';
@@ -10,6 +10,7 @@ import type { PersonRef } from '@/lib/types';
 export function Button({
   variant = 'primary', size = 'default', className = '', ...props
 }: ButtonHTMLAttributes<HTMLButtonElement> & {
+  ref?: Ref<HTMLButtonElement>;
   variant?: 'primary' | 'secondary' | 'ghost' | 'danger';
   size?: 'default' | 'sm' | 'icon';
 }) {
@@ -23,7 +24,7 @@ export function Button({
   return <button type="button" className={`ui-button tap disabled:pointer-events-none ${styles} ${sizes} ${className}`} {...props} />;
 }
 
-export function Input({ className = '', ...props }: InputHTMLAttributes<HTMLInputElement>) {
+export function Input({ className = '', ...props }: InputHTMLAttributes<HTMLInputElement> & { ref?: Ref<HTMLInputElement> }) {
   return <input className={`ui-input tap ${className}`} {...props} />;
 }
 

@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useState, type ReactNode } from 'react';
 import { ApiError } from '@/lib/api';
 import { SessionProvider } from '@/lib/session';
+import { ConfirmationProvider } from '@/components/confirmation';
 import { ToastProvider } from '@/components/toast';
 
 export function Providers({ children }: { children: ReactNode }) {
@@ -23,7 +24,7 @@ export function Providers({ children }: { children: ReactNode }) {
   return (
     <QueryClientProvider client={qc}>
       <SessionProvider>
-        <ToastProvider>{children}</ToastProvider>
+        <ToastProvider><ConfirmationProvider>{children}</ConfirmationProvider></ToastProvider>
       </SessionProvider>
     </QueryClientProvider>
   );

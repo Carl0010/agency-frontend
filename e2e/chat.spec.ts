@@ -92,9 +92,9 @@ test('chat: post, live second session, edit, thread, delete', async ({ browser }
   await expect(pane).toHaveCount(0);
 
   // Delete: a root with no replies disappears for everyone.
-  a.once('dialog', (d) => void d.accept());
   await message(a, 'Second message, revised').hover();
   await message(a, 'Second message, revised').getByRole('button', { name: 'Delete' }).click();
+  await a.getByRole('alertdialog', { name: 'Delete message?', exact: true }).getByRole('button', { name: 'Delete message', exact: true }).click();
   await expect(message(a, 'Second message, revised')).toHaveCount(0);
   await expect(message(b, 'Second message, revised')).toHaveCount(0, { timeout: 2_000 });
 

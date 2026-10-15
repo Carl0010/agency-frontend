@@ -2,6 +2,7 @@
 
 import { useQueryClient } from '@tanstack/react-query';
 import { useRef, useState, type DragEvent } from 'react';
+import { useConfirm } from '@/components/confirmation';
 import { useToast } from '@/components/toast';
 import { Button } from '@/components/ui';
 import { api, ApiError, errorMessage } from '@/lib/api';
@@ -42,6 +43,7 @@ export function Attachments({ cardId, attachments }: { cardId: string; attachmen
   const qc = useQueryClient();
   const toast = useToast();
   const { user } = useSession();
+  const confirmAction = useConfirm();
   const input = useRef<HTMLInputElement>(null);
   const [uploads, setUploads] = useState<Upload[]>([]);
   const [over, setOver] = useState(false);
@@ -90,7 +92,7 @@ export function Attachments({ cardId, attachments }: { cardId: string; attachmen
   }
 
   async function remove(a: Attachment) {
-    if (!window.confirm(`Delete ${a.filename}?`)) return;
+    if (!await confirmAction({ title: 'Delete attachment?', description: `“${a.filename}” will be permanently deleted from this card.`, confirmLabel: 'Delete attachment' })) return;
     try {
       await api.del(`/attachments/${a.id}`);
     } catch (err) {

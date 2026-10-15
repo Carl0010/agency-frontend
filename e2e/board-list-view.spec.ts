@@ -27,27 +27,48 @@ async function populate(request: APIRequestContext, account: Account) {
   await post(`/checklists/${checklist.id}/items`, { text: 'Check the welcome screen' });
 }
 
-test('Add list matches column header dimensions and preserves failed creation for retry', async ({ browser }) => {
+test('Add list creates a full column immediately and focuses its inline name with failure recovery', async ({ browser }, info) => {
   const { page } = await signupToBoard(browser, { viewport: { width: 1440, height: 1000 } });
   const tile = page.getByTestId('add-list-tile');
   const column = list(page, 'To do');
-  const [tileBox, columnBox, headerBox] = await Promise.all([tile.boundingBox(), column.boundingBox(), column.getByTestId('list-header').boundingBox()]);
+  const [tileBox, columnBox, headerBox, areaBox, emptyBox] = await Promise.all([tile.boundingBox(), column.boundingBox(), column.getByTestId('list-header').boundingBox(), column.getByTestId('list-cards').boundingBox(), column.getByTestId('list-empty-state').boundingBox()]);
   expect(tileBox!.width).toBe(columnBox!.width); expect(tileBox!.width).toBe(320);
   expect(tileBox!.height).toBe(headerBox!.height); expect(tileBox!.height).toBe(60);
-  await tile.click();
-  const name = page.getByRole('textbox', { name: 'List name', exact: true });
-  expect((await name.locator('..').boundingBox())!.width).toBe(320);
-  await name.fill('Client review');
+  expect(emptyBox!.height).toBeGreaterThan(200);
+  expect(Math.abs(areaBox!.height - 4 - emptyBox!.height)).toBeLessThan(2);
+  await page.screenshot({ path: info.outputPath('kanban-empty-height.png'), fullPage: true, animations: 'disabled', style: 'nextjs-portal { visibility: hidden; }' });
   await page.route('**/api/v1/boards/*/lists', (route) => route.fulfill({ status: 500, json: { error: { code: 'internal', message: 'Could not create the list.' } } }));
-  await page.getByRole('button', { name: 'Add list', exact: true }).click();
-  await expect(page.getByTestId('toast')).toContainText('Could not create the list.');
-  await expect(name).toHaveValue('Client review');
+  await tile.click();
+  await expect(page.getByTestId('toast').filter({ hasText: 'Could not create the list.' })).toBeVisible();
+  await expect(page.getByTestId('list-column')).toHaveCount(3);
+  await expect(tile).toBeEnabled();
   await page.unroute('**/api/v1/boards/*/lists');
-  await page.getByRole('button', { name: 'Add list', exact: true }).click();
-  await expect(list(page, 'Client review')).toBeVisible();
-  await expect(tile).toBeVisible();
+  await tile.click();
+  const created = list(page, 'New list');
+  const name = created.getByRole('textbox', { name: 'List name', exact: true });
+  await expect(page.getByTestId('list-column')).toHaveCount(4);
+  await expect(name).toBeFocused(); await expect(name).toBeInViewport();
+  await expect(name).toHaveValue('New list');
+  expect(await name.evaluate((element: HTMLInputElement) => element.selectionStart === 0 && element.selectionEnd === element.value.length)).toBe(true);
+  await expect(created.getByRole('button', { name: 'Cancel', exact: true })).toHaveCount(0);
+  await page.screenshot({ path: info.outputPath('list-created-inline.png'), fullPage: true, animations: 'disabled', style: 'nextjs-portal { visibility: hidden; }' });
+  await page.route('**/api/v1/lists/*', async (route) => {
+    if (route.request().method() === 'PATCH') await route.fulfill({ status: 500, json: { error: { code: 'internal', message: 'Could not save the list name.' } } });
+    else await route.continue();
+  });
+  await name.fill('Client review'); await name.press('Enter');
+  await expect(name).toHaveValue('Client review'); await expect(name).toBeEditable();
+  await expect(page.getByTestId('toast').filter({ hasText: 'Could not save the list name.' })).toBeVisible();
+  await page.unroute('**/api/v1/lists/*');
+  await name.press('Enter');
+  await expect(list(page, 'Client review').getByRole('button', { name: 'Client review', exact: true })).toBeVisible();
+  await tile.click();
+  await expect(list(page, 'New list').getByRole('textbox', { name: 'List name', exact: true })).toBeFocused();
+  await page.keyboard.press('Escape');
+  await expect(list(page, 'New list').getByRole('button', { name: 'New list', exact: true })).toBeVisible();
   await page.reload();
   await expect(list(page, 'Client review')).toBeVisible();
+  await expect(list(page, 'New list')).toBeVisible();
   await page.context().close();
 });
 
@@ -99,9 +120,9 @@ test('List view shares board filters, creation, ordering, list actions and the n
   await page.getByRole('group', { name: 'Actions for In progress', exact: true }).getByRole('button', { name: 'Rename', exact: true }).click();
   await progress.getByLabel('List name', { exact: true }).fill('In review'); await page.keyboard.press('Enter');
   await expect(list(page, 'In review')).toBeVisible();
-  page.once('dialog', (dialog) => void dialog.accept());
   await list(page, 'Done').getByRole('button', { name: 'List actions for Done' }).click();
   await page.getByRole('group', { name: 'Actions for Done', exact: true }).getByRole('button', { name: 'Archive list', exact: true }).click();
+  await page.getByRole('alertdialog', { name: 'Archive list?', exact: true }).getByRole('button', { name: 'Archive list', exact: true }).click();
   await expect(list(page, 'Done')).toHaveCount(0);
   await views.getByRole('button', { name: 'Kanban', exact: true }).click();
   await expect(list(page, 'In review').getByRole('button', { name: /Schedule the launch/ })).toBeVisible();
@@ -125,8 +146,9 @@ test('mobile List view shows every group, compact metadata and card creation wit
   await expect(page.locator('#board-view')).toBeHidden();
   await page.getByRole('button', { name: 'Close card' }).click(); await expect(card).toBeFocused();
   await page.getByTestId('add-list-tile').click();
+  await expect(page.getByRole('textbox', { name: 'List name', exact: true })).toBeFocused();
   await page.getByRole('textbox', { name: 'List name', exact: true }).fill('Client review');
-  await page.getByRole('button', { name: 'Add list', exact: true }).click();
+  await page.keyboard.press('Enter');
   const review = list(page, 'Client review'); await expect(review).toBeVisible();
   await review.getByTestId('add-card-end').click();
   await review.getByLabel('Card title').fill('Approve the final brief'); await page.keyboard.press('Enter');

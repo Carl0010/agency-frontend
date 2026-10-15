@@ -21,9 +21,14 @@ through existing API behavior.
 ## Kanban dimensions
 
 The Add list tile is 320px wide and 60px high: the column width and the shared
-list header height. Its creation form keeps the same 320px width. The existing
+list header height. Clicking it creates a `New list` through the API, scrolls to the new column and
+selects its inline name field. Enter or blur saves the name; Escape keeps the
+already-created list with its saved name. There is no Add/Cancel mini-form.
+Creation failure adds no column and leaves the tile available for retry; rename
+failure retains the entered name for retry. The existing
 one-list mobile Kanban layout is retained. Add card remains a separate tile
-below each list panel.
+below each list panel. Kanban columns fill the available board height; the
+empty dashed outline fills their remaining card area rather than hugging its text.
 
 Kanban lists drag from the whole header (including its title, count and padding),
 with no separate grip. The title remains the keyboard activator: Space lifts,
@@ -66,7 +71,7 @@ and subscription gates remain authoritative.
 
 ## Verification
 
-`e2e/board-list-view.spec.ts` covers exact Add list dimensions, failed creation
+`e2e/board-list-view.spec.ts` covers exact Add list dimensions, immediate creation, focused naming, failed creation/rename
 and retry, URL restoration, shared filtering/order, row drawer interactions,
 collapse/rename/archive, mobile creation, light/dark previews and overflow.
 Existing Kanban drag, card drawer and onboarding journeys remain regression

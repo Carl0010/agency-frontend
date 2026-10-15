@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Markdown } from '@/components/markdown';
+import { useConfirm } from '@/components/confirmation';
 import { useToast } from '@/components/toast';
 import { Avatar, Button, GuestChip } from '@/components/ui';
 import { MentionInput } from '@/components/card/mention-input';
@@ -71,6 +72,7 @@ export function MessageItem({
   linkFor: (m: Message) => string;
 }) {
   const toast = useToast();
+  const confirmAction = useConfirm();
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(message.body ?? '');
   const mine = message.author.id === myId;
@@ -91,7 +93,7 @@ export function MessageItem({
   }
 
   async function remove() {
-    if (!window.confirm('Delete this message?')) return;
+    if (!await confirmAction({ title: 'Delete message?', description: 'This message will be deleted. Thread replies remain available.', confirmLabel: 'Delete message' })) return;
     try {
       await api.del(`/messages/${message.id}`);
     } catch (err) {

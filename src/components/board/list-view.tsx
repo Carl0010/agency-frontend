@@ -13,26 +13,28 @@ import { AddList } from './add-list';
 import { ListHeader } from './list-header';
 
 /** A second presentation of the existing board query, preserving server order. */
-export function BoardListView({ board, filters, now, cardHref }: {
+export function BoardListView({ board, filters, now, cardHref, editingListId, onListCreated, onListEditFinished }: {
   board: Board; filters: BoardFilters; now: Date; cardHref: (id: string) => string;
+  editingListId: string | null; onListCreated: (id: string) => void; onListEditFinished: (id: string) => void;
 }) {
   const pathname = usePathname();
   return <div data-testid="board-list-view" className="@container min-h-0 flex-1 overflow-y-auto overscroll-contain p-4 sm:p-6">
     <div className="space-y-6">
-      {board.lists.map((list) => <ListGroup key={list.id} list={list} cards={list.cards.filter((card) => matchesFilters(card, filters, now))} board={board} now={now} cardHref={cardHref} pathname={pathname} />)}
-      <AddList boardId={board.id} layout="list" />
+      {board.lists.map((list) => <ListGroup startEditing={editingListId === list.id} onEditingFinished={() => onListEditFinished(list.id)} key={list.id} list={list} cards={list.cards.filter((card) => matchesFilters(card, filters, now))} board={board} now={now} cardHref={cardHref} pathname={pathname} />)}
+      <AddList boardId={board.id} onCreated={onListCreated} layout="list" />
     </div>
   </div>;
 }
 
-function ListGroup({ list, cards, board, now, cardHref, pathname }: {
+function ListGroup({ list, cards, board, now, cardHref, pathname, startEditing, onEditingFinished }: {
+  startEditing: boolean; onEditingFinished: () => void;
   list: BoardList; cards: CardTile[]; board: Board; now: Date; cardHref: (id: string) => string; pathname: string;
 }) {
   const [expanded, setExpanded] = useState(true);
   const contentId = useId();
   return <section aria-label={`List ${list.name}`} className="space-y-3" data-testid="list-group">
     <div className="overflow-hidden rounded-xl border border-border bg-surface">
-      <div className="bg-subtle"><ListHeader list={list} count={cards.length} boardId={board.id} leading={
+      <div className="bg-subtle"><ListHeader startEditing={startEditing} onEditingFinished={onEditingFinished} list={list} count={cards.length} boardId={board.id} leading={
         <button type="button" aria-label={`${expanded ? 'Collapse' : 'Expand'} ${list.name}`} aria-expanded={expanded} aria-controls={contentId} onClick={() => setExpanded((value) => !value)} className="tap inline-flex size-9 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-muted"><Icon name="chevron" className={`size-3.5 ${expanded ? 'rotate-90' : ''}`} /></button>
       } /></div>
       <div id={contentId} hidden={!expanded}>

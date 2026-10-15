@@ -2,6 +2,7 @@
 
 import { useQueryClient } from '@tanstack/react-query';
 import { useState, type FormEvent } from 'react';
+import { useConfirm } from '@/components/confirmation';
 import { useToast } from '@/components/toast';
 import { Button } from '@/components/ui';
 import { api, errorMessage } from '@/lib/api';
@@ -71,6 +72,7 @@ function ChecklistView({
   moveUp?: () => Promise<void>;
   moveDown?: () => Promise<void>;
 }) {
+  const confirmAction = useConfirm();
   const [editingTitle, setEditingTitle] = useState(false);
   const [newItem, setNewItem] = useState('');
   const items = [...checklist.items].sort((a, b) => a.position - b.position);
@@ -119,7 +121,7 @@ function ChecklistView({
         <IconButton label={`Move ${checklist.title} down`} onClick={moveDown}>↓</IconButton>
         <IconButton
           label={`Delete ${checklist.title}`}
-          onClick={() => (window.confirm(`Delete checklist “${checklist.title}”?`) ? run(() => api.del(`/checklists/${checklist.id}`)) : Promise.resolve())}
+          onClick={async () => { if (await confirmAction({ title: 'Delete checklist?', description: `“${checklist.title}” and all its items will be permanently deleted.`, confirmLabel: 'Delete checklist' })) await run(() => api.del(`/checklists/${checklist.id}`)); }}
         >
           ✕
         </IconButton>

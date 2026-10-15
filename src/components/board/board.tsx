@@ -77,6 +77,9 @@ export function BoardScreen({ boardId, projectId }: { boardId: string; projectId
   const params = useSearchParams();
   const now = useNow();
   const [drag, setDrag] = useState<Drag | null>(null);
+  const [editingListId, setEditingListId] = useState<string | null>(null);
+  const onListCreated = (id: string) => { setMobileListId(id); setEditingListId(id); };
+  const onListEditFinished = (id: string) => setEditingListId((current) => current === id ? null : current);
   const [mobileListId, setMobileListId] = useState<string | null>(null);
 
   useProjectRealtime(projectId);
@@ -244,7 +247,7 @@ export function BoardScreen({ boardId, projectId }: { boardId: string; projectId
         ) : null}
         {filtering ? <p className="mx-4 mt-3 shrink-0 text-caption text-muted-foreground sm:mx-6">{view === 'kanban' ? 'Filters are on — clear them to drag cards.' : 'Filters apply to cards in every list.'}</p> : null}
 
-        {view === 'list' ? <BoardListView board={shown} filters={filters} now={now} cardHref={cardHref} /> : <DndContext
+        {view === 'list' ? <BoardListView editingListId={editingListId} onListCreated={onListCreated} onListEditFinished={onListEditFinished} board={shown} filters={filters} now={now} cardHref={cardHref} /> : <DndContext
           sensors={sensors}
           collisionDetection={collision}
           onDragStart={onDragStart}
@@ -263,11 +266,13 @@ export function BoardScreen({ boardId, projectId }: { boardId: string; projectId
                   now={now}
                   cardHref={cardHref}
                   dndDisabled={filtering}
+                  startEditing={editingListId === l.id}
+                  onEditingFinished={() => onListEditFinished(l.id)}
                   className={l.id === selectedList?.id ? 'flex' : 'hidden sm:flex'}
                 />
               ))}
             </SortableContext>
-            <AddList boardId={boardId} />
+            <AddList boardId={boardId} onCreated={onListCreated} />
           </div>
           <DragOverlay>
             {activeCard ? (

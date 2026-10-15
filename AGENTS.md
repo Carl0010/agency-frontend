@@ -28,6 +28,8 @@ For navigation changes also read [sidebar responsibilities](docs/NAVIGATION.md).
   active; do not add a blocking backdrop, focus trap or document scroll lock.
 - Board presentations follow [docs/BOARD_VIEWS.md](docs/BOARD_VIEWS.md). Keep view/filter
   state in the URL and server ordering unchanged; reuse the shared list header and composers.
+- Use `useConfirm` from `components/confirmation.tsx` for confirmations. Browser
+  confirm/alert/prompt calls are lint errors; preserve API authorization and error handling.
 - A new token needs a purpose and documented foreground/background pairing. Run the contrast tests.
 - Light and dark modes are supported. Define paired semantic tokens and verify contrast in both.
   Theme preference is browser UI state; project settings and stars must come from the API.

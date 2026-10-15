@@ -164,7 +164,9 @@ themes. Add list uses a `border-hover` outline against the canvas for contrast.
 
 Keep list headings and the bottom Add card control outside the list's scrolling
 card area. Long lists scroll internally; users can still identify the list and
-create a card. Empty lists say **No cards yet**; filtered lists with no matches
+create a card. Empty outlines fill the available card area, with the message centered.
+Click Add list to create and focus its real column header instead of opening
+a separate creation form. Empty lists say **No cards yet**; filtered lists with no matches
 say **No matching cards**. Keep one Add card control per list as a separate bordered surface below the
 list panel, with a 12px gap. The form expands inside that separate tile.
 
@@ -238,3 +240,17 @@ OS. Theme is local presentation state, never workspace/project data.
 Board presentation rules live in [Board views](BOARD_VIEWS.md). List view reuses
 the Kanban data, header actions and card composer; compact rows respond to the
 content pane width, including when a card drawer is open.
+
+## Confirmation dialogs
+
+Use `useConfirm` from `src/components/confirmation.tsx`; `ConfirmationProvider`
+is mounted globally. Never call browser confirm, alert or prompt. Existing API
+actions stay in their callers and run only after acceptance. The shared modal
+uses a styled native dialog in the top layer, so it works above drawers and
+other dialogs in both themes, including the guest portal. It owns no business data.
+
+Give each action a specific title, consequence description and confirm verb.
+Destructive actions use the danger button; access grants may use primary. Cancel
+receives initial focus. Escape, close and backdrop dismiss without a mutation;
+Tab stays within the modal and closing restores focus. Requests queue instead
+of replacing one another. Provider teardown dismisses outstanding requests.
