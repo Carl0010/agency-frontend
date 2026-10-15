@@ -13,7 +13,7 @@ import { useWorkspace } from '@/lib/workspace';
 
 export const unreadKey = (workspaceId: string) => ['notifications', workspaceId, 'unread-count'] as const;
 
-/** Sidebar inbox with the unread count; live via `notification.created` / `notification.read`. */
+/** Module-rail inbox with the unread count; live via `notification.created` / `notification.read`. */
 export function NotificationBell({ active, onNavigate }: { active?: boolean; onNavigate?: () => void }) {
   const ws = useWorkspace();
   const qc = useQueryClient();
@@ -31,13 +31,14 @@ export function NotificationBell({ active, onNavigate }: { active?: boolean; onN
       href={`/w/${ws.slug}/inbox`}
       aria-label={n ? `Inbox, ${n} unread` : 'Inbox'}
       data-testid="notification-bell"
-      aria-current={active ? 'page' : undefined}
+      aria-current={active ? 'location' : undefined}
       onClick={onNavigate}
-      className="ui-nav-link tap"
+      className="ui-module-link tap relative"
+      title={n ? `Inbox, ${n} unread` : 'Inbox'}
     >
-      <Icon name="inbox" /><span>Inbox</span>
+      <Icon name="inbox" className="size-5" /><span>Inbox</span>
       {n ? (
-        <span data-testid="unread-badge" className="ml-auto min-w-5 rounded-full bg-primary px-1 text-center text-caption font-semibold leading-4 text-inverse-foreground">
+        <span data-testid="unread-badge" className="absolute right-1 top-1 min-w-4 rounded-full bg-primary px-1 text-center text-caption font-semibold leading-4 text-inverse-foreground">
           {n > 99 ? '99+' : n}
         </span>
       ) : null}

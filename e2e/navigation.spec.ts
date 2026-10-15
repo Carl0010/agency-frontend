@@ -5,6 +5,14 @@ test('the sidebar owns workspace and project destinations while headers retain l
   const { page, account } = await signupToBoard(browser, { viewport: { width: 1440, height: 1000 } });
   const sidebar = page.getByRole('complementary', { name: 'Workspace sidebar' });
   await expect(sidebar).toBeVisible();
+  const rail = page.getByRole('complementary', { name: 'Module rail' });
+  const modules = rail.getByRole('navigation', { name: 'Main modules' });
+  await expect(rail).toBeVisible();
+  expect((await rail.boundingBox())!.width).toBe(72);
+  const [railBox, sidebarBox] = await Promise.all([rail.boundingBox(), sidebar.boundingBox()]);
+  expect(railBox!.x + railBox!.width).toBe(sidebarBox!.x);
+  await expect(modules.getByRole('link', { name: 'Projects', exact: true })).toHaveAttribute('aria-current', 'location');
+  await expect(sidebar.getByRole('link', { name: 'Members', exact: true })).toHaveCount(0);
   await expect(sidebar.getByRole('link', { name: 'Board', exact: true })).toHaveAttribute('aria-current', 'page');
   await expect(sidebar.getByTestId('internal-badge')).toHaveText('Internal');
   await expect(page.getByTestId('workspace-header').getByRole('navigation')).toHaveCount(0);
@@ -23,12 +31,21 @@ test('the sidebar owns workspace and project destinations while headers retain l
   await expect(page.getByLabel('Search cards, comments and messages')).toBeFocused();
   await page.keyboard.press('Escape');
   await expect(page.getByTestId('command-palette')).toHaveCount(0);
-  await sidebar.getByRole('link', { name: 'Members', exact: true }).click();
+  await modules.getByRole('link', { name: 'Workspace', exact: true }).click();
   await expect(page).toHaveURL(/\/settings\/members$/);
   await expect(sidebar.getByRole('link', { name: 'Members', exact: true })).toHaveAttribute('aria-current', 'page');
+  await expect(modules.getByRole('link', { name: 'Workspace', exact: true })).toHaveAttribute('aria-current', 'location');
+  await expect(sidebar.getByRole('navigation', { name: 'Projects', exact: true })).toHaveCount(0);
+  await page.screenshot({ path: info.outputPath('module-workspace.png'), fullPage: true, style: 'nextjs-portal { visibility: hidden; }' });
+  await modules.getByRole('link', { name: 'Inbox', exact: true }).click();
+  await expect(page).toHaveURL(/\/inbox$/);
+  await expect(sidebar.getByRole('link', { name: 'All notifications' })).toHaveAttribute('aria-current', 'page');
+  await expect(modules.getByRole('link', { name: 'Inbox', exact: true })).toHaveAttribute('aria-current', 'location');
+  await modules.getByRole('link', { name: 'Projects', exact: true }).click();
+  await expect(sidebar.getByRole('link', { name: /^Projects/ })).toHaveAttribute('aria-current', 'page');
   await page.goto(account.boardUrl);
   await expect(list(page, 'To do')).toBeVisible();
-  await page.screenshot({ path: info.outputPath('sidebar-desktop.png'), fullPage: true });
+  await page.screenshot({ path: info.outputPath('sidebar-desktop.png'), fullPage: true, style: 'nextjs-portal { visibility: hidden; }' });
 
   await sidebar.getByRole('link', { name: /^Projects/ }).click();
   await page.getByRole('button', { name: 'New project' }).click();
@@ -51,7 +68,7 @@ test('mobile drawer traps focus, closes on navigation/Escape/backdrop, and hands
   await expect(drawer).toBeVisible();
   await page.keyboard.press('Shift+Tab');
   expect(await drawer.evaluate((element) => element.contains(document.activeElement))).toBe(true);
-  await page.screenshot({ path: info.outputPath('sidebar-mobile.png'), fullPage: true });
+  await page.screenshot({ path: info.outputPath('sidebar-mobile.png'), fullPage: true, style: 'nextjs-portal { visibility: hidden; }' });
   await page.keyboard.press('Escape');
   await expect(drawer).toHaveCount(0);
   await expect(trigger).toBeFocused();
@@ -72,6 +89,28 @@ test('mobile drawer traps focus, closes on navigation/Escape/backdrop, and hands
   await expect(drawer).toHaveCount(0);
   await expect(page.getByTestId('command-palette')).toBeVisible();
   await expect(page.getByLabel('Search cards, comments and messages')).toBeFocused();
+  await page.keyboard.press('Escape');
+
+  await trigger.click();
+  const modules = drawer.getByRole('navigation', { name: 'Main modules' });
+  expect(await drawer.getByTestId('module-rail').evaluate((element) => element.parentElement!.getBoundingClientRect().width)).toBe(72);
+  await modules.getByRole('link', { name: 'Workspace', exact: true }).click();
+  await expect(drawer).toHaveCount(0);
+  await expect(page).toHaveURL(/\/settings\/members$/);
+  await trigger.click();
+  await expect(modules.getByRole('link', { name: 'Workspace', exact: true })).toHaveAttribute('aria-current', 'location');
+  await expect(drawer.getByRole('link', { name: 'Members', exact: true })).toHaveAttribute('aria-current', 'page');
+  await expect(drawer.getByRole('link', { name: 'Board', exact: true })).toHaveCount(0);
+  await modules.getByRole('link', { name: 'Projects', exact: true }).click();
+  await expect(page).toHaveURL(/\/projects$/);
+  await expect(drawer).toHaveCount(0);
+  await trigger.click();
+  await expect(drawer.getByRole('link', { name: 'Import', exact: true })).toBeVisible();
+  await modules.getByRole('link', { name: 'Inbox', exact: true }).click();
+  await expect(page).toHaveURL(/\/inbox$/);
+  await expect(drawer).toHaveCount(0);
+  await trigger.click();
+  await expect(drawer.getByRole('link', { name: 'All notifications' })).toBeVisible();
   await page.keyboard.press('Escape');
 
   await trigger.click();

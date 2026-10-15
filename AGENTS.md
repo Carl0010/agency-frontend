@@ -20,7 +20,8 @@ For navigation changes also read [sidebar responsibilities](docs/NAVIGATION.md).
 - `src/lib/content-colors.ts` owns mappings for user-selected labels, projects and avatars.
 - Use semantic color utilities. `design-system/semantic-colors` is an ESLint error.
 - Keep business logic, API behavior and audience boundaries separate from visual changes.
-- The workspace sidebar owns destinations, search, inbox and account controls.
+- The 72px module rail owns Projects, Inbox and Workspace selection. The 256px
+  contextual sidebar owns the selected module's links, search and account controls.
   Page headers own local actions. Do not duplicate a project rail or member tabs.
 - Member card details use a non-modal right drawer. Keep desktop board controls
   active; do not add a blocking backdrop, focus trap or document scroll lock.

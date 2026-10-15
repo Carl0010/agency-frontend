@@ -121,11 +121,12 @@ text to avoid iOS zoom. Small avatar initials are a limited exception to the
   Default maximum width is 1024px; forms/settings may use a narrower max width.
 - `PageHeader` puts the title/description on the left and actions on the right,
   stacking naturally on small screens. Use one primary action per action group.
-- Use one 256px workspace sidebar and 320px board lanes on desktop. Below 640px,
+- Use a 72px module rail beside the 256px contextual sidebar, with 320px
+  board lanes on desktop. Below 640px,
   preserve the existing one-list-at-a-time board behavior.
 - Follow [navigation ownership](NAVIGATION.md): workspace and project destinations
-  live in the sidebar; headers keep location and local actions. Do not add a
-  second project rail or duplicate member Board/Chat/Team tabs.
+  live in the module rail and contextual sidebar; headers keep location and
+  local actions. Do not add a duplicate project rail or Board/Chat/Team tabs.
 - Card details use the non-modal right inspector in
   [navigation ownership](NAVIGATION.md#card-inspector). Keep the board usable
   beside it and use a single content column inside the drawer.

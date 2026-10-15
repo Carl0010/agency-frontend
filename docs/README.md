@@ -2,7 +2,7 @@
 
 Read [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md) before changing the UI. It contains
 the research references, palette, typography, spacing, components and agent rules.
-Read [NAVIGATION.md](NAVIGATION.md) for sidebar, header and content ownership.
+Read [NAVIGATION.md](NAVIGATION.md) for module rail, sidebar, header and content ownership.
 
 The implementation is global: tokens in `src/styles/tokens.css`, imported by
 the root stylesheet, plus shared controls in `src/components/ui.tsx`. All
@@ -18,7 +18,8 @@ These images come from the actual app, with synthetic test data:
 - [Desktop board](previews/board-desktop.png)
 - [Desktop card drawer](previews/card-drawer-desktop.png)
 - [Mobile card drawer](previews/card-drawer-mobile.png)
-- [Desktop workspace sidebar](previews/sidebar-desktop.png)
+- [Desktop module rail and project sidebar](previews/sidebar-desktop.png)
+- [Workspace module sidebar](previews/module-workspace.png)
 - [Mobile navigation drawer](previews/sidebar-mobile.png)
 - [Mobile projects](previews/projects-mobile.png)
 - [Mobile login and focused field](previews/login-mobile.png)
@@ -30,8 +31,8 @@ every page layout. The app supports light mode in this slice.
 
 - Web lint and typechecking pass.
 - 93 unit tests pass, including 29 token contrast checks and the guest import boundary.
-- All 23 Chrome browser journeys pass, covering sidebar destinations and mobile
-  dismissal/focus, search, onboarding, chat/realtime, guest isolation, import,
+- All 23 Chrome browser journeys pass, covering top-level modules, contextual
+  destinations, mobile dismissal/focus, search, onboarding, chat/realtime, guest isolation, import,
   billing, board behavior and the non-modal card drawer (card switching, drafts,
   independent scrolling, filters, history and full-page links). Mobile checks
   include reduced motion, 44px targets, overflow and one-list board behavior.

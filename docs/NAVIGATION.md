@@ -1,47 +1,67 @@
 # Sidebar and page responsibilities
 
-The member workspace has one persistent left sidebar, shared across `/w/[slug]/*`.
-It replaces the previous workspace top navigation and page-specific project rail.
-The guest portal retains its separate navigation and imports none of this shell.
+Member routes (`/w/[slug]/*`) use two navigation levels: a **72px module
+rail on the far left**, followed by the existing **256px contextual sidebar**.
+The guest portal keeps its separate navigation and imports none of this shell.
 
 ## Ownership
 
 | Surface | Responsibility | Contents |
 | --- | --- | --- |
-| Sidebar identity | Which workspace am I in? | Workspace name and brand; link to projects |
-| Sidebar quick access | Find work and see activity | Search palette and live inbox count |
-| Sidebar workspace destinations | Move between workspace areas | Projects overview and import |
-| Sidebar client projects | Switch projects and their work surfaces | Project list and unread dots; current project's Board, Chat and internal Team links |
-| Sidebar workspace settings | Manage the workspace and personal preferences | Members, notifications, owner-only billing |
+| Module rail | Switch high-level areas | Projects, Inbox with live unread count, Workspace |
+| Sidebar identity | Identify workspace and selected module | Workspace name and current module label |
+| Sidebar quick access | Find work across the workspace | Global search palette |
+| Projects sidebar | Browse client work and project surfaces | Projects overview, import, project list, current project's Board/Chat/internal Team |
+| Inbox sidebar | Browse activity and configure delivery | All notifications and notification preferences |
+| Workspace sidebar | Manage people, preferences and subscription | Members, notifications, owner-only billing |
 | Sidebar footer | Resume setup, understand trial status, account actions | Setup progress, trial link, user identity/role, log out |
 | Compact app header | Location and mobile navigation access | Breadcrumb/location text and mobile menu button |
 | Project/page header | Describe and act on the current view | Project title, sharing, collaborators, archive; page-specific primary actions |
 | Content toolbars | Manipulate the current content | Card filters, list selection, message/thread controls |
 | Persistent content banners | Show urgent state and recovery actions | Read-only/payment warnings and exports; push permission explanation |
 
-Navigation answers where to go. Page actions answer what to do here. Do not
-move card creation, drag controls, message composition or destructive operations
-into the sidebar. Do not recreate Board/Chat/Team tabs above member content.
-Sharing remains an action beside the project title. Import is available in the
-sidebar and may remain a contextual shortcut on the projects overview.
+The module rail is global navigation. The neighboring sidebar shows only the
+selected module's destinations. Do not duplicate all workspace settings inside
+the Projects sidebar or repeat Board/Chat/Team tabs above content. Page actions
+remain local: card creation, dragging, message composition, sharing and
+destructive operations belong beside the content they affect.
+
+## Module destinations
+
+- **Projects** opens the projects overview. Project boards, cards, client Chat,
+  internal Team, import and global search results belong to this module.
+- **Inbox** opens workspace activity, retaining its live unread badge across
+  all member screens. The sidebar's notification preferences link moves into
+  the Workspace module because preferences live under workspace settings.
+- **Workspace** opens Members. The contextual sidebar contains Members,
+  Notifications and owner-only Billing; existing API permissions still apply.
+
+Module selection comes from the current URL, including direct links, reloads
+and browser history. It is not a second copy of router state or server data.
 
 ## Responsive behavior
 
-- At 1024px and above, the sidebar is 256px wide and fills the viewport height.
-- Its middle scrolls independently; workspace identity and account/status footer
-  stay accessible. Long workspace and project names truncate instead of widening it.
-- Below 1024px, the compact header exposes **Open navigation**. The sidebar
-  appears in a native modal drawer up to 320px wide with space for the backdrop.
-- The native dialog contains keyboard focus and makes the rest of the app inert.
-  Escape, the close button, backdrop click, selecting a destination and resizing
-  to desktop close it. Closing restores focus to the opener when it still exists.
-- Search closes the navigation modal before opening the search palette.
-- Mobile still shows one board list at a time below 640px. The sidebar does not
+- At 1024px and above, the 72px rail and 256px sidebar are adjacent and fill the
+  viewport height. The content begins after 328px of navigation.
+- Each navigation area's middle scrolls independently. Workspace identity and
+  account/status footer remain accessible. Long names truncate.
+- Below 1024px, **Open navigation** opens one native modal drawer up to 320px
+  wide. It contains the same 72px rail and a flexible contextual sidebar. Both
+  navigation levels leave the board's normal mobile work area available when closed.
+- The drawer contains keyboard focus and makes background content inert.
+  Escape, close, backdrop click, selecting a destination and resizing to desktop
+  close it. Route changes finish closing the old drawer before it can be reopened.
+  Closing restores focus to the opener when it still exists.
+- Module destinations close the mobile drawer just like other destinations;
+  reopening shows the selected module's links. Search closes it before opening
+  the search palette. All rail entries have icons, visible names and focus states.
+- Mobile still shows one board list at a time below 640px. Navigation does not
   replace that content control or alter drag-and-drop behavior.
 
 ## Active and unread states
 
-Use `aria-current="page"` for the selected destination. The current project
+The selected module uses `aria-current="location"` in the rail. Use
+`aria-current="page"` for the selected destination in the contextual sidebar. The current project
 parent uses `aria-current="location"` and expands its three destinations.
 Card routes and additional boards retain Board as their selected destination.
 Keep the Team link's lock icon and **Internal** label visible.
@@ -89,7 +109,9 @@ full-page layouts. Keep member drawer code outside the guest portal tree.
 ## Implementation
 
 - `components/navigation/workspace-shell.tsx`: workspace data/subscription,
-  responsive shell, location header and modal visibility.
+  adjacent navigation levels, responsive shell, location header and drawer visibility.
+- `components/navigation/module-rail.tsx`: high-level module links and brand.
+- `components/navigation/workspace-modules.ts`: module labels and URL classification.
 - `components/navigation/workspace-sidebar.tsx`: navigation sections, current
   project destinations and account footer. Projects share the existing TanStack
   query key; loading, failure/retry and empty states are explicit.
@@ -103,7 +125,8 @@ details stay owner-only; do not infer extra permissions from visible links.
 
 ## Verification
 
-`e2e/navigation.spec.ts` covers destination ownership, active states, local
+`e2e/navigation.spec.ts` covers the exact 72px rail width, module switching,
+contextual destination ownership, active states, local
 sharing, mobile focus containment/restoration, dismissal, search handoff and
 viewport changes. Existing guest, onboarding, chat and board journeys exercise
 their unchanged workflows. `e2e/card-drawer.spec.ts` verifies board interaction,
