@@ -94,7 +94,7 @@ test('at 375px, card tiles keep their full content and the card sheet has 44px t
 
   // Card detail: full-screen sheet; inline title edit and the due "Done" box are tappable.
   await tiles.first().click();
-  const sheet = page.getByTestId('card-modal');
+  const sheet = page.getByTestId('card-drawer');
   await expect(sheet.getByTestId('card-title')).toBeVisible();
   await sheet.getByTestId('card-title').click();
   await expect(sheet.getByLabel('Card title')).toBeFocused();

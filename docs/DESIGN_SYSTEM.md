@@ -126,6 +126,9 @@ text to avoid iOS zoom. Small avatar initials are a limited exception to the
 - Follow [navigation ownership](NAVIGATION.md): workspace and project destinations
   live in the sidebar; headers keep location and local actions. Do not add a
   second project rail or duplicate member Board/Chat/Team tabs.
+- Card details use the non-modal right inspector in
+  [navigation ownership](NAVIGATION.md#card-inspector). Keep the board usable
+  beside it and use a single content column inside the drawer.
 - Control radius: 6px (`rounded-md`). Cards: 8px. Panels/dialogs: 12px.
   Fully rounded shapes are reserved for avatars, compact pills and status dots.
 - Prefer borders to shadows. `shadow-sm` for subtle controls/cards, `shadow-md`

@@ -2,7 +2,7 @@
 
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useRef, type KeyboardEvent } from 'react';
 import { Icon } from '@/components/icon';
 import { DuePill } from '@/components/due-pill';
@@ -65,6 +65,7 @@ export function CardTileView({ card, projectKey, now, dragging }: { card: Tile; 
 /** A tile that can be dragged with mouse, touch (long-press) or keyboard (Space). Enter or click opens it. */
 export function SortableCard({ card, projectKey, now, href, disabled }: { card: Tile; projectKey: string; now: Date; href: string; disabled?: boolean }) {
   const router = useRouter();
+  const selected = usePathname().endsWith(`/c/${card.id}`);
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: card.id,
     data: { type: 'card', listId: card.listId },
@@ -92,11 +93,15 @@ export function SortableCard({ card, projectKey, now, href, disabled }: { card: 
       onKeyDown={onKeyDown}
       onClick={open}
       role="button"
+      // Filtering disables sorting, while opening the card remains available.
+      aria-disabled={undefined}
       aria-label={`${projectKey}-${card.number}: ${card.title}`}
       data-testid="card-tile"
       data-tour="card"
       data-card-id={card.id}
-      className={`tap shrink-0 cursor-pointer rounded-lg focus-visible:outline-2 focus-visible:outline-ring ${isDragging ? 'opacity-40' : ''}`}
+      aria-expanded={selected}
+      aria-controls={selected ? 'card-drawer' : undefined}
+      className={`tap shrink-0 cursor-pointer rounded-lg focus-visible:outline-2 focus-visible:outline-ring ${isDragging ? 'opacity-40' : ''} ${selected ? 'ring-2 ring-primary-border' : ''}`}
     >
       <CardTileView card={card} projectKey={projectKey} now={now} />
     </div>

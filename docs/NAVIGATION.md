@@ -53,6 +53,39 @@ desktop/mobile lists, which would double-count incoming activity.
 Creating a project and finishing an import invalidate both project and channel
 queries, so the persistent sidebar discovers new destinations without a reload.
 
+## Card inspector
+
+Opening a member card from a board uses a non-modal right drawer in the board's
+intercepted `@modal` route slot. The URL still identifies the card.
+
+- At 768px and above, the board and drawer share the available work area. The
+  drawer is 448px wide, 512px from 1280px, and 576px from 1536px. The board's
+  lists remain horizontally scrollable beside it; there is no backdrop, page
+  scroll lock or focus trap. Clicking another tile switches the inspector.
+- Below 768px, the drawer fills the work area below workspace navigation.
+  The board remains mounted but is hidden, including its covered keyboard
+  controls, until the drawer closes. Workspace navigation remains available.
+- The drawer owns card editing and an independent content scroll area. Its
+  header keeps Close, Open card as full page, and desktop Focus board available.
+  The selected tile has an expanded state and a visible outline.
+- Opening focuses the drawer; closing returns focus to the selected tile when
+  focus is still in the drawer. Navigation through the board must not have its
+  focus stolen. Tab can leave the drawer normally. Escape inside the drawer
+  closes it unless an inline editor or popover consumes the key. Board controls
+  retain their own Escape behavior.
+- Closing returns to the board with the current filters. Browser Back/Forward
+  dismiss/reopen the inspector. Reloading or opening a direct card URL renders
+  the existing full-page detail. Open card as full page explicitly bypasses
+  route interception with a normal anchor.
+- Card switches remount card-specific editors and reset inspector scrolling.
+  Description drafts retain their existing per-card local-storage keys.
+- A loading or unavailable card stays inside the drawer, with Close and the
+  board still available. Existing API failures and permissions are preserved.
+
+`components/card/card-drawer.tsx` owns inspector behavior and chrome.
+`components/card/card-detail.tsx` owns card content, with compact drawer and
+full-page layouts. Keep member drawer code outside the guest portal tree.
+
 ## Implementation
 
 - `components/navigation/workspace-shell.tsx`: workspace data/subscription,
@@ -73,5 +106,7 @@ details stay owner-only; do not infer extra permissions from visible links.
 `e2e/navigation.spec.ts` covers destination ownership, active states, local
 sharing, mobile focus containment/restoration, dismissal, search handoff and
 viewport changes. Existing guest, onboarding, chat and board journeys exercise
-their unchanged workflows. `portal-bundle.spec.ts` explicitly forbids the entire
+their unchanged workflows. `e2e/card-drawer.spec.ts` verifies board interaction,
+card switching and drafts, filters, focus, mobile layout, history, direct links
+and unavailable-card recovery. `portal-bundle.spec.ts` explicitly forbids the entire
 member navigation directory in the guest portal's transitive import graph.

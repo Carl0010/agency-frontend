@@ -19,8 +19,8 @@ import { Comments } from './comments';
 
 const LABEL_COLORS = ['grey', 'red', 'orange', 'yellow', 'green', 'teal', 'blue', 'purple', 'pink', 'brown'] as const;
 
-/** Card detail (§3.3). Rendered inside the board modal and as a full page on hard load. */
-export function CardDetail({ cardId, boardHref }: { cardId: string; boardHref: string }) {
+/** Card detail (§3.3). Rendered inside the board drawer and as a full page on hard load. */
+export function CardDetail({ cardId, boardHref, layout = 'page' }: { cardId: string; boardHref: string; layout?: 'page' | 'drawer' }) {
   const qc = useQueryClient();
   const toast = useToast();
   const now = useNow();
@@ -46,10 +46,39 @@ export function CardDetail({ cardId, boardHref }: { cardId: string; boardHref: s
     return <p className="p-8 text-center text-secondary-foreground">{card.error instanceof ApiError && card.error.status === 404 ? 'This card does not exist or you cannot see it.' : errorMessage(card.error)}</p>;
   }
   const c = card.data;
+  const createdBy = (
+    <p className="text-secondary-foreground">
+      Created by <span className="font-medium text-foreground">{c.createdBy.name}</span>
+      {!c.createdBy.active ? ' (deactivated)' : ''} · {timeAgo(c.createdAt, now)}
+    </p>
+  );
+  const actions = (
+    <>
+      <MoveToList card={c} onMove={(listId) => mutate(() => api.patch<CardTile>(`/cards/${c.id}/move`, { listId, beforeCardId: null }))} />
+      <div className="flex flex-wrap gap-2">
+        {c.archivedAt ? null : (
+          <Button variant="secondary" onClick={() => void mutate(() => api.post<CardTile>(`/cards/${c.id}/archive`))}>
+            Archive
+          </Button>
+        )}
+        <Button
+          variant="secondary"
+          onClick={() => {
+            void navigator.clipboard
+              .writeText(`${window.location.origin}${boardHref}/c/${c.id}`)
+              .then(() => toast('Link copied.', 'info'))
+              .catch(() => toast('Could not copy the link.'));
+          }}
+        >
+          Copy link
+        </Button>
+      </div>
+    </>
+  );
 
   return (
-    <div className="flex flex-col gap-6 lg:flex-row" data-testid="card-detail">
-      <div className="min-w-0 space-y-6 lg:w-[65%]">
+    <div className={`flex flex-col gap-6 ${layout === 'page' ? 'lg:flex-row' : ''}`} data-testid="card-detail">
+      <div className={`min-w-0 space-y-6 ${layout === 'page' ? 'lg:w-[65%]' : ''}`}>
         {c.archivedAt ? (
           <div role="status" className="flex items-center justify-between rounded-md bg-warning-subtle px-3 py-2 text-sm text-warning-text">
             This card is archived.
@@ -65,7 +94,9 @@ export function CardDetail({ cardId, boardHref }: { cardId: string; boardHref: s
           <Title card={c} onSave={(title) => mutate(() => api.patch<CardTile>(`/cards/${c.id}`, { title }))} />
         </header>
 
-        <div className="flex flex-wrap gap-x-8 gap-y-4">
+        {layout === 'drawer' ? <div className="space-y-3 rounded-lg border border-border bg-background p-3 text-sm">{actions}</div> : null}
+
+        <div className={`flex gap-y-4 ${layout === 'drawer' ? 'flex-col border-b border-border pb-6' : 'flex-wrap gap-x-8'}`}>
           <Field label="Assignees">
             <Assignees card={c} onToggle={(userId, on) => mutate(() => (on ? api.post<CardTile>(`/cards/${c.id}/assignees/${userId}`) : api.del<CardTile>(`/cards/${c.id}/assignees/${userId}`)))} />
           </Field>
@@ -83,33 +114,10 @@ export function CardDetail({ cardId, boardHref }: { cardId: string; boardHref: s
           <Attachments cardId={c.id} attachments={c.attachments} />
           <Comments cardId={c.id} />
         </MentionScopeContext.Provider>
+        {layout === 'drawer' ? <div className="border-t border-border pt-4 text-caption">{createdBy}</div> : null}
       </div>
 
-      <aside className="space-y-4 text-sm lg:w-[35%]">
-        <p className="text-secondary-foreground">
-          Created by <span className="font-medium text-foreground">{c.createdBy.name}</span>
-          {!c.createdBy.active ? ' (deactivated)' : ''} · {timeAgo(c.createdAt, now)}
-        </p>
-        <MoveToList card={c} onMove={(listId) => mutate(() => api.patch<CardTile>(`/cards/${c.id}/move`, { listId, beforeCardId: null }))} />
-        <div className="flex flex-wrap gap-2">
-          {c.archivedAt ? null : (
-            <Button variant="secondary" onClick={() => void mutate(() => api.post<CardTile>(`/cards/${c.id}/archive`))}>
-              Archive
-            </Button>
-          )}
-          <Button
-            variant="secondary"
-            onClick={() => {
-              void navigator.clipboard
-                .writeText(`${window.location.origin}${boardHref}/c/${c.id}`)
-                .then(() => toast('Link copied.', 'info'))
-                .catch(() => toast('Could not copy the link.'));
-            }}
-          >
-            Copy link
-          </Button>
-        </div>
-      </aside>
+      {layout === 'page' ? <aside className="space-y-4 text-sm lg:w-[35%]">{createdBy}{actions}</aside> : null}
     </div>
   );
 }
