@@ -17,7 +17,7 @@ The guest portal keeps its separate navigation and imports none of this shell.
 | Workspace sidebar | Manage people, preferences and subscription | Members, notifications, owner-only billing |
 | Sidebar footer | Resume setup, understand trial status, account actions | Setup progress, trial link, user identity/role, log out |
 | Project/page header | Describe and act on the current view | Project title, sharing, collaborators, archive; page-specific primary actions |
-| Content toolbars | Manipulate the current content | Card filters, list selection, message/thread controls |
+| Content toolbars | Manipulate the current content | Kanban/List presentation, card filters, list selection, message/thread controls |
 | Persistent content banners | Show urgent state and recovery actions | Read-only/payment warnings and exports; push permission explanation |
 
 The module rail is global navigation. The neighboring sidebar shows only the
@@ -156,3 +156,9 @@ initialization uses the saved preference, otherwise the OS preference. Explicit
 choices persist across navigation/reloads and synchronize across tabs. Storage
 failure still allows switching for the current page. Shared tokens theme all
 routes, including auth and portal; member navigation remains excluded from portal.
+
+## Board presentations
+
+[Kanban and List](BOARD_VIEWS.md) share filters, card routes and API state.
+The presentation switch belongs with board content, never in the app bar or
+sidebar. Preserve `view=list` and filters when opening/closing card details.

@@ -149,6 +149,7 @@ piece of information. Reuse the semantic type and color tokens above.
 | Card title | 15px / 24px, medium | Up to three visible lines; full title in the control label and tooltip |
 | Labels and facts | 12px / 16px | Readable label names, due state, checklist/file/comment counts |
 | Card footer | 12px / 16px key; 24px avatars | Identity and ownership in a separate row, even for simple cards |
+| Add list tile | 320px × 60px | Matches column width and the shared list header height |
 | Desktop list | 320px wide; at least 256px tall | Enough text width and a useful empty/drop area |
 | Board gutter | 16px mobile / 24px desktop | Aligns project header, filtering and lists |
 | Between lists / cards | 16px / 12px | Clear grouping without compressing card content |
@@ -227,3 +228,7 @@ Primary fills use `primary-foreground`; inverse/status fills use
 The app bar's labelled toggle saves a browser preference. A before-paint root
 script prevents a light flash on reload; without a saved choice it follows the
 OS. Theme is local presentation state, never workspace/project data.
+
+Board presentation rules live in [Board views](BOARD_VIEWS.md). List view reuses
+the Kanban data, header actions and card composer; compact rows respond to the
+content pane width, including when a card drawer is open.

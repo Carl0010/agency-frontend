@@ -19,11 +19,11 @@ import { horizontalListSortingStrategy, SortableContext, sortableKeyboardCoordin
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { useMemo, useState, type FormEvent } from 'react';
+import { useMemo, useState } from 'react';
 import { Icon } from '@/components/icon';
 import { ProjectActions } from '@/components/project-chrome';
 import { useToast } from '@/components/toast';
-import { Avatar, Button, Input, Spinner } from '@/components/ui';
+import { Avatar, Button, Spinner } from '@/components/ui';
 import { api, errorMessage } from '@/lib/api';
 import { findCard, moveCardLocal, moveListLocal, upsertCard, upsertList } from '@/lib/board-state';
 import { isFiltering, matchesFilters, parseFilters, writeFilters, type BoardFilters } from '@/lib/filters';
@@ -31,7 +31,8 @@ import { useProjectRealtime } from '@/lib/realtime';
 import type { Board, CardTile, Label, Member, Page } from '@/lib/types';
 import { useNow } from '@/lib/use-now';
 import { useWorkspace } from '@/lib/workspace';
-import { formText } from '@/lib/form';
+import { AddList } from './add-list';
+import { BoardListView } from './list-view';
 import { CardTileView } from './card-tile';
 import { FilterBar } from './filter-bar';
 import { ListColumn } from './list-column';
@@ -79,6 +80,14 @@ export function BoardScreen({ boardId, projectId }: { boardId: string; projectId
     router.replace(next ? `${pathname}?${next}` : pathname, { scroll: false });
   };
   const filtering = isFiltering(filters);
+  const view = params.get('view') === 'list' ? 'list' : 'kanban';
+  const setView = (nextView: 'kanban' | 'list') => {
+    setDrag(null); // A cancelled drag preview must never become the other view's data.
+    const next = new URLSearchParams(params.toString());
+    if (nextView === 'list') next.set('view', 'list'); else next.delete('view');
+    const query = next.toString();
+    router.push(query ? `${pathname}?${query}` : pathname, { scroll: false });
+  };
 
   const sensors = useSensors(
     useSensor(MouseSensor, { activationConstraint: { distance: 6 } }),
@@ -194,9 +203,16 @@ export function BoardScreen({ boardId, projectId }: { boardId: string; projectId
             <ArchivedCards boardId={boardId} cardHref={cardHref} />
           </div>
         </div>
+        <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-border bg-surface px-4 py-2 sm:px-6">
+          <div role="group" aria-label="Board view" className="inline-flex gap-1 rounded-lg border border-border bg-background p-1">
+            <button type="button" aria-pressed={view === 'kanban'} onClick={() => setView('kanban')} className={`ui-button tap ${view === 'kanban' ? 'bg-surface text-foreground shadow-sm' : 'text-muted-foreground hover:bg-subtle'}`}><Icon name="board" />Kanban</button>
+            <button type="button" aria-pressed={view === 'list'} onClick={() => setView('list')} className={`ui-button tap ${view === 'list' ? 'bg-surface text-foreground shadow-sm' : 'text-muted-foreground hover:bg-subtle'}`}><Icon name="list" />List</button>
+          </div>
+          <p className="text-caption text-muted-foreground">{view === 'list' ? 'Cards grouped by list' : 'Arrange cards across lists'}</p>
+        </div>
         <FilterBar filters={filters} onChange={setFilters} members={activeMembers} labels={labels.data?.data ?? []} />
 
-        {shown.lists.length ? (
+        {view === 'kanban' && shown.lists.length ? (
           <div className="flex shrink-0 gap-2 overflow-x-auto border-b border-border bg-surface px-4 py-2 sm:hidden" role="tablist" aria-label="Lists">
             {shown.lists.map((l) => (
               <button
@@ -216,9 +232,9 @@ export function BoardScreen({ boardId, projectId }: { boardId: string; projectId
         {totalCards === 0 && !filtering ? (
           <p className="mx-4 mt-4 shrink-0 rounded-lg border border-primary-border bg-primary-subtle px-4 py-3 text-label text-primary-text sm:mx-6">Add your first card to get started.</p>
         ) : null}
-        {filtering ? <p className="mx-4 mt-3 shrink-0 text-caption text-muted-foreground sm:mx-6">Filters are on — clear them to drag cards.</p> : null}
+        {filtering ? <p className="mx-4 mt-3 shrink-0 text-caption text-muted-foreground sm:mx-6">{view === 'kanban' ? 'Filters are on — clear them to drag cards.' : 'Filters apply to cards in every list.'}</p> : null}
 
-        <DndContext
+        {view === 'list' ? <BoardListView board={shown} filters={filters} now={now} cardHref={cardHref} /> : <DndContext
           sensors={sensors}
           collisionDetection={collision}
           onDragStart={onDragStart}
@@ -252,43 +268,9 @@ export function BoardScreen({ boardId, projectId }: { boardId: string; projectId
               <div className="w-80 rounded-xl border border-border bg-subtle p-4 text-sm font-semibold shadow-lg">{activeList.name}</div>
             ) : null}
           </DragOverlay>
-        </DndContext>
+        </DndContext>}
       </div>
     </div>
-  );
-}
-
-function AddList({ boardId }: { boardId: string }) {
-  const qc = useQueryClient();
-  const toast = useToast();
-  const [open, setOpen] = useState(false);
-
-  async function onSubmit(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    const formEl = e.currentTarget;
-    const name = formText(new FormData(formEl), 'name');
-    if (!name) return;
-    try {
-      const view = await api.post<{ id: string; boardId: string; name: string; position: number }>(`/boards/${boardId}/lists`, { name });
-      qc.setQueryData<Board>(['board', boardId], (b) => (b ? upsertList(b, view) : b));
-      formEl.reset();
-    } catch (err) {
-      toast(errorMessage(err));
-    }
-  }
-
-  return open ? (
-    <form onSubmit={(e) => void onSubmit(e)} className="hidden w-72 shrink-0 space-y-3 rounded-xl border border-border bg-surface p-4 sm:block">
-      <Input name="name" autoFocus aria-label="List name" placeholder="List name" maxLength={120} className="py-1.5 text-label" />
-      <div className="flex gap-2">
-        <Button type="submit" size="sm">Add list</Button>
-        <Button variant="ghost" size="sm" onClick={() => setOpen(false)}>Cancel</Button>
-      </div>
-    </form>
-  ) : (
-    <button type="button" onClick={() => setOpen(true)} className="tap hidden min-h-14 w-56 shrink-0 items-center gap-2 rounded-xl border border-dashed border-input px-4 text-left text-label font-medium text-secondary-foreground hover:border-border-hover hover:bg-subtle active:bg-muted sm:inline-flex">
-      <Icon name="plus" />Add list
-    </button>
   );
 }
 

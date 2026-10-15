@@ -26,6 +26,8 @@ For navigation changes also read [sidebar responsibilities](docs/NAVIGATION.md).
   Page headers own local actions. Do not duplicate a project rail or member tabs.
 - Member card details use a non-modal right drawer. Keep desktop board controls
   active; do not add a blocking backdrop, focus trap or document scroll lock.
+- Board presentations follow [docs/BOARD_VIEWS.md](docs/BOARD_VIEWS.md). Keep view/filter
+  state in the URL and server ordering unchanged; reuse the shared list header and composers.
 - A new token needs a purpose and documented foreground/background pairing. Run the contrast tests.
 - Light and dark modes are supported. Define paired semantic tokens and verify contrast in both.
   Theme preference is browser UI state; project settings and stars must come from the API.
