@@ -15,7 +15,7 @@ export function CardTileView({ card, projectKey, now, dragging }: { card: Tile; 
     card.dueAt || card.assignees.length || card.checklistTotal || card.commentCount || card.attachmentCount || card.hasDescription;
   return (
     <div
-      className={`rounded-md border bg-white p-2 text-sm shadow-sm ${dragging ? 'rotate-1 border-blue-400 shadow-lg' : 'border-slate-200 hover:border-slate-300'}`}
+      className={`rounded-lg bg-white p-3 text-sm shadow-sm transition-shadow ${dragging ? 'rotate-1 shadow-xl ring-2 ring-blue-500' : 'hover:shadow-md'}`}
     >
       {card.labels.length ? (
         <div className="mb-1.5 flex flex-wrap gap-1">
@@ -24,9 +24,9 @@ export function CardTileView({ card, projectKey, now, dragging }: { card: Tile; 
           ))}
         </div>
       ) : null}
-      <p className="line-clamp-2 break-words text-slate-900">{card.title}</p>
+      <p className="line-clamp-2 break-words font-medium leading-snug text-slate-900">{card.title}</p>
       {hasMeta ? (
-        <div className="mt-1.5 flex flex-wrap items-center gap-2 text-xs text-slate-600">
+        <div className="mt-2.5 flex flex-wrap items-center gap-2.5 text-xs text-slate-500">
           <DuePill dueAt={card.dueAt} dueCompletedAt={card.dueCompletedAt} now={now} />
           {card.hasDescription ? <span title="Has description" aria-label="Has description">≡</span> : null}
           {card.checklistTotal ? (
@@ -40,7 +40,7 @@ export function CardTileView({ card, projectKey, now, dragging }: { card: Tile; 
           ) : null}
           {card.commentCount ? <span data-testid="comment-count" title="Comments">💬 {card.commentCount}</span> : null}
           {card.attachmentCount ? <span title="Attachments">📎 {card.attachmentCount}</span> : null}
-          <span className="ml-auto text-[11px] text-slate-400">
+          <span className="ml-auto font-mono text-[11px] text-slate-400">
             {projectKey}-{card.number}
           </span>
           {card.assignees.length ? (
@@ -95,7 +95,7 @@ export function SortableCard({ card, projectKey, now, href, disabled }: { card: 
       data-testid="card-tile"
       data-tour="card"
       data-card-id={card.id}
-      className={`tap shrink-0 cursor-pointer rounded-md focus-visible:outline-2 focus-visible:outline-blue-600 ${isDragging ? 'opacity-40' : ''}`}
+      className={`tap shrink-0 cursor-pointer rounded-lg focus-visible:outline-2 focus-visible:outline-blue-600 ${isDragging ? 'opacity-40' : ''}`}
     >
       <CardTileView card={card} projectKey={projectKey} now={now} />
     </div>

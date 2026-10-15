@@ -60,7 +60,7 @@ export function ListColumn({ list, cards, board, now, cardHref, dndDisabled, cla
       aria-label={`List ${list.name}`}
       data-testid="list-column"
       data-list-id={list.id}
-      className={`max-h-full w-full shrink-0 flex-col rounded-lg bg-slate-100 sm:w-72 ${sortable.isDragging ? 'opacity-40' : ''} ${className}`}
+      className={`max-h-full w-full shrink-0 flex-col rounded-xl bg-slate-200/50 sm:w-72 ${sortable.isDragging ? 'opacity-40' : ''} ${className}`}
     >
       <header className="flex items-center gap-1 px-2 pt-2">
         <button
@@ -88,7 +88,7 @@ export function ListColumn({ list, cards, board, now, cardHref, dndDisabled, cla
           />
         ) : (
           <h2 className="min-w-0 flex-1">
-            <button type="button" onClick={() => setEditing(true)} className="tap w-full truncate rounded px-1 text-left text-sm font-semibold hover:bg-slate-200">
+            <button type="button" onClick={() => setEditing(true)} className="tap w-full truncate rounded px-1 text-left text-[13px] font-semibold tracking-tight hover:bg-slate-200">
               {list.name}
             </button>
           </h2>
@@ -183,7 +183,7 @@ function AddCard({ listId, boardId, at }: { listId: string; boardId: string; at:
         className="w-full resize-none rounded-md border border-slate-300 p-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none"
       />
       <div className="flex gap-2">
-        <button type="submit" disabled={busy} className="tap rounded-md bg-blue-600 px-3 py-1 text-sm font-medium text-white hover:bg-blue-700">
+        <button type="submit" disabled={busy} className="tap rounded-lg bg-blue-600 px-3 py-1 text-sm font-medium text-white shadow-sm hover:bg-blue-700">
           Add
         </button>
         <button type="button" onClick={() => setOpen(false)} className="tap rounded-md px-2 text-sm text-slate-600 hover:bg-slate-200">

@@ -19,7 +19,7 @@ export function ProjectRail({ open, onClose, currentProjectId }: { open: boolean
   const projects = useQuery({ queryKey: ['projects', ws.id], queryFn: () => api.get<Page<Project>>(`/workspaces/${ws.id}/projects`) });
   const body = (
     <nav aria-label="Projects" className="space-y-1 p-2">
-      <p className="px-2 pb-1 text-xs font-semibold uppercase tracking-wide text-slate-500">Clients</p>
+      <p className="px-2.5 pb-1.5 pt-1 text-xs font-medium text-slate-500">Clients</p>
       {(projects.data?.data ?? []).map((p) => (
         <Link
           key={p.id}
@@ -27,7 +27,7 @@ export function ProjectRail({ open, onClose, currentProjectId }: { open: boolean
           onClick={onClose}
           aria-current={p.id === currentProjectId ? 'page' : undefined}
           data-testid="rail-project"
-          className={`tap flex items-center gap-2 rounded px-2 py-1.5 text-sm ${p.id === currentProjectId ? 'bg-blue-50 font-medium text-blue-800' : 'text-slate-700 hover:bg-slate-100'}`}
+          className={`tap flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-sm ${p.id === currentProjectId ? 'bg-blue-50 font-medium text-blue-800' : 'text-slate-700 hover:bg-slate-100'}`}
         >
           <span className="min-w-0 flex-1 truncate">{p.name}</span>
           {unread.projectUnread(p.id) ? <UnreadDot label={`Unread messages in ${p.name}`} /> : null}
@@ -77,7 +77,7 @@ export function ProjectTabs({
             href={t.href}
             aria-current={t.key === current ? 'page' : undefined}
             data-tour={t.key === 'client' ? 'client-channel' : undefined}
-            className={`tap flex items-center gap-1.5 rounded px-2 ${t.key === current ? 'bg-slate-100 font-medium' : 'text-slate-600 hover:bg-slate-50'}`}
+            className={`tap flex items-center gap-1.5 rounded-lg px-2.5 py-1 ${t.key === current ? 'bg-slate-100 font-medium' : 'text-slate-600 hover:bg-slate-50'}`}
           >
             {t.label}
             {t.key === 'internal' ? (

@@ -59,8 +59,9 @@ export default function WorkspaceLayout({ children }: { children: ReactNode }) {
   return (
     <WorkspaceContext.Provider value={ws.data}>
       <div className="flex h-full flex-col">
-        <header className="flex h-12 shrink-0 items-center gap-2 border-b border-slate-200 bg-white px-3">
-          <Link href={`/w/${slug}/projects`} className="tap flex items-center truncate font-bold text-blue-700">
+        <header className="flex h-14 shrink-0 items-center gap-2 border-b border-slate-200/80 bg-white/90 px-4 backdrop-blur">
+          <Link href={`/w/${slug}/projects`} className="tap flex items-center gap-2 truncate text-[15px] font-semibold tracking-tight text-slate-900">
+            <span aria-hidden className="size-5 shrink-0 rounded-md bg-blue-600 shadow-sm" />
             {ws.data.name}
           </Link>
           <nav className="ml-2 flex gap-1 text-sm">
@@ -68,7 +69,7 @@ export default function WorkspaceLayout({ children }: { children: ReactNode }) {
               <Link
                 key={n.href}
                 href={n.href}
-                className={`tap flex items-center rounded px-2 ${pathname.startsWith(n.href) ? 'bg-slate-100 font-medium' : 'text-slate-600 hover:bg-slate-50'}`}
+                className={`tap flex items-center rounded-lg px-2.5 py-1 transition-colors ${pathname.startsWith(n.href) ? 'bg-slate-100 font-medium text-slate-900' : 'text-slate-600 hover:bg-slate-100/70 hover:text-slate-900'}`}
               >
                 {n.label}
               </Link>
@@ -80,12 +81,12 @@ export default function WorkspaceLayout({ children }: { children: ReactNode }) {
             <button
               type="button"
               onClick={() => window.dispatchEvent(new Event(OPEN_EVENT))}
-              className="tap hidden items-center gap-2 rounded-md border border-slate-200 px-2 text-sm text-slate-500 hover:bg-slate-50 sm:flex"
+              className="tap hidden items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-sm text-slate-500 transition-colors hover:border-slate-300 hover:bg-white sm:flex"
             >
-              Search <kbd className="rounded bg-slate-100 px-1 text-xs">⌘K</kbd>
+              Search <kbd className="rounded bg-white px-1 font-mono text-[11px] text-slate-500 ring-1 ring-slate-200">⌘K</kbd>
             </button>
             <NotificationBell />
-            <Avatar person={{ ...user, active: true }} size={28} />
+            <Avatar person={{ ...user, active: true }} size={30} />
             <button type="button" className="tap px-2 text-sm text-slate-600 hover:text-slate-900" onClick={() => void signOut().then(() => router.replace('/login'))}>
               Log out
             </button>

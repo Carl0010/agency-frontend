@@ -117,7 +117,7 @@ export function CardDetail({ cardId, boardHref }: { cardId: string; boardHref: s
 function Field({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div>
-      <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-slate-500">{label}</p>
+      <p className="mb-1 text-xs font-medium text-slate-500">{label}</p>
       {children}
     </div>
   );
@@ -370,7 +370,7 @@ function MoveToList({ card, onMove }: { card: Detail; onMove: (listId: string) =
   const board = useQuery({ queryKey: ['board', card.boardId], queryFn: () => api.get<Board>(`/boards/${card.boardId}`) });
   return (
     <label className="block">
-      <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">List</span>
+      <span className="mb-1 block text-xs font-medium text-slate-500">List</span>
       <select
         value={card.listId}
         aria-label="Move to list"
