@@ -7,7 +7,8 @@ and card ordering. The guest portal remains separate.
 
 ## Switching and navigation
 
-A labelled Kanban/List control lives below the project header. The default is
+A labelled Kanban/List control shares a compact toolbar with search and filters
+below the project header. It has no dedicated full-width row. The default is
 Kanban; `?view=list` selects List. Changing the presentation preserves filters
 and unrelated URL parameters, without scrolling the document. Filters keep the
 view parameter. Reload, shareable URLs and browser history restore the selected
@@ -27,18 +28,21 @@ already-created list with its saved name. There is no Add/Cancel mini-form.
 Creation failure adds no column and leaves the tile available for retry; rename
 failure retains the entered name for retry. The existing
 one-list mobile Kanban layout is retained. Add card remains a separate tile
-below each list panel. Kanban columns fill the available board height; the
-empty dashed outline fills their remaining card area rather than hugging its text.
+below each list panel. Kanban columns size to their content, capped by available
+board height so long lists scroll internally. Empty dashed outlines have a 200px
+minimum height; empty columns wrap that area instead of stretching to the viewport.
 
 Kanban lists drag from the whole header (including its title, count and padding),
 with no separate grip. The title remains the keyboard activator: Space lifts,
 arrows move, Space drops and Escape cancels. A normal title click renames;
 ending a drag must not open rename. Menus and the rename field never activate
-header dragging. Filtering keeps list/card sorting disabled as before. The List
+header dragging. Pointer and keyboard list targeting both use the 60px header
+rectangles, so different card counts do not affect the reorder target.
+Filtering keeps list/card sorting disabled as before. The List
 presentation retains its collapse control and does not enable group dragging.
 
-The board canvas uses a cool neutral `board-canvas` token in light and dark
-mode; navigation keeps the warmer `background` token. Card and toolbar surfaces
+The board canvas uses a lighter shade of the sidebar's warm neutral palette
+through `board-canvas` in light and dark mode; navigation keeps `background`. Card and toolbar surfaces
 retain their existing semantic roles.
 
 ## List layout
@@ -71,7 +75,8 @@ and subscription gates remain authoritative.
 
 ## Verification
 
-`e2e/board-list-view.spec.ts` covers exact Add list dimensions, immediate creation, focused naming, failed creation/rename
+`e2e/board-list-view.spec.ts` covers compact toolbar/header height, the 200px empty area,
+exact Add list dimensions, immediate creation, focused naming, failed creation/rename
 and retry, URL restoration, shared filtering/order, row drawer interactions,
 collapse/rename/archive, mobile creation, light/dark previews and overflow.
 Existing Kanban drag, card drawer and onboarding journeys remain regression

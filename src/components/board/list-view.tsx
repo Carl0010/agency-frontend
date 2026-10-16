@@ -18,7 +18,7 @@ export function BoardListView({ board, filters, now, cardHref, editingListId, on
   editingListId: string | null; onListCreated: (id: string) => void; onListEditFinished: (id: string) => void;
 }) {
   const pathname = usePathname();
-  return <div data-testid="board-list-view" className="@container min-h-0 flex-1 overflow-y-auto overscroll-contain p-4 sm:p-6">
+  return <div data-testid="board-list-view" className="@container min-h-0 flex-1 overflow-y-auto overscroll-contain p-4">
     <div className="space-y-6">
       {board.lists.map((list) => <ListGroup startEditing={editingListId === list.id} onEditingFinished={() => onListEditFinished(list.id)} key={list.id} list={list} cards={list.cards.filter((card) => matchesFilters(card, filters, now))} board={board} now={now} cardHref={cardHref} pathname={pathname} />)}
       <AddList boardId={board.id} onCreated={onListCreated} layout="list" />

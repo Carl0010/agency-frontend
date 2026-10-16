@@ -5,7 +5,7 @@
   --font-mono: var(--font-geist-mono), ui-monospace, 'SF Mono', Menlo, monospace;
 
   --color-background: #f7f8f5;
-  --color-board-canvas: #eef2f6;
+  --color-board-canvas: #fafbf9;
   --color-surface: #ffffff;
   --color-subtle: #f0f2ee;
   --color-muted: #e7ebe5;
@@ -98,7 +98,7 @@
 /* Keep status fills and content colors stable; adapt surfaces, text and controls. */
 html[data-theme='dark'] {
   --color-background: #111714;
-  --color-board-canvas: #151f27;
+  --color-board-canvas: #18201b;
   --color-surface: #19221c;
   --color-subtle: #202c24;
   --color-muted: #2d3c31;

@@ -1,8 +1,8 @@
 # Sidebar and page responsibilities
 
-Member routes (`/w/[slug]/*`) use two navigation levels: a **72px module
+Member routes (`/w/[slug]/*`) use two navigation levels: a **56px icon module
 rail on the far left**, followed by the existing **256px contextual sidebar**.
-A 64px app bar spans the full viewport above both levels.
+A 56px app bar spans the full viewport above both levels.
 The guest portal keeps its separate navigation and imports none of this shell.
 
 ## Ownership
@@ -41,14 +41,14 @@ and browser history. It is not a second copy of router state or server data.
 
 ## Responsive behavior
 
-- At 1024px and above, the 72px rail and 256px sidebar are adjacent and fill the
-  remaining height below the app bar. The content begins after 328px of navigation.
+- At 1024px and above, the 56px rail and 256px sidebar are adjacent and fill the
+  remaining height below the app bar. The content begins after 312px of navigation.
   The hamburger collapses/reopens the 256px sidebar while retaining the module rail;
   the content gains that space. This visibility persists during member-route navigation.
 - Each navigation area's middle scrolls independently. Workspace identity and
   account/status footer remain accessible. Long names truncate.
 - Below 1024px, **Open navigation** opens one native modal drawer up to 320px
-  wide. It contains the same 72px rail and a flexible contextual sidebar. Both
+  wide. It contains the same 56px rail and a flexible contextual sidebar. Both
   navigation levels leave the board's normal mobile work area available when closed.
 - The drawer contains keyboard focus and makes background content inert.
   Escape, close, backdrop click, selecting a destination and resizing to desktop
@@ -56,7 +56,8 @@ and browser history. It is not a second copy of router state or server data.
   Closing restores focus to the opener when it still exists.
 - Module destinations close the mobile drawer just like other destinations;
   reopening shows the selected module's links. Search is in the app bar, never the sidebar.
-  Ctrl/Cmd K from the drawer closes navigation before the palette opens. All rail entries have icons, visible names and focus states.
+  Ctrl/Cmd K from the drawer closes navigation before the palette opens. Rail entries have
+  44px icon targets, accessible names, title tooltips and visible focus/selection states.
 - Mobile still shows one board list at a time below 640px. Navigation does not
   replace that content control or alter drag-and-drop behavior.
 
@@ -127,7 +128,7 @@ details stay owner-only; do not infer extra permissions from visible links.
 
 ## Verification
 
-`e2e/navigation.spec.ts` covers the exact 72px rail width, module switching,
+`e2e/navigation.spec.ts` covers the exact 56px rail width, module switching,
 contextual destination ownership, active states, local
 sharing, mobile focus containment/restoration, dismissal, search handoff and
 viewport changes. Existing guest, onboarding, chat and board journeys exercise
@@ -138,7 +139,9 @@ member navigation directory in the guest portal's transitive import graph.
 
 ## Project actions
 
-The Client projects heading has an Add project button. Its native dialog creates
+The Client projects heading has an Add project button and no outbound arrow;
+the Projects overview link above already owns that destination. The current project
+expands automatically without a decorative chevron. Its native creation dialog creates
 through the existing API and navigates to the returned default board. A separate
 menu beside each project contains Open board, Edit project and Copy project link;
 it is never nested inside the project link. The editor supports project name,

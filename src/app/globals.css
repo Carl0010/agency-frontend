@@ -48,7 +48,7 @@
   .ui-page { @apply mx-auto w-full max-w-5xl px-4 py-6 sm:px-8 sm:py-8; }
   .ui-nav-link { @apply flex min-h-8 items-center gap-2 rounded-md px-2.5 py-1 text-label text-secondary-foreground hover:bg-subtle hover:text-foreground; }
   .ui-nav-link[aria-current='page'] { @apply bg-primary-subtle font-medium text-primary-text; }
-  .ui-module-link { @apply flex min-h-16 w-full max-w-16 shrink-0 flex-col items-center justify-center gap-1 rounded-lg py-2 text-caption font-medium text-secondary-foreground hover:bg-subtle hover:text-foreground active:bg-muted focus-visible:outline-offset-1; }
+  .ui-module-link { @apply flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-secondary-foreground hover:bg-subtle hover:text-foreground active:bg-muted focus-visible:outline-offset-1; }
   .ui-module-link[aria-current='location'] { @apply bg-primary-subtle text-primary-text; }
   .ui-tab { @apply inline-flex min-h-8 items-center justify-center gap-2 rounded-md px-3 py-1 text-label text-secondary-foreground hover:bg-subtle; }
   .ui-tab[aria-current='page'], .ui-tab[aria-selected='true'] { @apply bg-primary-subtle font-medium text-primary-text; }

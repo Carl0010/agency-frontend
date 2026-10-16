@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { Icon } from '@/components/icon';
 import { Avatar, Input, LABEL_BG } from '@/components/ui';
 import { EMPTY_FILTERS, isFiltering, type BoardFilters, type DueFilter } from '@/lib/filters';
@@ -13,18 +13,21 @@ export function FilterBar({
   onChange,
   members,
   labels,
+  leading,
 }: {
   filters: BoardFilters;
   onChange: (f: BoardFilters) => void;
   members: Member[];
   labels: Label[];
+  leading?: ReactNode;
 }) {
   const [open, setOpen] = useState(isFiltering(filters));
   const active = isFiltering(filters);
   return (
-    <div className="shrink-0 border-b border-border bg-surface px-4 py-3 sm:px-6">
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="relative min-w-0 flex-1 sm:max-w-xs">
+    <div data-testid="board-toolbar" className="shrink-0 border-b border-border bg-surface px-4 py-2">
+      <div className="flex flex-wrap items-center gap-2">
+        {leading}
+        <div className="relative order-last w-full min-w-0 sm:order-none sm:w-auto sm:min-w-32 sm:flex-1 sm:max-w-xs">
           <Icon name="search" className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             type="search"
@@ -39,7 +42,7 @@ export function FilterBar({
           type="button"
           aria-expanded={open}
           onClick={() => setOpen((o) => !o)}
-          className={`ui-button tap border border-border ${active ? 'bg-primary-muted text-primary-text' : 'text-secondary-foreground hover:bg-subtle'}`}
+          className={`ui-button tap ml-auto border border-border sm:ml-0 ${active ? 'bg-primary-muted text-primary-text' : 'text-secondary-foreground hover:bg-subtle'}`}
         >
           <Icon name="settings" />Filters{active ? <span className="size-1.5 rounded-full bg-primary" aria-label="Active filters" /> : null}
         </button>

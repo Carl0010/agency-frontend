@@ -32,7 +32,7 @@ export function ListColumn({ list, cards, board, now, cardHref, dndDisabled, sta
       aria-label={`List ${list.name}`}
       data-testid="list-column"
       data-list-id={list.id}
-      className={`h-full max-h-full min-h-64 w-full shrink-0 flex-col gap-3 sm:w-80 ${sortable.isDragging ? 'opacity-40' : ''} ${className}`}
+      className={`max-h-full min-h-0 w-full shrink-0 flex-col gap-3 sm:w-80 ${sortable.isDragging ? 'opacity-40' : ''} ${className}`}
     >
       <div data-testid="list-surface" className="flex min-h-0 flex-1 flex-col rounded-xl border border-border bg-subtle pb-3">
         <ListHeader startEditing={startEditing} onEditingFinished={onEditingFinished} list={list} count={cards.length} boardId={board.id} drag={{
@@ -41,7 +41,7 @@ export function ListColumn({ list, cards, board, now, cardHref, dndDisabled, sta
           disabled: dndDisabled,
         }} />
         <div ref={drop.setNodeRef} data-testid="list-cards" className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto overscroll-contain px-3 pb-1">
-          {cards.length === 0 ? <p data-testid="list-empty-state" className="flex min-h-24 flex-1 items-center justify-center rounded-lg border border-dashed border-border px-3 py-6 text-center text-caption text-muted-foreground">{list.cards.length ? 'No matching cards' : 'No cards yet'}</p> : null}
+          {cards.length === 0 ? <p data-testid="list-empty-state" className="flex min-h-[200px] shrink-0 items-center justify-center rounded-lg border border-dashed border-border px-3 py-6 text-center text-caption text-muted-foreground">{list.cards.length ? 'No matching cards' : 'No cards yet'}</p> : null}
           <SortableContext items={cards.map((c) => c.id)} strategy={verticalListSortingStrategy}>
             {cards.map((c) => (
               <SortableCard key={c.id} card={c} projectKey={board.project.key} now={now} href={cardHref(c.id)} disabled={dndDisabled} />

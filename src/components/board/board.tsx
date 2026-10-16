@@ -11,6 +11,7 @@ import {
   useSensor,
   useSensors,
   type CollisionDetection,
+  type ClientRect,
   type KeyboardCoordinateGetter,
   type DragEndEvent,
   type DragOverEvent,
@@ -52,11 +53,20 @@ function resolveOver(board: Board, overId: string): { listId: string; index: num
   return found ? { listId: found.list.id, index: found.index } : null;
 }
 
-/** Lists only collide with lists; cards collide with cards and list bodies. */
+/** Compare list headers (60px), so columns with different card counts have the same drag target. */
+const listHeaderRect = (rect: ClientRect): ClientRect => ({
+  left: rect.left, right: rect.right, width: rect.width,
+  top: rect.top, bottom: rect.top + 60, height: 60,
+});
+
+/** Lists only collide with list headers; cards collide with cards and list bodies. */
 const collision: CollisionDetection = (args) => {
   const isList = args.active.data.current?.type === 'list';
   const droppableContainers = args.droppableContainers.filter((c) => (c.data.current?.type === 'list') === isList);
-  return isList ? closestCenter({ ...args, droppableContainers }) : closestCorners({ ...args, droppableContainers });
+  return isList ? closestCenter({
+    ...args, droppableContainers, collisionRect: listHeaderRect(args.collisionRect),
+    droppableRects: new Map([...args.droppableRects].map(([id, rect]) => [id, listHeaderRect(rect)])),
+  }) : closestCorners({ ...args, droppableContainers });
 };
 
 /** List keyboard moves must ignore the inset card-drop zones inside each list. */
@@ -64,8 +74,11 @@ const boardKeyboardCoordinates: KeyboardCoordinateGetter = (event, args) => {
   if (args.context.active?.data.current?.type !== 'list') return sortableKeyboardCoordinates(event, args);
   const droppableRects = new Map([...args.context.droppableRects].filter(([id]) =>
     args.context.droppableContainers.get(id)?.data.current?.type === 'list',
-  ));
-  return sortableKeyboardCoordinates(event, { ...args, context: { ...args.context, droppableRects } });
+  ).map(([id, rect]) => [id, listHeaderRect(rect)]));
+  return sortableKeyboardCoordinates(event, { ...args, context: {
+    ...args.context, droppableRects,
+    collisionRect: args.context.collisionRect ? listHeaderRect(args.context.collisionRect) : null,
+  } });
 };
 
 export function BoardScreen({ boardId, projectId }: { boardId: string; projectId: string }) {
@@ -196,12 +209,12 @@ export function BoardScreen({ boardId, projectId }: { boardId: string; projectId
   return (
     <div data-testid="board-canvas" className="flex h-full bg-board-canvas">
       <div className="flex min-w-0 flex-1 flex-col">
-        <div className="flex shrink-0 flex-wrap items-center gap-x-4 gap-y-3 border-b border-border bg-surface px-4 py-4 sm:px-6">
-          <div className="min-w-0 grow basis-48">
-            <h1 className="truncate text-xl font-semibold leading-7" data-testid="board-title">
+        <div data-testid="board-project-header" className="flex shrink-0 flex-wrap items-center gap-x-4 gap-y-1 border-b border-border bg-surface px-4 py-2">
+          <div className="flex min-w-0 grow basis-40 flex-wrap items-baseline gap-x-3 gap-y-0.5">
+            <h1 className="min-w-0 max-w-full truncate text-lg font-semibold leading-6" data-testid="board-title">
               {shown.project.name}
             </h1>
-            <p className="mt-1 flex flex-wrap items-center gap-x-2 text-label text-muted-foreground">
+            <p className="flex min-w-0 flex-wrap items-center gap-x-2 text-caption text-muted-foreground">
               {shown.project.clientName ? <><span className="truncate">{shown.project.clientName}</span><span aria-hidden="true">·</span></> : null}
               <span>{totalCards} {totalCards === 1 ? 'card' : 'cards'} in {shown.lists.length} {shown.lists.length === 1 ? 'list' : 'lists'}</span>
             </p>
@@ -216,14 +229,12 @@ export function BoardScreen({ boardId, projectId }: { boardId: string; projectId
             <ArchivedCards boardId={boardId} cardHref={cardHref} />
           </div>
         </div>
-        <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-border bg-surface px-4 py-2 sm:px-6">
-          <div role="group" aria-label="Board view" className="inline-flex gap-1 rounded-lg border border-border bg-background p-1">
-            <button type="button" aria-pressed={view === 'kanban'} onClick={() => setView('kanban')} className={`ui-button tap ${view === 'kanban' ? 'bg-surface text-foreground shadow-sm' : 'text-muted-foreground hover:bg-subtle'}`}><Icon name="board" />Kanban</button>
-            <button type="button" aria-pressed={view === 'list'} onClick={() => setView('list')} className={`ui-button tap ${view === 'list' ? 'bg-surface text-foreground shadow-sm' : 'text-muted-foreground hover:bg-subtle'}`}><Icon name="list" />List</button>
+        <FilterBar filters={filters} onChange={setFilters} members={activeMembers} labels={labels.data?.data ?? []} leading={
+          <div role="group" aria-label="Board view" className="inline-flex shrink-0 gap-0.5 rounded-lg border border-border bg-background p-0.5">
+            <button type="button" aria-pressed={view === 'kanban'} onClick={() => setView('kanban')} className={`ui-button tap min-h-8 gap-1.5 px-2.5 ${view === 'kanban' ? 'bg-surface text-foreground shadow-sm' : 'text-muted-foreground hover:bg-subtle'}`}><Icon name="board" />Kanban</button>
+            <button type="button" aria-pressed={view === 'list'} onClick={() => setView('list')} className={`ui-button tap min-h-8 gap-1.5 px-2.5 ${view === 'list' ? 'bg-surface text-foreground shadow-sm' : 'text-muted-foreground hover:bg-subtle'}`}><Icon name="list" />List</button>
           </div>
-          <p className="text-caption text-muted-foreground">{view === 'list' ? 'Cards grouped by list' : 'Arrange cards across lists'}</p>
-        </div>
-        <FilterBar filters={filters} onChange={setFilters} members={activeMembers} labels={labels.data?.data ?? []} />
+        } />
 
         {view === 'kanban' && shown.lists.length ? (
           <div className="flex shrink-0 gap-2 overflow-x-auto border-b border-border bg-surface px-4 py-2 sm:hidden" role="tablist" aria-label="Lists">
@@ -242,10 +253,7 @@ export function BoardScreen({ boardId, projectId }: { boardId: string; projectId
           </div>
         ) : null}
 
-        {totalCards === 0 && !filtering ? (
-          <p className="mx-4 mt-4 shrink-0 rounded-lg border border-primary-border bg-primary-subtle px-4 py-3 text-label text-primary-text sm:mx-6">Add your first card to get started.</p>
-        ) : null}
-        {filtering ? <p className="mx-4 mt-3 shrink-0 text-caption text-muted-foreground sm:mx-6">{view === 'kanban' ? 'Filters are on — clear them to drag cards.' : 'Filters apply to cards in every list.'}</p> : null}
+        {filtering ? <p className="mx-4 mt-3 shrink-0 text-caption text-muted-foreground">{view === 'kanban' ? 'Filters are on — clear them to drag cards.' : 'Filters apply to cards in every list.'}</p> : null}
 
         {view === 'list' ? <BoardListView editingListId={editingListId} onListCreated={onListCreated} onListEditFinished={onListEditFinished} board={shown} filters={filters} now={now} cardHref={cardHref} /> : <DndContext
           sensors={sensors}
@@ -255,7 +263,7 @@ export function BoardScreen({ boardId, projectId }: { boardId: string; projectId
           onDragEnd={onDragEnd}
           onDragCancel={() => setDrag(null)}
         >
-          <div className="flex min-h-0 flex-1 items-start gap-4 overflow-auto p-4 sm:p-6" data-testid="board-lists">
+          <div className="flex min-h-0 flex-1 items-start gap-4 overflow-auto p-4" data-testid="board-lists">
             <SortableContext items={shown.lists.map((l) => `list:${l.id}`)} strategy={horizontalListSortingStrategy}>
               {shown.lists.map((l) => (
                 <ListColumn

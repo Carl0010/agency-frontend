@@ -15,6 +15,18 @@ async function dragHeader(page: Page, source: Locator, destination: Locator, pad
   await page.mouse.up();
 }
 
+async function populateProgress(page: Page) {
+  const progress = list(page, 'In progress');
+  await progress.getByTestId('add-card-end').click();
+  for (const name of ['Review the client brief', 'Prepare the launch checklist', 'Check the final assets']) {
+    await progress.getByLabel('Card title').fill(name);
+    await progress.getByRole('button', { name: 'Add', exact: true }).click();
+    await expect(progress.getByRole('button', { name: new RegExp(name) })).toBeVisible();
+  }
+  await progress.getByRole('button', { name: 'Cancel', exact: true }).click();
+  return progress;
+}
+
 test('board canvas is distinct from the sidebar in light and dark themes', async ({ browser }, info) => {
   const { page } = await signupToBoard(browser, { viewport: { width: 1440, height: 1000 }, colorScheme: 'light' });
   const canvas = page.getByTestId('board-canvas');
@@ -31,7 +43,8 @@ test('board canvas is distinct from the sidebar in light and dark themes', async
 test('header padding and title both reorder columns while controls retain normal behavior', async ({ browser }) => {
   const { page } = await signupToBoard(browser, { viewport: { width: 1440, height: 1000 } });
   const todo = list(page, 'To do');
-  const progress = list(page, 'In progress');
+  const progress = await populateProgress(page);
+  expect((await progress.boundingBox())!.height).toBeGreaterThan((await todo.boundingBox())!.height);
   await expect(page.getByRole('button', { name: /^Move list/ })).toHaveCount(0);
   await dragHeader(page, todo.getByTestId('list-header'), progress.getByTestId('list-header'), true);
   await expect.poll(() => order(page)).toEqual(['List In progress', 'List To do', 'List Done']);
@@ -60,10 +73,15 @@ test('header padding and title both reorder columns while controls retain normal
 
 test('header title supports keyboard reorder, Escape cancellation and API failure recovery', async ({ browser }) => {
   const { page } = await signupToBoard(browser, { viewport: { width: 1440, height: 1000 } });
+  // Column height is content-driven: the neighbor must also be reachable when taller.
+  await populateProgress(page);
   const title = list(page, 'To do').getByRole('button', { name: 'To do', exact: true });
+  const todoId = await list(page, 'To do').getAttribute('data-list-id');
   await title.click({ trial: true });
   await title.focus(); await page.keyboard.press('Space');
   await expect(title).toHaveAttribute('aria-pressed', 'true');
+  // aria-pressed updates before DnD's first measurement; wait for its initial target.
+  await expect(page.getByRole('status')).toContainText(`over droppable area list:${todoId}`);
   const progressId = await list(page, 'In progress').getAttribute('data-list-id');
   await page.keyboard.press('ArrowRight');
   await expect(page.getByRole('status')).toContainText(`over droppable area list:${progressId}`);
@@ -73,6 +91,7 @@ test('header title supports keyboard reorder, Escape cancellation and API failur
   await title.click({ trial: true });
   await title.focus(); await page.keyboard.press('Space');
   await expect(title).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByRole('status')).toContainText(`over droppable area list:${todoId}`);
   await page.keyboard.press('ArrowRight');
   await expect(page.getByRole('status')).toContainText(`over droppable area list:${progressId}`);
   await page.keyboard.press('Space');
@@ -82,6 +101,7 @@ test('header title supports keyboard reorder, Escape cancellation and API failur
   await title.click({ trial: true });
   await title.focus(); await page.keyboard.press('Space');
   await expect(title).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByRole('status')).toContainText(`over droppable area list:${todoId}`);
   await page.keyboard.press('ArrowLeft');
   await expect(page.getByRole('status')).toContainText(`over droppable area list:${progressId}`);
   await page.keyboard.press('Space');
