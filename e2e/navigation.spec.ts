@@ -8,13 +8,15 @@ test('the sidebar owns workspace and project destinations while headers retain l
   const rail = page.getByRole('complementary', { name: 'Module rail' });
   const modules = rail.getByRole('navigation', { name: 'Main modules' });
   await expect(rail).toBeVisible();
-  expect((await rail.boundingBox())!.width).toBe(72);
+  expect((await rail.boundingBox())!.width).toBe(56);
   const [railBox, sidebarBox] = await Promise.all([rail.boundingBox(), sidebar.boundingBox()]);
   expect(railBox!.x + railBox!.width).toBe(sidebarBox!.x);
   await expect(modules.getByRole('link', { name: 'Projects', exact: true })).toHaveAttribute('aria-current', 'location');
   await expect(sidebar.getByRole('link', { name: 'Members', exact: true })).toHaveCount(0);
   await expect(sidebar.getByRole('link', { name: 'Board', exact: true })).toHaveAttribute('aria-current', 'page');
   await expect(sidebar.getByTestId('internal-badge')).toHaveText('Internal');
+  await expect(sidebar.getByRole('link', { name: 'View all projects' })).toHaveCount(0);
+  await expect(sidebar.getByRole('button', { name: 'Add project', exact: true })).toBeVisible();
   await expect(page.getByTestId('workspace-header').getByRole('navigation')).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'Share with client' })).toBeVisible();
 
@@ -92,7 +94,7 @@ test('mobile drawer traps focus, closes on navigation/Escape/backdrop, and hands
 
   await trigger.click();
   const modules = drawer.getByRole('navigation', { name: 'Main modules' });
-  expect(await drawer.getByTestId('module-rail').evaluate((element) => element.parentElement!.getBoundingClientRect().width)).toBe(72);
+  expect(await drawer.getByTestId('module-rail').evaluate((element) => element.parentElement!.getBoundingClientRect().width)).toBe(56);
   await modules.getByRole('link', { name: 'Workspace', exact: true }).click();
   await expect(drawer).toHaveCount(0);
   await expect(page).toHaveURL(/\/settings\/members$/);

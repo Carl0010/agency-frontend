@@ -20,7 +20,7 @@ For navigation changes also read [sidebar responsibilities](docs/NAVIGATION.md).
 - `src/lib/content-colors.ts` owns mappings for user-selected labels, projects and avatars.
 - Use semantic color utilities. `design-system/semantic-colors` is an ESLint error.
 - Keep business logic, API behavior and audience boundaries separate from visual changes.
-- The 72px module rail owns Projects, Inbox and Workspace selection. The 256px
+- The 56px icon module rail owns Projects, Inbox and Workspace selection. The 256px
   contextual sidebar owns the selected module's links, project menus and account controls.
   The top app bar owns centered global search, sidebar visibility and a labelled theme switch.
   Page headers own local actions. Do not duplicate a project rail or member tabs.
@@ -28,6 +28,8 @@ For navigation changes also read [sidebar responsibilities](docs/NAVIGATION.md).
   active; do not add a blocking backdrop, focus trap or document scroll lock.
 - Board presentations follow [docs/BOARD_VIEWS.md](docs/BOARD_VIEWS.md). Keep view/filter
   state in the URL and server ordering unchanged; reuse the shared list header and composers.
+  Keep view tabs left, search/filters right, and filters in the anchored popover.
+  Project headers show their saved icon and name without card/list-count descriptions.
 - Use `useConfirm` from `components/confirmation.tsx` for confirmations. Browser
   confirm/alert/prompt calls are lint errors; preserve API authorization and error handling.
 - A new token needs a purpose and documented foreground/background pairing. Run the contrast tests.

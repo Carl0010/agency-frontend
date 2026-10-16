@@ -1,8 +1,8 @@
 # Sidebar and page responsibilities
 
-Member routes (`/w/[slug]/*`) use two navigation levels: a **72px module
+Member routes (`/w/[slug]/*`) use two navigation levels: a **56px icon module
 rail on the far left**, followed by the existing **256px contextual sidebar**.
-A 64px app bar spans the full viewport above both levels.
+A 56px app bar spans the full viewport above both levels.
 The guest portal keeps its separate navigation and imports none of this shell.
 
 ## Ownership
@@ -41,14 +41,14 @@ and browser history. It is not a second copy of router state or server data.
 
 ## Responsive behavior
 
-- At 1024px and above, the 72px rail and 256px sidebar are adjacent and fill the
-  remaining height below the app bar. The content begins after 328px of navigation.
+- At 1024px and above, the 56px rail and 256px sidebar are adjacent and fill the
+  remaining height below the app bar. The content begins after 312px of navigation.
   The hamburger collapses/reopens the 256px sidebar while retaining the module rail;
   the content gains that space. This visibility persists during member-route navigation.
 - Each navigation area's middle scrolls independently. Workspace identity and
   account/status footer remain accessible. Long names truncate.
 - Below 1024px, **Open navigation** opens one native modal drawer up to 320px
-  wide. It contains the same 72px rail and a flexible contextual sidebar. Both
+  wide. It contains the same 56px rail and a flexible contextual sidebar. Both
   navigation levels leave the board's normal mobile work area available when closed.
 - The drawer contains keyboard focus and makes background content inert.
   Escape, close, backdrop click, selecting a destination and resizing to desktop
@@ -56,7 +56,8 @@ and browser history. It is not a second copy of router state or server data.
   Closing restores focus to the opener when it still exists.
 - Module destinations close the mobile drawer just like other destinations;
   reopening shows the selected module's links. Search is in the app bar, never the sidebar.
-  Ctrl/Cmd K from the drawer closes navigation before the palette opens. All rail entries have icons, visible names and focus states.
+  Ctrl/Cmd K from the drawer closes navigation before the palette opens. Rail entries have
+  44px icon targets, accessible names, title tooltips and visible focus/selection states.
 - Mobile still shows one board list at a time below 640px. Navigation does not
   replace that content control or alter drag-and-drop behavior.
 
@@ -125,9 +126,37 @@ Keep server state in TanStack Query. Sidebar/drawer visibility and browser theme
 Existing API authorization remains authoritative. Billing navigation and plan
 details stay owner-only; do not infer extra permissions from visible links.
 
+## Panel motion
+
+The desktop sidebar and card inspector resize their reserved space with the shared
+`--duration-panel` (220ms) and `--ease-ui` tokens. Their content keeps a stable
+width while sliding, so text does not repeatedly wrap during the transition.
+Rapid sidebar toggles reverse the current transition. Collapsed navigation is
+inert and hidden from assistive technology immediately.
+
+Mobile navigation uses native dialog display/overlay transitions for its slide
+and backdrop fade. Closing releases modal focus and scroll containment without
+waiting for the visual exit; this keeps the search shortcut responsive. Browsers
+without discrete-transition support retain immediate native dismissal.
+
+The board layout owns `CardDrawerHost`; the intercepted route registers the
+current card with it. This retains the inspector through closing transitions,
+including browser Back, without retaining a stale route tree. Exiting content is
+inert and hidden from assistive technology; focus returns to the board at the
+start of closing. Card switches update the open inspector without replaying its
+entrance. Once its own width/slide transitions finish, card content unmounts.
+Navigation away from the board disposes the entire inspector normally.
+
+Reduced-motion preferences remove the visible travel in every panel. This panel
+resize is the specific exception to the general rule against animating content
+layout; do not add layout animations to board cards or unrelated page content.
+`e2e/panel-motion.spec.ts` uses presentation fixtures to check intermediate sizes,
+rapid reversal, history, focus, mobile search handoff and reduced motion. It does
+not verify compatibility with the pending backend contract upgrade.
+
 ## Verification
 
-`e2e/navigation.spec.ts` covers the exact 72px rail width, module switching,
+`e2e/navigation.spec.ts` covers the exact 56px rail width, module switching,
 contextual destination ownership, active states, local
 sharing, mobile focus containment/restoration, dismissal, search handoff and
 viewport changes. Existing guest, onboarding, chat and board journeys exercise
@@ -138,7 +167,9 @@ member navigation directory in the guest portal's transitive import graph.
 
 ## Project actions
 
-The Client projects heading has an Add project button. Its native dialog creates
+The Client projects heading has an Add project button and no outbound arrow;
+the Projects overview link above already owns that destination. The current project
+expands automatically without a decorative chevron. Its native creation dialog creates
 through the existing API and navigates to the returned default board. A separate
 menu beside each project contains Open board, Edit project and Copy project link;
 it is never nested inside the project link. The editor supports project name,

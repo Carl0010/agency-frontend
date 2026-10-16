@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { ProjectEditor } from '@/components/projects/project-editor';
 import { ProjectMenu } from '@/components/projects/project-menu';
+import { ProjectIcon } from '@/components/projects/project-icon';
 import { usePathname, useRouter } from 'next/navigation';
 import { Icon, type IconName } from '@/components/icon';
 import { SetupChip } from '@/components/onboarding/setup-chip';
@@ -11,7 +12,6 @@ import { TrialPill } from '@/components/billing/billing-notices';
 import { Avatar, Button } from '@/components/ui';
 import { useToast } from '@/components/toast';
 import { errorMessage } from '@/lib/api';
-import { PROJECT_ICON_BG } from '@/lib/content-colors';
 import { useSession } from '@/lib/session';
 import type { Channel, Project } from '@/lib/types';
 import { useWorkspace } from '@/lib/workspace';
@@ -78,7 +78,7 @@ export function WorkspaceSidebar({ data, projectId, activeModule, onNavigate, on
           </nav>
 
           <nav aria-label="Projects" className="mt-6">
-            <div className="mb-2 flex items-center justify-between px-2.5 text-caption font-medium text-muted-foreground"><span>Client projects</span><Button variant="ghost" size="icon" aria-label="Add project" onClick={() => setCreating(true)}><Icon name="plus" /></Button><Link href={`${base}/projects`} onClick={onNavigate} aria-label="View all projects" className="tap inline-flex items-center rounded px-1 hover:text-primary"><Icon name="arrow" className="size-3.5" /></Link></div>
+            <div className="mb-2 flex items-center justify-between px-2.5 text-caption font-medium text-muted-foreground"><span>Client projects</span><Button variant="ghost" size="icon" aria-label="Add project" onClick={() => setCreating(true)}><Icon name="plus" /></Button></div>
             {data.pending ? <p role="status" className="px-2.5 py-2 text-caption text-muted-foreground">Loading projects…</p> : null}
             {data.error ? <div role="alert" className="space-y-2 rounded-md border border-danger-border bg-danger-subtle p-2.5 text-caption text-danger-text"><p>{data.error}</p><Button variant="secondary" size="sm" onClick={data.retry}>Try again</Button></div> : null}
             {!data.pending && !data.error && data.projects.length === 0 ? <p className="px-2.5 py-2 text-caption text-muted-foreground">Your client projects will appear here.</p> : null}
@@ -96,10 +96,9 @@ export function WorkspaceSidebar({ data, projectId, activeModule, onNavigate, on
                   <li key={project.id}>
                     <div className="flex items-center gap-1">
                       <Link href={`${projectBase}/b/${project.defaultBoardId}`} onClick={onNavigate} aria-current={current ? 'location' : undefined} data-testid="rail-project" className={`ui-nav-link tap min-w-0 flex-1 ${current ? 'bg-subtle font-medium text-foreground' : ''}`}>
-                        <span className={`flex size-7 shrink-0 items-center justify-center rounded-lg text-foreground ${PROJECT_ICON_BG[project.color] ?? 'bg-subtle'}`}><Icon name="board" className="size-4" /></span>
+                        <ProjectIcon project={project} />
                         <span className="min-w-0 flex-1 truncate">{project.name}</span>
                         {unread ? <UnreadDot label={`Unread messages in ${project.name}`} /> : null}
-                        {current ? <Icon name="chevron" className="size-3 rotate-90 text-muted-foreground" /> : null}
                       </Link>
                       <ProjectMenu project={project} onNavigate={onNavigate} />
                     </div>

@@ -42,7 +42,7 @@ component library to fix an individual screen.
 | Role / utility | Value | Use |
 | --- | --- | --- |
 | `bg-background` | `#F7F8F5` | App canvas and quiet navigation rail |
-| `bg-board-canvas` | `#EEF2F6` light / `#151F27` dark | Cool neutral board work area, distinct from the warm sidebar; pair with foreground/secondary/muted text |
+| `bg-board-canvas` | `#FAFBF9` light / `#18201B` dark | A lighter shade of the warm sidebar palette; pair with foreground/secondary/muted text |
 | `bg-surface` | `#FFFFFF` | Cards, forms, dialogs, main headers |
 | `bg-subtle` | `#F0F2EE` | Board lanes, code, secondary control hover |
 | `bg-muted` | `#E7EBE5` | Neutral selected/pressed surfaces |
@@ -122,7 +122,7 @@ text to avoid iOS zoom. Small avatar initials are a limited exception to the
   Default maximum width is 1024px; forms/settings may use a narrower max width.
 - `PageHeader` puts the title/description on the left and actions on the right,
   stacking naturally on small screens. Use one primary action per action group.
-- Use a 72px module rail beside the 256px contextual sidebar, with 320px
+- Use a 56px icon module rail beside the 256px contextual sidebar, with 320px
   board lanes on desktop. Below 640px,
   preserve the existing one-list-at-a-time board behavior.
 - Follow [navigation ownership](NAVIGATION.md): workspace and project destinations
@@ -145,14 +145,15 @@ piece of information. Reuse the semantic type and color tokens above.
 
 | Element | Type / dimensions | Purpose |
 | --- | --- | --- |
-| Project title | 20px / 28px, semibold | Main heading; client and board counts beneath at 13px / 20px |
+| Project title | 18px / 24px, semibold | Saved project icon/color beside the name; no card/list counts or client-description line |
 | List heading | 14px / 20px, semibold | Stable header with a separate count badge and action target |
 | Card title | 15px / 24px, medium | Up to three visible lines; full title in the control label and tooltip |
 | Labels and facts | 12px / 16px | Readable label names, due state, checklist/file/comment counts |
 | Card footer | 12px / 16px key; 24px avatars | Identity and ownership in a separate row, even for simple cards |
 | Add list tile | 320px × 60px | Matches column width and the shared list header height |
-| Desktop list | 320px wide; at least 256px tall | Enough text width and a useful empty/drop area |
-| Board gutter | 16px mobile / 24px desktop | Aligns project header, filtering and lists |
+| Desktop list | 320px wide; content height up to the available board height | Short lists fit their content; long lists scroll internally |
+| Empty card area | At least 200px high | Centered empty message with a useful drop target |
+| Board gutter | 16px | Aligns the compact project header, toolbar and lists |
 | Between lists / cards | 16px / 12px | Clear grouping without compressing card content |
 | Inside a card | 16px | Common text and metadata inset |
 | Controls | 36px desktop; at least 44px below 640px | Aligned toolbar and accessible mobile touch targets |
@@ -164,7 +165,8 @@ themes. Add list uses a `border-hover` outline against the canvas for contrast.
 
 Keep list headings and the bottom Add card control outside the list's scrolling
 card area. Long lists scroll internally; users can still identify the list and
-create a card. Empty outlines fill the available card area, with the message centered.
+create a card. Empty outlines have a 200px minimum height, with the message centered;
+their columns size to that area instead of filling the viewport.
 Click Add list to create and focus its real column header instead of opening
 a separate creation form. Empty lists say **No cards yet**; filtered lists with no matches
 say **No matching cards**. Keep one Add card control per list as a separate bordered surface below the
@@ -174,6 +176,21 @@ User-selected label colors appear as dots beside their readable names on a
 neutral chip. Do not put low-contrast text on arbitrary label fills. Card facts
 wrap independently from the footer so dates, counts, keys and assignees cannot
 compete for one row. Plain cards still show their key.
+
+The global app bar is 56px high. Board chrome uses a compact project row and
+one toolbar with the Kanban/List switch on the left and card search, Filters and
+Clear aligned right. Search says **Search by card name**. Do not
+give the view switch its own full-width row or repeat the empty-list guidance
+in a separate banner. The toolbar wraps on mobile while keeping 44px targets.
+
+Filters open a non-modal native popover anchored to their button, with member
+names/avatars, label names/colors, due date, selection counts, Reset and Done.
+Opening or changing filters never inserts a header row or moves board content.
+Keep the panel within the viewport and update its position on resize/scroll and
+selection changes. Focus Close on open; Escape/outside click dismiss, and explicit
+close/Done returns focus to the trigger. Reset clears structured filters while
+preserving card search; toolbar Clear resets everything. Active filters persist
+in the URL but never cause the popover to open automatically after reload.
 
 The project header wraps as the available board pane narrows, including when
 the card drawer is open. Filters use the shared input and consistent control
@@ -212,6 +229,10 @@ including metadata bounds and access to list headings and bottom actions.
   User-authored emoji and existing attachment-message content are unaffected.
 - Transitions use 150ms and the shared easing curve. Respect reduced motion;
   do not animate layout or use decorative looping effects.
+  Navigation panels use the documented exception in [Panel motion](NAVIGATION.md#panel-motion):
+  `--duration-panel` is 220ms, with `--ease-ui`, for sidebar/inspector resizing,
+  panel slides and the mobile navigation backdrop. Keep content width stable
+  during travel and make closed/exiting controls inert.
 
 ## Agent workflow and enforcement
 

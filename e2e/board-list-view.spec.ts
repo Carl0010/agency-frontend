@@ -34,8 +34,19 @@ test('Add list creates a full column immediately and focuses its inline name wit
   const [tileBox, columnBox, headerBox, areaBox, emptyBox] = await Promise.all([tile.boundingBox(), column.boundingBox(), column.getByTestId('list-header').boundingBox(), column.getByTestId('list-cards').boundingBox(), column.getByTestId('list-empty-state').boundingBox()]);
   expect(tileBox!.width).toBe(columnBox!.width); expect(tileBox!.width).toBe(320);
   expect(tileBox!.height).toBe(headerBox!.height); expect(tileBox!.height).toBe(60);
-  expect(emptyBox!.height).toBeGreaterThan(200);
+  expect(emptyBox!.height).toBeGreaterThanOrEqual(200);
+  expect(emptyBox!.height).toBeLessThanOrEqual(201);
+  expect(columnBox!.height).toBeLessThan(360);
   expect(Math.abs(areaBox!.height - 4 - emptyBox!.height)).toBeLessThan(2);
+  // Board controls share one compact row, leaving the work area close to the app bar.
+  const toolbar = page.getByTestId('board-toolbar');
+  const views = toolbar.getByRole('group', { name: 'Board view', exact: true });
+  const search = toolbar.getByRole('searchbox', { name: 'Search by card name' });
+  const [toolbarBox, viewsBox, searchBox, projectBox, barBox, listsBox] = await Promise.all([toolbar.boundingBox(), views.boundingBox(), search.boundingBox(), page.getByTestId('board-project-header').boundingBox(), page.getByTestId('workspace-header').boundingBox(), page.getByTestId('board-lists').boundingBox()]);
+  expect(toolbarBox!.height).toBeLessThanOrEqual(56);
+  expect(projectBox!.height).toBeLessThanOrEqual(56);
+  expect(Math.abs(viewsBox!.y + viewsBox!.height / 2 - searchBox!.y - searchBox!.height / 2)).toBeLessThan(2);
+  expect(listsBox!.y - barBox!.height).toBeLessThanOrEqual(112);
   await page.screenshot({ path: info.outputPath('kanban-empty-height.png'), fullPage: true, animations: 'disabled', style: 'nextjs-portal { visibility: hidden; }' });
   await page.route('**/api/v1/boards/*/lists', (route) => route.fulfill({ status: 500, json: { error: { code: 'internal', message: 'Could not create the list.' } } }));
   await tile.click();
@@ -51,7 +62,7 @@ test('Add list creates a full column immediately and focuses its inline name wit
   await expect(name).toHaveValue('New list');
   expect(await name.evaluate((element: HTMLInputElement) => element.selectionStart === 0 && element.selectionEnd === element.value.length)).toBe(true);
   await expect(created.getByRole('button', { name: 'Cancel', exact: true })).toHaveCount(0);
-  await page.screenshot({ path: info.outputPath('list-created-inline.png'), fullPage: true, animations: 'disabled', style: 'nextjs-portal { visibility: hidden; }' });
+  await page.screenshot({ path: info.outputPath('list-created-inline.png'), fullPage: true, animations: 'disabled', style: 'nextjs-portal, [data-testid="toast"] { visibility: hidden; }' });
   await page.route('**/api/v1/lists/*', async (route) => {
     if (route.request().method() === 'PATCH') await route.fulfill({ status: 500, json: { error: { code: 'internal', message: 'Could not save the list name.' } } });
     else await route.continue();
@@ -89,7 +100,7 @@ test('List view shares board filters, creation, ordering, list actions and the n
   await page.screenshot({ path: info.outputPath('list-view-dark.png'), fullPage: true, animations: 'disabled', style: 'nextjs-portal { visibility: hidden; }' });
   await page.reload();
   await expect(page.getByTestId('board-list-view')).toBeVisible();
-  const filter = page.getByRole('searchbox', { name: 'Filter cards' });
+  const filter = page.getByRole('searchbox', { name: 'Search by card name' });
   await filter.fill('Review'); await expect(rows).toHaveCount(1);
   await expect(list(page, 'To do').getByText('No matching cards')).toBeVisible();
   await views.getByRole('button', { name: 'Kanban', exact: true }).click();

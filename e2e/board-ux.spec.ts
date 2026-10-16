@@ -182,6 +182,8 @@ test('a populated board keeps metadata readable and column actions reachable at 
   const cards = column.getByTestId('list-cards');
   await expect(column.getByTestId('card-tile')).toHaveCount(10);
   await expect(column.getByText('Client experience', { exact: true }).first()).toBeVisible();
+  // Short populated lists shrink to their cards; the long list uses the available height.
+  expect((await list(page, 'In progress').boundingBox())!.height).toBeLessThan((await column.boundingBox())!.height);
 
   // A long list scrolls internally without losing its name or Add card control.
   await cards.evaluate((element) => { element.scrollTop = element.scrollHeight; });

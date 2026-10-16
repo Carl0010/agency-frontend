@@ -27,7 +27,7 @@ test('card drawer leaves the board usable, switches cards safely and retains fil
 
   await drawer.getByRole('button', { name: 'Focus board' }).click();
   await expect(page.locator('#board-view')).toBeFocused();
-  const filter = page.getByRole('searchbox', { name: 'Filter cards' });
+  const filter = page.getByRole('searchbox', { name: 'Search by card name' });
   await filter.fill('Review');
   await expect(filter).toBeFocused();
   await expect(drawer.getByTestId('card-title')).toHaveText('Review first concept');
@@ -120,7 +120,7 @@ test('card links support history, full-page reloads and a recoverable unavailabl
   await page.route(`**/api/v1/cards/${cardId}`, (route) => route.fulfill({ status: 404, json: { error: { code: 'not_found', message: 'Card not found.' } } }));
   await unavailable.click();
   await expect(drawer).toContainText('This card does not exist or you cannot see it.');
-  await page.getByRole('searchbox', { name: 'Filter cards' }).fill('brief');
+  await page.getByRole('searchbox', { name: 'Search by card name' }).fill('brief');
   await expect(drawer).toBeVisible();
   await drawer.getByRole('button', { name: 'Close card' }).click();
   await expect(drawer).toHaveCount(0);
