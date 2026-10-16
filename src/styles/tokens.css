@@ -93,6 +93,7 @@
   --text-page: 1.5rem;
   --text-page--line-height: 2rem;
   --ease-ui: cubic-bezier(0.2, 0, 0, 1);
+  --duration-panel: 220ms;
 }
 
 /* Keep status fills and content colors stable; adapt surfaces, text and controls. */

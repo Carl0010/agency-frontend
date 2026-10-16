@@ -63,15 +63,17 @@ export function WorkspaceShell({ children }: { children: ReactNode }) {
         <aside aria-label="Module rail" className="hidden w-14 shrink-0 border-r border-border bg-surface lg:block">
           <ModuleRail activeModule={activeModule} />
         </aside>
-        <aside id="desktop-sidebar" aria-label="Workspace sidebar" className={`${sidebarVisible ? 'hidden lg:block' : 'hidden'} w-64 shrink-0 border-r border-border bg-background`}>
-          <WorkspaceSidebar data={data} projectId={projectId} activeModule={activeModule} />
+        <aside id="desktop-sidebar" aria-label="Workspace sidebar" aria-hidden={!sidebarVisible} inert={!sidebarVisible} data-open={sidebarVisible} className="workspace-sidebar-panel hidden shrink-0 bg-background lg:block">
+          <div className="workspace-sidebar-content h-full w-64 border-r border-border">
+            <WorkspaceSidebar data={data} projectId={projectId} activeModule={activeModule} />
+          </div>
         </aside>
-        {open ? <NavigationDrawer onClose={close}>
+        <NavigationDrawer open={open} onClose={close}>
           <div className="flex h-full min-w-0">
             <div className="w-14 shrink-0 border-r border-border bg-surface"><ModuleRail activeModule={activeModule} onNavigate={close} /></div>
             <div className="min-w-0 flex-1"><WorkspaceSidebar data={data} projectId={projectId} activeModule={activeModule} onNavigate={close} onClose={close} /></div>
           </div>
-        </NavigationDrawer> : null}
+        </NavigationDrawer>
         <div className="flex min-w-0 flex-1 flex-col bg-background">
           <BillingBanners ws={ws} />
           <PushExplainer />

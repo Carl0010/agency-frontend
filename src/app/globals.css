@@ -78,10 +78,72 @@
 .prose-sm a { @apply text-primary underline decoration-primary-border underline-offset-2; }
 .prose-sm code { @apply rounded bg-subtle px-1 text-[0.85em]; }
 
+.workspace-sidebar-panel {
+  width: 16rem;
+  overflow: clip;
+  transition: width var(--duration-panel) var(--ease-ui);
+}
+.workspace-sidebar-content {
+  transition: transform var(--duration-panel) var(--ease-ui), opacity var(--duration-panel) var(--ease-ui);
+}
+.workspace-sidebar-panel[data-open='false'] { width: 0; }
+.workspace-sidebar-panel[data-open='false'] > .workspace-sidebar-content { transform: translateX(-12px); opacity: 0; }
+
+/* Leave native focus/scroll lifecycle to dialog; keep its top-layer rendering
+   alive just long enough to slide out. Older browsers close immediately. */
+.navigation-drawer {
+  transform: translateX(-100%);
+  transition: transform var(--duration-panel) var(--ease-ui),
+    display var(--duration-panel) allow-discrete, overlay var(--duration-panel) allow-discrete;
+}
+.navigation-drawer[open] { transform: translateX(0); }
+.navigation-drawer:not([open]), .navigation-drawer:not([open])::backdrop { pointer-events: none; }
+.navigation-drawer::backdrop {
+  opacity: 0;
+  transition: opacity var(--duration-panel) var(--ease-ui),
+    display var(--duration-panel) allow-discrete, overlay var(--duration-panel) allow-discrete;
+}
+.navigation-drawer[open]::backdrop { opacity: 1; }
+
+.card-drawer-frame {
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  width: 100%;
+  min-height: 0;
+  overflow: clip;
+}
+.card-drawer-panel { transition: transform var(--duration-panel) var(--ease-ui); }
+.card-drawer-frame[data-open='false'] { pointer-events: none; }
+.card-drawer-frame[data-open='false'] > .card-drawer-panel { transform: translateX(100%); }
+@media (min-width: 768px) {
+  .card-drawer-frame {
+    --inspector-width: 28rem;
+    position: relative;
+    inset: auto;
+    flex-shrink: 0;
+    width: var(--inspector-width);
+    transition: width var(--duration-panel) var(--ease-ui);
+  }
+  .card-drawer-panel { width: var(--inspector-width); }
+  .card-drawer-frame[data-open='false'] { width: 0; }
+  @starting-style { .card-drawer-frame { width: 0; } }
+}
+@media (min-width: 1280px) { .card-drawer-frame { --inspector-width: 32rem; } }
+@media (min-width: 1536px) { .card-drawer-frame { --inspector-width: 36rem; } }
+@media (min-width: 1024px) {
+  .navigation-drawer, .navigation-drawer::backdrop { transition: none; }
+}
+@starting-style {
+  .navigation-drawer[open] { transform: translateX(-100%); }
+  .navigation-drawer[open]::backdrop { opacity: 0; }
+  .card-drawer-panel { transform: translateX(100%); }
+}
+
 /* A narrow card inspector uses the work area; workspace navigation stays usable.
    Keep the board mounted, but remove its covered controls from keyboard order. */
 @media (max-width: 767px) {
-  .board-split-view:has(#card-drawer) > #board-view { display: none; }
+  .board-split-view:has(.card-drawer-frame[data-open='true']) > #board-view { display: none; }
 }
 
 html[data-theme='dark'] { color-scheme: dark; }

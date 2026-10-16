@@ -126,6 +126,34 @@ Keep server state in TanStack Query. Sidebar/drawer visibility and browser theme
 Existing API authorization remains authoritative. Billing navigation and plan
 details stay owner-only; do not infer extra permissions from visible links.
 
+## Panel motion
+
+The desktop sidebar and card inspector resize their reserved space with the shared
+`--duration-panel` (220ms) and `--ease-ui` tokens. Their content keeps a stable
+width while sliding, so text does not repeatedly wrap during the transition.
+Rapid sidebar toggles reverse the current transition. Collapsed navigation is
+inert and hidden from assistive technology immediately.
+
+Mobile navigation uses native dialog display/overlay transitions for its slide
+and backdrop fade. Closing releases modal focus and scroll containment without
+waiting for the visual exit; this keeps the search shortcut responsive. Browsers
+without discrete-transition support retain immediate native dismissal.
+
+The board layout owns `CardDrawerHost`; the intercepted route registers the
+current card with it. This retains the inspector through closing transitions,
+including browser Back, without retaining a stale route tree. Exiting content is
+inert and hidden from assistive technology; focus returns to the board at the
+start of closing. Card switches update the open inspector without replaying its
+entrance. Once its own width/slide transitions finish, card content unmounts.
+Navigation away from the board disposes the entire inspector normally.
+
+Reduced-motion preferences remove the visible travel in every panel. This panel
+resize is the specific exception to the general rule against animating content
+layout; do not add layout animations to board cards or unrelated page content.
+`e2e/panel-motion.spec.ts` uses presentation fixtures to check intermediate sizes,
+rapid reversal, history, focus, mobile search handoff and reduced motion. It does
+not verify compatibility with the pending backend contract upgrade.
+
 ## Verification
 
 `e2e/navigation.spec.ts` covers the exact 56px rail width, module switching,

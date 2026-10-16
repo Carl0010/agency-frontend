@@ -229,6 +229,10 @@ including metadata bounds and access to list headings and bottom actions.
   User-authored emoji and existing attachment-message content are unaffected.
 - Transitions use 150ms and the shared easing curve. Respect reduced motion;
   do not animate layout or use decorative looping effects.
+  Navigation panels use the documented exception in [Panel motion](NAVIGATION.md#panel-motion):
+  `--duration-panel` is 220ms, with `--ease-ui`, for sidebar/inspector resizing,
+  panel slides and the mobile navigation backdrop. Keep content width stable
+  during travel and make closed/exiting controls inert.
 
 ## Agent workflow and enforcement
 

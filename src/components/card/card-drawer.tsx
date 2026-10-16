@@ -1,13 +1,50 @@
 'use client';
 
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Suspense, useEffect, useRef } from 'react';
+import { createContext, Suspense, useCallback, useContext, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { Icon } from '@/components/icon';
 import { Button } from '@/components/ui';
 import { CardDetail } from './card-detail';
 
+type DrawerProps = { cardId: string; boardHref: string };
+const DrawerContext = createContext<((card: DrawerProps) => () => void) | null>(null);
+
+/** Keep the inspector present through route-driven exits, including browser Back. */
+export function CardDrawerHost({ children }: { children: ReactNode }) {
+  const [inspector, setInspector] = useState<(DrawerProps & { open: boolean }) | null>(null);
+  const frame = useRef<HTMLDivElement>(null);
+  const register = useCallback((card: DrawerProps) => {
+    setInspector({ ...card, open: true });
+    return () => setInspector((current) => current?.cardId === card.cardId ? { ...current, open: false } : current);
+  }, []);
+
+  useEffect(() => {
+    if (!inspector || inspector.open) return;
+    let cancelled = false;
+    // Resolve actual CSS transitions rather than maintaining a second duration in JS.
+    // No animation support/reduced motion also completes without a delayed timeout.
+    const animations = [
+      ...frame.current?.getAnimations() ?? [],
+      ...frame.current?.querySelector('#card-drawer')?.getAnimations() ?? [],
+    ];
+    void Promise.allSettled(animations.map((animation) => animation.finished)).then(() => {
+      if (!cancelled) setInspector((current) => current?.open ? current : null);
+    });
+    return () => { cancelled = true; };
+  }, [inspector]);
+
+  return <DrawerContext.Provider value={register}>
+    <div className="board-split-view relative flex h-full min-h-0 min-w-0 overflow-hidden">
+      {children}
+      {inspector ? <div ref={frame} data-testid="card-drawer-frame" data-open={inspector.open} aria-hidden={!inspector.open} inert={!inspector.open} className="card-drawer-frame">
+        <Suspense><Drawer {...inspector} /></Suspense>
+      </div> : null}
+    </div>
+  </DrawerContext.Provider>;
+}
+
 /** Non-modal card inspector: board and drawer remain independently usable. */
-function Drawer({ cardId, boardHref }: { cardId: string; boardHref: string }) {
+function Drawer({ cardId, boardHref, open }: DrawerProps & { open: boolean }) {
   const router = useRouter();
   const params = useSearchParams();
   const panel = useRef<HTMLDivElement>(null);
@@ -17,6 +54,7 @@ function Drawer({ cardId, boardHref }: { cardId: string; boardHref: string }) {
   const close = () => router.push(boardUrl, { scroll: false });
 
   useEffect(() => {
+    if (!open) return;
     const element = panel.current;
     element?.querySelector('[data-testid="card-drawer-content"]')?.scrollTo({ top: 0 });
     element?.focus({ preventScroll: true });
@@ -27,7 +65,7 @@ function Drawer({ cardId, boardHref }: { cardId: string; boardHref: string }) {
         (tile ?? document.getElementById('board-view'))?.focus({ preventScroll: true });
       }
     };
-  }, [cardId]);
+  }, [cardId, open]);
 
   return (
     <div
@@ -45,7 +83,7 @@ function Drawer({ cardId, boardHref }: { cardId: string; boardHref: string }) {
           close();
         }
       }}
-      className="absolute inset-0 z-40 flex h-full min-h-0 w-full flex-col border-l border-border bg-surface outline-none md:relative md:inset-auto md:w-[28rem] md:shrink-0 xl:w-[32rem] 2xl:w-[36rem]"
+      className="card-drawer-panel flex h-full min-h-0 w-full flex-col border-l border-border bg-surface outline-none"
     >
       <header className="flex shrink-0 items-center gap-2 border-b border-border px-4 py-3">
         <Icon name="description" className="size-4 text-muted-foreground" />
@@ -68,6 +106,9 @@ function Drawer({ cardId, boardHref }: { cardId: string; boardHref: string }) {
   );
 }
 
-export function CardDrawer(props: { cardId: string; boardHref: string }) {
-  return <Suspense><Drawer {...props} /></Suspense>;
+export function CardDrawer({ cardId, boardHref }: DrawerProps) {
+  const register = useContext(DrawerContext);
+  if (!register) throw new Error('CardDrawer requires CardDrawerHost');
+  useLayoutEffect(() => register({ cardId, boardHref }), [register, cardId, boardHref]);
+  return null;
 }
