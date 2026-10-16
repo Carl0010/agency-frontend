@@ -18,15 +18,15 @@ test('the sidebar owns workspace and project destinations while headers retain l
   await expect(sidebar.getByRole('link', { name: 'View all projects' })).toHaveCount(0);
   await expect(sidebar.getByRole('button', { name: 'Add project', exact: true })).toBeVisible();
   await expect(page.getByTestId('workspace-header').getByRole('navigation')).toHaveCount(0);
-  await expect(page.getByRole('button', { name: 'Share with client' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Share', exact: true })).toBeVisible();
 
   await sidebar.getByRole('link', { name: 'Team Internal' }).click();
   await expect(page).toHaveURL(/\/team$/);
   await expect(page.getByTestId('channel-badge')).toHaveText('Internal');
   await expect(sidebar.getByRole('link', { name: 'Team Internal' })).toHaveAttribute('aria-current', 'page');
-  await sidebar.getByRole('link', { name: 'Chat', exact: true }).click();
+  await sidebar.getByRole('link', { name: 'Shared', exact: true }).click();
   await expect(page).toHaveURL(/\/chat$/);
-  await expect(page.getByTestId('client-reminder')).toBeVisible();
+  await expect(page.getByTestId('shared-reminder')).toBeVisible();
 
   await page.getByRole('button', { name: 'Search workspace' }).click();
   await expect(page.getByTestId('command-palette')).toBeVisible();
@@ -52,12 +52,12 @@ test('the sidebar owns workspace and project destinations while headers retain l
   await sidebar.getByRole('link', { name: /^Projects/ }).click();
   await page.getByRole('button', { name: 'New project' }).click();
   await page.getByLabel('Project name').fill('Northwind launch');
-  await page.getByRole('button', { name: 'Create', exact: true }).click();
+  await page.getByRole('button', { name: 'Create project', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Northwind launch', exact: true })).toBeVisible();
   await expect(sidebar.getByRole('link', { name: 'Northwind launch', exact: true })).toHaveAttribute('aria-current', 'location');
   await expect(sidebar.getByRole('link', { name: 'Board', exact: true })).toHaveAttribute('aria-current', 'page');
-  await sidebar.getByRole('link', { name: 'Chat', exact: true }).click();
-  await expect(page.getByTestId('client-reminder')).toBeVisible();
+  await sidebar.getByRole('link', { name: 'Shared', exact: true }).click();
+  await expect(page.getByTestId('shared-reminder')).toBeVisible();
   await page.context().close();
 });
 
@@ -76,7 +76,7 @@ test('mobile drawer traps focus, closes on navigation/Escape/backdrop, and hands
   await expect(trigger).toBeFocused();
 
   await trigger.click();
-  await drawer.getByRole('link', { name: 'Chat', exact: true }).click();
+  await drawer.getByRole('link', { name: 'Shared', exact: true }).click();
   await expect(page).toHaveURL(/\/chat$/);
   await expect(drawer).toHaveCount(0);
   await page.getByRole('button', { name: 'Search workspace' }).click();

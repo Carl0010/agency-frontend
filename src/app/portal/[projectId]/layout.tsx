@@ -4,8 +4,9 @@ import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useParams, usePathname, useRouter } from 'next/navigation';
 import type { ReactNode } from 'react';
-import { Avatar, GuestChip, Spinner } from '@/components/ui';
-import { api } from '@/lib/api';
+import { Avatar, Button, GuestChip, Spinner } from '@/components/ui';
+import { ProjectIcon } from '@/components/projects/project-icon';
+import { api, errorMessage } from '@/lib/api';
 import { PortalContext, portalProjectsKey } from '@/lib/portal';
 import { useSession } from '@/lib/session';
 import type { Page, PortalProject, Workspace } from '@/lib/types';
@@ -14,7 +15,7 @@ import { WorkspaceContext } from '@/lib/workspace';
 /**
  * Guest view header (§3.6): the agency's name, the project, a `Guest` chip
  * with the access level, a switcher listing only granted projects (AC13),
- * and exactly two tabs — Board and Chat.
+ * and exactly two tabs — Board and Shared.
  */
 export default function PortalProjectLayout({ children }: { children: ReactNode }) {
   const { projectId } = useParams<{ projectId: string }>();
@@ -31,10 +32,11 @@ export default function PortalProjectLayout({ children }: { children: ReactNode 
   });
 
   if (projects.isPending) return <Spinner />;
+  if (projects.error || ws.error) return <main role="alert" className="space-y-3 p-8 text-center"><p>{errorMessage(projects.error ?? ws.error)}</p><Button variant="secondary" onClick={() => { void projects.refetch(); void ws.refetch(); }}>Try again</Button></main>;
   if (!project) {
     return (
       <main className="mx-auto max-w-md p-8 text-center" data-testid="portal-not-found">
-        <h1 className="text-lg font-semibold">Project not found</h1>
+        <h1 className="text-lg font-semibold">You don&apos;t have access to this project</h1>
         <p className="mt-2 text-sm text-secondary-foreground">It does not exist, or it is no longer shared with you.</p>
         <Link className="mt-4 inline-block text-sm text-primary" href="/portal">
           Your projects
@@ -47,7 +49,7 @@ export default function PortalProjectLayout({ children }: { children: ReactNode 
   const base = `/portal/${project.id}`;
   const tabs = [
     { href: base, label: 'Board', current: pathname === base || pathname.startsWith(`${base}/c/`) },
-    { href: `${base}/chat`, label: 'Chat', current: pathname.startsWith(`${base}/chat`) },
+    { href: `${base}/chat`, label: 'Shared', current: pathname.startsWith(`${base}/chat`) },
   ];
   const others = projects.data?.data ?? [];
 
@@ -63,9 +65,9 @@ export default function PortalProjectLayout({ children }: { children: ReactNode 
               {project.workspaceName}
             </span>
             <span className="text-muted-foreground">/</span>
+            <ProjectIcon project={project} />
             <div className="min-w-0">
               <h1 className="truncate font-semibold">{project.name}</h1>
-              {project.clientName ? <p className="truncate text-xs text-muted-foreground">{project.clientName}</p> : null}
             </div>
             <GuestChip access={project.access} />
             {others.length > 1 ? (

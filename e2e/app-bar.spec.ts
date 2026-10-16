@@ -14,7 +14,7 @@ test('app bar spans the viewport with centered search and a reopenable contextua
   await expect(sidebar.getByRole('button', { name: /Search/ })).toHaveCount(0);
   await bar.getByRole('button', { name: 'Close sidebar' }).click();
   await expect(sidebar).toBeHidden(); await expect(rail).toBeVisible();
-  expect((await page.locator('#workspace-content').boundingBox())!.width - expanded!.width).toBe(256);
+  await expect.poll(async () => (await page.locator('#workspace-content').boundingBox())!.width - expanded!.width).toBe(256);
   await rail.getByRole('link', { name: 'Inbox', exact: true }).click();
   await expect(sidebar).toBeHidden();
   await bar.getByRole('button', { name: 'Open sidebar' }).click();

@@ -4,7 +4,7 @@ import { expect, test, type Page } from '@playwright/test';
 // backend contract upgrade. Real-API navigation journeys remain separate.
 async function workspace(page: Page) {
   const person = { id: 'owner', name: 'Motion Owner', avatarUrl: null, active: true };
-  const project = { id: 'project', workspaceId: 'workspace', name: 'Motion project', clientName: null, key: 'MP', color: 'green', icon: 'folder', defaultBoardId: 'board', archivedAt: null, createdAt: '2026-10-16T00:00:00Z' };
+  const project = { id: 'project', workspaceId: 'workspace', name: 'Motion project', teamIds: [], access: 'admin', starredByMe: false, key: 'MP', color: 'green', icon: 'folder', defaultBoardId: 'board', archivedAt: null, createdAt: '2026-10-16T00:00:00Z' };
   const card = { id: 'card', listId: 'list', boardId: 'board', projectId: 'project', number: 1, title: 'Review motion', position: 1, hasDescription: false, dueAt: null, dueCompletedAt: null, archivedAt: null, assignees: [], labels: [], commentCount: 0, attachmentCount: 0, checklistDone: 0, checklistTotal: 0 };
   await page.route('**/api/v1/**', async (route) => {
     const path = new URL(route.request().url()).pathname.replace('/api/v1', '');

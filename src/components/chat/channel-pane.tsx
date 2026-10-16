@@ -3,8 +3,8 @@
 import { useInfiniteQuery, useQuery, useQueryClient, type InfiniteData } from '@tanstack/react-query';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { Avatar, Spinner } from '@/components/ui';
-import { api, errorMessage } from '@/lib/api';
+import { Avatar, Button, Spinner } from '@/components/ui';
+import { api, ApiError, errorMessage } from '@/lib/api';
 import { addMessage, buildRows, deleteMessage, flattenPages, replaceMessage } from '@/lib/chat';
 import { useRoom } from '@/lib/realtime';
 import { useSession } from '@/lib/session';
@@ -24,7 +24,7 @@ const messagesKey = (channelId: string) => ['messages', channelId] as const;
 const threadKey = (rootId: string) => ['thread', rootId] as const;
 
 /**
- * §3.4 client channel (`kind = client`) and Team channel (`kind = internal`):
+ * §3.4 shared channel (`kind = shared`) and Team channel (`kind = internal`):
  * message list oldest→newest with day dividers and author grouping, the "New
  * messages" line at the read marker, infinite scroll upwards that keeps the
  * viewport still, a right-hand thread pane, typing indicators, and realtime.
@@ -63,8 +63,8 @@ export function ChannelPane({
   });
   // A guest's roster is already narrowed by the API to people they may know (AC8).
   const members = useQuery({
-    queryKey: ['members', ws.id],
-    queryFn: () => api.get<Page<RosterEntry & { status?: string }>>(`/workspaces/${ws.id}/members`),
+    queryKey: ['project-people', ws.id, projectId, kind],
+    queryFn: () => api.get<Page<RosterEntry & { status?: string }>>(`/workspaces/${ws.id}/members?mentionable=true&projectId=${projectId}&surface=${kind}`),
   });
   const channel = channels.data?.data.find((c) => c.kind === kind) ?? null;
   const channelId = channel?.id ?? null;
@@ -235,8 +235,11 @@ export function ChannelPane({
   };
 
   if (channels.isPending) return <Spinner />;
-  if (channels.error) return <p className="p-8 text-center text-secondary-foreground">{errorMessage(channels.error)}</p>;
-  if (!channel) return <p className="p-8 text-center text-secondary-foreground">This channel does not exist.</p>;
+  if (channels.error || messages.error) {
+    const error = channels.error ?? messages.error;
+    return <div role="alert" className="space-y-3 p-8 text-center"><p>{error instanceof ApiError && error.code === 'not_found' ? "You don't have access to this project" : errorMessage(error)}</p><Button variant="secondary" onClick={() => { void channels.refetch(); void messages.refetch(); }}>Retry channel</Button></div>;
+  }
+  if (!channel) return <p role="alert" className="p-8 text-center text-secondary-foreground">You don&apos;t have access to this project</p>;
 
   const isAdmin = ws.role === 'owner' || ws.role === 'admin';
   const linkFor = (m: Message) => (m.threadRootId ? `${linkBase}?thread=${m.threadRootId}&m=${m.id}` : `${linkBase}?m=${m.id}`);
@@ -251,10 +254,10 @@ export function ChannelPane({
                 {channel.name}
               </h2>
               <span
-                className={`rounded px-1.5 py-0.5 text-xs font-medium ${kind === 'client' ? 'bg-primary-subtle text-primary-text' : 'bg-muted text-secondary-foreground'}`}
+                className={`rounded px-1.5 py-0.5 text-xs font-medium ${kind === 'shared' ? 'bg-primary-subtle text-primary-text' : 'bg-muted text-secondary-foreground'}`}
                 data-testid="channel-badge"
               >
-                {kind === 'client' ? 'Client' : 'Internal'}
+                {kind === 'shared' ? 'Shared' : 'Internal'}
               </span>
               <div className="ml-auto flex -space-x-1.5">
                 {people.slice(0, 6).map((m) => (
@@ -262,9 +265,9 @@ export function ChannelPane({
                 ))}
               </div>
             </header>
-            {kind === 'client' && audience === 'member' ? (
-              <p className="border-b border-info-border bg-info-subtle px-3 py-1 text-xs text-info-text" data-testid="client-reminder">
-                Your client can read and post here.
+            {kind === 'shared' && audience === 'member' ? (
+              <p className="border-b border-info-border bg-info-subtle px-3 py-1 text-xs text-info-text" data-testid="shared-reminder">
+                Guests can read this. Guests with comment access can post here.
               </p>
             ) : null}
             <div
@@ -399,7 +402,7 @@ function ThreadPane({
         {thread.isPending ? (
           <Spinner />
         ) : thread.error ? (
-          <p className="p-4 text-sm text-secondary-foreground">{errorMessage(thread.error)}</p>
+          <p role="alert" className="p-4 text-sm text-secondary-foreground">{thread.error instanceof ApiError && thread.error.code === 'not_found' ? "You don't have access to this project" : errorMessage(thread.error)}</p>
         ) : (
           <>
             <MessageItem message={thread.data.root} grouped={false} now={now} myId={user?.id ?? null} isAdmin={isAdmin} highlighted={false} inThread linkFor={linkFor} />

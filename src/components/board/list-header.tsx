@@ -14,8 +14,8 @@ import type { Board, BoardList } from '@/lib/types';
 type HeaderDrag = Pick<ReturnType<typeof useSortable>, 'attributes' | 'listeners' | 'setActivatorNodeRef' | 'isDragging'> & { disabled: boolean };
 
 /** The same 60px list heading, counts and actions in Kanban and List views. */
-export function ListHeader({ list, count, boardId, leading, drag, startEditing = false, onEditingFinished }: {
-  list: BoardList; count: number; boardId: string; leading?: ReactNode; drag?: HeaderDrag; startEditing?: boolean; onEditingFinished?: () => void;
+export function ListHeader({ list, count, boardId, leading, drag, startEditing = false, onEditingFinished, compact = false }: {
+  list: BoardList; count: number; boardId: string; leading?: ReactNode; drag?: HeaderDrag; startEditing?: boolean; onEditingFinished?: () => void; compact?: boolean;
 }) {
   const qc = useQueryClient();
   const toast = useToast();
@@ -71,7 +71,7 @@ export function ListHeader({ list, count, boardId, leading, drag, startEditing =
     catch (error) { toast(errorMessage(error)); }
   }
   return <header data-testid="list-header" onMouseDown={startDrag} onTouchStart={startDrag}
-    className={`flex h-15 shrink-0 items-center gap-2 px-3 py-3 ${drag && !drag.disabled && !editing ? 'cursor-grab select-none active:cursor-grabbing' : ''}`}>
+    className={`flex shrink-0 items-center gap-2 ${compact ? 'h-12 px-2' : 'h-15 px-3 py-3'} ${drag && !drag.disabled && !editing ? 'cursor-grab select-none active:cursor-grabbing' : ''}`}>
     {leading}
     {editing ? <Input ref={input} data-no-list-drag disabled={saving} aria-busy={saving} aria-invalid={Boolean(nameError)} aria-describedby={nameError ? `${menuId}-name-error` : undefined} defaultValue={list.name} aria-label="List name" maxLength={120}
       onBlur={(event) => void rename(event.target.value)}

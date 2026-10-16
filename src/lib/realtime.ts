@@ -85,9 +85,15 @@ export function useProjectRealtime(projectId: string | undefined): void {
 
     roomRefs.set(room, (roomRefs.get(room) ?? 0) + 1);
     const join = () => {
-      s.emit('join', { room });
-      // Anything missed while disconnected is picked up by a refetch.
-      void qc.invalidateQueries({ queryKey: ['board'] });
+      s.emit('join', { room }, (ack: { ok: boolean }) => {
+        if (!ack.ok) {
+          void qc.resetQueries({ queryKey: ['project', projectId] });
+          void qc.invalidateQueries({ queryKey: ['projects'] });
+        }
+        // A failed rejoin must also remove the old board snapshot.
+        if (!ack.ok) void qc.resetQueries({ queryKey: ['board'] });
+        else void qc.invalidateQueries({ queryKey: ['board'] });
+      });
     };
     const onTile = ({ card }: { card: CardTile }) => {
       applyTile(qc, card);
@@ -175,6 +181,7 @@ export function useRoom(
   handlers: Record<string, (payload: never) => void>,
   onJoin?: () => void,
 ): void {
+  const qc = useQueryClient();
   // Handlers change every render; keep the latest without re-subscribing.
   const ref = useRef({ handlers, onJoin });
   ref.current = { handlers, onJoin };
@@ -186,8 +193,12 @@ export function useRoom(
     ensurePinger(s);
     roomRefs.set(room, (roomRefs.get(room) ?? 0) + 1);
     const join = () => {
-      s.emit('join', { room });
-      ref.current.onJoin?.();
+      s.emit('join', { room }, (ack: { ok: boolean }) => {
+        if (!ack.ok) {
+          for (const key of ['project', 'card', 'channels', 'projects']) void qc.resetQueries({ queryKey: [key] });
+        }
+        ref.current.onJoin?.();
+      });
     };
     const bound = events
       .split('|')
@@ -209,7 +220,7 @@ export function useRoom(
         s.emit('leave', { room });
       }
     };
-  }, [room, events]);
+  }, [room, events, qc]);
 }
 
 /** Listens to an event on this user's own room (`user:{id}`, joined by the server at connect). */

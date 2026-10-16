@@ -24,6 +24,17 @@ For navigation changes also read [sidebar responsibilities](docs/NAVIGATION.md).
   contextual sidebar owns the selected module's links, project menus and account controls.
   The top app bar owns centered global search, sidebar visibility and a labelled theme switch.
   Page headers own local actions. Do not duplicate a project rail or member tabs.
+- Projects are visible through team shares or direct grants. Sidebar groups use
+  `teamIds`; Starred reads the full `?starred=true` collection from the API. Keep
+  saved icons and personal stars server-backed. Workspace settings own Teams.
+- Only `project.access === 'admin'` exposes sharing and guest mutations. Team
+  management follows `myRole` plus workspace owner/admin access. People pickers
+  use project-scoped roster queries; never assign from the whole workspace list.
+- Use Shared (`kind: 'shared'`, `surface=shared`), `fromGuest`, and guest. Never
+  send the removed `clientName` field. `/chat` and `/team` URLs remain stable.
+- Handle project `404 not_found` as no access. Access-change events clear stale
+  project content; reconnects refetch while preserving unrelated drafts. New
+  grants require fresh reads; the API only guarantees narrowing events.
 - Member card details use a non-modal right drawer. Keep desktop board controls
   active; do not add a blocking backdrop, focus trap or document scroll lock.
 - Board presentations follow [docs/BOARD_VIEWS.md](docs/BOARD_VIEWS.md). Keep view/filter

@@ -26,6 +26,16 @@ export function useBilling(ws: Workspace) {
   });
 }
 
+/** Owner flags are server-computed; other members use the published status gates. */
+export function useWriteAvailability(ws: Workspace) {
+  const billing = useBilling(ws);
+  const status = ws.subscription?.status;
+  return {
+    readOnly: billing.data?.notice.readOnly ?? (status ? READ_ONLY.has(status) : false),
+    invitesBlocked: billing.data?.notice.invitesBlocked ?? (status ? status !== 'trialing' && status !== 'active' : false),
+  };
+}
+
 const fmtDate = (iso: string) => new Date(iso).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
 
 /** "14 days left in trial · Add billing" — amber at ≤ 3 days (§8.2). */

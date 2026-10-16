@@ -7,7 +7,13 @@ test('sidebar creates and edits a project through its own menu, preserving faile
   await sidebar.getByRole('button', { name: 'Add project', exact: true }).click();
   const create = page.getByRole('dialog', { name: 'New project', exact: true });
   await create.getByLabel('Project name').fill('Northwind launch');
-  await create.getByLabel('Client name').fill('Northwind');
+
+  await create.getByRole('radio', { name: 'rocket', exact: true }).check();
+  await create.getByRole('radio', { name: 'rocket', exact: true }).focus();
+  await page.keyboard.press('ArrowRight');
+  await expect(create.getByRole('radio', { name: 'folder', exact: true })).toBeChecked();
+  await page.keyboard.press('ArrowLeft');
+  await expect(create.getByRole('radio', { name: 'rocket', exact: true })).toBeChecked();
   await create.getByRole('radio', { name: 'violet', exact: true }).check();
   await page.route('**/api/v1/workspaces/*/projects', async (route) => {
     if (route.request().method() === 'POST') await route.fulfill({ status: 403, json: { error: { code: 'READ_ONLY', message: 'This workspace is read-only.' } } });
@@ -28,8 +34,9 @@ test('sidebar creates and edits a project through its own menu, preserving faile
   await menu.getByRole('button', { name: 'Edit project', exact: true }).click();
   const editor = page.getByRole('dialog', { name: 'Edit project', exact: true });
   await expect(editor.getByRole('radio', { name: 'violet', exact: true })).toBeChecked();
+  await expect(editor.getByRole('radio', { name: 'rocket', exact: true })).toBeChecked();
   await editor.getByLabel('Project name').fill('Northwind release');
-  await editor.getByLabel('Client name').fill('');
+
   await editor.getByRole('radio', { name: 'teal', exact: true }).check();
   await editor.getByRole('button', { name: 'Save changes' }).click();
   await expect(editor).toHaveCount(0);
@@ -39,7 +46,7 @@ test('sidebar creates and edits a project through its own menu, preserving faile
   await sidebar.getByRole('button', { name: 'Project actions for Northwind release' }).click();
   await page.getByRole('group', { name: 'Northwind release actions' }).getByRole('button', { name: 'Edit project', exact: true }).click();
   await expect(editor.getByRole('radio', { name: 'teal', exact: true })).toBeChecked();
-  await expect(editor.getByLabel('Client name')).toHaveValue('');
+  await expect(editor.getByLabel('Project name')).toHaveValue('Northwind release');
   await page.screenshot({ path: info.outputPath('project-editor.png'), fullPage: true, animations: 'disabled', style: 'nextjs-portal { visibility: hidden; }' });
   await page.context().close();
 });

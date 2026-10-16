@@ -66,7 +66,7 @@ test('AC26 a brand-new user reaches a board with ≥ 6 real cards in under 3 min
   await page.getByLabel('Agency name').fill(`Timed Studio ${stamp}`);
   await page.getByRole('button', { name: 'Continue' }).click();
   await page.getByLabel('Project name').fill('Northwind rebrand');
-  await page.getByLabel('Client name').fill('Northwind');
+
   await page.getByRole('button', { name: 'Create project' }).click();
   await page.getByRole('heading', { name: 'Invite your team' }).waitFor();
   await page.getByRole('button', { name: 'Skip', exact: true }).click();
@@ -97,7 +97,7 @@ test('AC26 a brand-new user reaches a board with ≥ 6 real cards in under 3 min
   // Chat moved to navigation; the final step must still have a mobile anchor.
   await page.setViewportSize({ width: 390, height: 844 });
   await mark.getByRole('button', { name: 'Next' }).click();
-  await expect(mark).toContainText('Open the client channel');
+  await expect(mark).toContainText('Open the shared channel');
   await expect(page.getByRole('button', { name: 'Open navigation' })).toBeVisible();
   await mark.getByRole('button', { name: 'Done' }).click();
   await expect(mark).toHaveCount(0);
@@ -108,7 +108,7 @@ test('AC26 a brand-new user reaches a board with ≥ 6 real cards in under 3 min
 
   // AC20: step 3 was skipped, so the chip offers to finish it (3/4).
   await page.setViewportSize({ width: 1280, height: 720 });
-  await expect(page.getByTestId('setup-chip')).toContainText('Finish setup (3/4)');
+  await expect(page.getByTestId('setup-chip').filter({ visible: true })).toContainText('Finish setup (3/4)');
 });
 
 test('AC20 closing the tab mid-step resumes at the same step; the chip stays until dismissed', async ({ browser }) => {
@@ -137,16 +137,16 @@ test('AC20 closing the tab mid-step resumes at the same step; the chip stays unt
   // Leave for later: the chip brings the stepper back until dismissed.
   await again.getByRole('button', { name: 'Finish setup later' }).click();
   await expect(again).toHaveURL(/\/w\/[^/]+\/projects$/);
-  const chip = again.getByTestId('setup-chip');
+  const chip = again.getByTestId('setup-chip').filter({ visible: true });
   await expect(chip).toContainText('Finish setup (2/4)');
   await chip.getByRole('link').click();
   await expect(again.getByRole('heading', { name: 'Invite your team' })).toBeVisible();
   await again.goBack();
-  await again.getByTestId('setup-chip').getByRole('button', { name: 'Dismiss setup' }).click();
-  await expect(again.getByTestId('setup-chip')).toHaveCount(0);
+  await again.getByTestId('setup-chip').filter({ visible: true }).getByRole('button', { name: 'Dismiss setup' }).click();
+  await expect(again.getByTestId('setup-chip').filter({ visible: true })).toHaveCount(0);
   await again.reload();
-  await expect(again.getByRole('heading', { name: 'Clients' })).toBeVisible();
-  await expect(again.getByTestId('setup-chip')).toHaveCount(0);
+  await expect(again.getByRole('heading', { name: 'Projects' })).toBeVisible();
+  await expect(again.getByTestId('setup-chip').filter({ visible: true })).toHaveCount(0);
 });
 
 test('AC27 + AC28 invited people skip setup: a member lands on projects with the tour, a guest in the portal with neither', async ({ browser, request }) => {
@@ -156,13 +156,17 @@ test('AC27 + AC28 invited people skip setup: a member lands on projects with the
   const project = (await (await request.get(`/api/v1/projects/${projectId}`, { headers: auth })).json()) as { workspaceId: string };
 
   const memberEmail = `e2e-member-${Date.now()}@example.test`;
-  expect((await request.post(`/api/v1/workspaces/${project.workspaceId}/members/invites`, { headers: auth, data: { email: memberEmail, role: 'member' } })).ok()).toBeTruthy();
+  const teamResponse = await request.post(`/api/v1/workspaces/${project.workspaceId}/teams`, { headers: auth, data: { name: 'Delivery' } });
+  expect(teamResponse.ok()).toBeTruthy();
+  const team = await teamResponse.json() as { id: string };
+  expect((await request.put(`/api/v1/projects/${projectId}/teams/${team.id}`, { headers: auth })).ok()).toBeTruthy();
+  expect((await request.post(`/api/v1/workspaces/${project.workspaceId}/members/invites`, { headers: auth, data: { email: memberEmail, role: 'member', teamIds: [team.id] } })).ok()).toBeTruthy();
   const member = await (await browser.newContext()).newPage();
   await acceptInvite(member, await knownInviteToken(memberEmail, 'member'), 'New Teammate');
   await expect(member).toHaveURL(/\/w\/[^/]+\/projects$/);
-  await expect(member.getByTestId('coach-mark')).toContainText('Open a client project');
+  await expect(member.getByTestId('coach-mark')).toContainText('Open a project');
   await expect(member.getByText('Name your workspace')).toHaveCount(0);
-  await expect(member.getByTestId('setup-chip')).toHaveCount(0);
+  await expect(member.getByTestId('setup-chip').filter({ visible: true })).toHaveCount(0);
   // Billing is the owner's: no nav entry, and the screen says so.
   await expect(member.getByRole('link', { name: 'Billing' })).toHaveCount(0);
 
@@ -174,8 +178,8 @@ test('AC27 + AC28 invited people skip setup: a member lands on projects with the
   await expect(guest.getByTestId('portal-layout')).toBeVisible();
   await guest.waitForTimeout(1000);
   await expect(guest.getByTestId('coach-mark')).toHaveCount(0);
-  await expect(guest.getByTestId('setup-chip')).toHaveCount(0);
-  await expect(guest.getByTestId('trial-pill')).toHaveCount(0);
+  await expect(guest.getByTestId('setup-chip').filter({ visible: true })).toHaveCount(0);
+  await expect(guest.getByTestId('trial-pill').filter({ visible: true })).toHaveCount(0);
   await expect(guest.locator('body')).not.toContainText(/trial|seats|billing/i);
   await owner.close();
 });
@@ -184,7 +188,7 @@ test('billing screen: owner sees plan and trial; forced cancel drops to read-onl
   const { page, account } = await signupToBoard(browser);
   const slug = new URL(account.boardUrl).pathname.split('/')[2] ?? '';
 
-  await expect(page.getByTestId('trial-pill')).toContainText('14 days left in trial');
+  await expect(page.getByTestId('trial-pill').filter({ visible: true })).toContainText('14 days left in trial');
   await page.getByRole('navigation', { name: 'Main modules' }).getByRole('link', { name: 'Workspace', exact: true }).click();
   await page.getByRole('link', { name: 'Billing', exact: true }).click();
   await expect(page).toHaveURL(new RegExp(`/w/${slug}/settings/billing$`));
@@ -203,6 +207,11 @@ test('billing screen: owner sees plan and trial; forced cancel drops to read-onl
   await page.goto(account.boardUrl);
   await expect(page.getByTestId('read-only-banner')).toContainText('read-only');
   await expect(page.getByTestId('card-tile').or(page.getByTestId('list-column')).first()).toBeVisible();
+  const sidebar = page.getByRole('complementary', { name: 'Workspace sidebar' });
+  await sidebar.getByRole('button', { name: 'Project actions for Acme site rebuild' }).click();
+  await page.getByRole('button', { name: 'Star Acme site rebuild', exact: true }).click();
+  await expect(sidebar.getByRole('region', { name: 'Starred', exact: true })).toBeVisible();
+  await page.keyboard.press('Escape');
 
   const download = page.waitForEvent('download');
   await page.getByTestId('read-only-banner').getByRole('button', { name: 'Export JSON' }).click();

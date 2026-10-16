@@ -30,7 +30,7 @@ test('workspace and board use the system without breaking the narrow layout', as
 
   const slug = new URL(account.boardUrl).pathname.split('/')[2];
   await page.goto(`/w/${slug}/projects`);
-  await expect(page.getByRole('heading', { name: 'Clients', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Projects', exact: true })).toBeVisible();
   await expect(page.getByRole('navigation', { name: 'Project navigation' }).getByRole('link', { name: 'Projects' })).toHaveAttribute('aria-current', 'page');
   await page.screenshot({ path: info.outputPath('projects-desktop.png'), fullPage: true });
 

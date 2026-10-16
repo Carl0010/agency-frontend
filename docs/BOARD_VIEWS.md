@@ -22,7 +22,7 @@ The panel is non-modal and never expands the header or shifts board content.
 It clamps to the viewport, repositions on resize/scroll and keeps long option
 lists scrollable. Escape/outside click dismiss; Close/Done returns to the trigger.
 Reset preserves card search; the toolbar Clear resets all filters. Reload restores
-the selected filters with the panel closed. Filtering still disables Kanban drag.
+the selected filters with the panel closed. Filtering disables drag sorting in both views.
 Client-only filter changes use Next's integrated History API and compose against
 the latest URL, so quick selections accumulate without a server navigation per click.
 
@@ -50,8 +50,8 @@ arrows move, Space drops and Escape cancels. A normal title click renames;
 ending a drag must not open rename. Menus and the rename field never activate
 header dragging. Pointer and keyboard list targeting both use the 60px header
 rectangles, so different card counts do not affect the reorder target.
-Filtering keeps list/card sorting disabled as before. The List
-presentation retains its collapse control and does not enable group dragging.
+Filtering keeps list/card sorting disabled in both presentations. List uses
+explicit hover/focus handles rather than the whole-header Kanban drag area.
 
 The board canvas uses a lighter shade of the sidebar's warm neutral palette
 through `board-canvas` in light and dark mode; navigation keeps `background`. Card and toolbar surfaces
@@ -59,10 +59,15 @@ retain their existing semantic roles.
 
 ## List layout
 
-- Groups follow the board's lists, including empty lists. Headers show the list
-  name, filtered/total count, collapse control and Rename/Archive actions.
-- Rows show card key/title, assignees, due date, labels and activity. A native link
-  opens the card drawer by click or Enter; selection is visible and announced.
+- One semantic table contains list section rows and card subrows, including empty
+  lists. Section headers are 48px; desktop card rows are approximately 40px.
+  Headers show the name, filtered/total count, collapse and Rename/Archive actions.
+- Rows show card key/title, assignees, due date, labels and activity. The card key
+  is a native link opening the drawer; its accessible name includes the full title.
+  Clicking the title edits the name inline. Enter/blur saves, Escape cancels,
+  and a failed save retains the draft with an error and retry. Assignee and due
+  cells open non-modal editors, backed by the existing API and shared card cache.
+  Assignees come from the project-scoped roster, never the whole workspace.
 - Groups collapse independently. Table and composer controls are hidden from
   keyboard navigation while collapsed; expanding restores them.
 - At a content width of at least 768px, metadata has labelled table columns.
@@ -73,8 +78,13 @@ retain their existing semantic roles.
 - Labels keep readable names beside their colored dots; no color-only statuses.
   Both themes use existing semantic tokens and 44px mobile touch targets.
 - Shared filters apply across groups. Empty lists and groups with no matching
-  cards have distinct messages. List view does not offer drag sorting; use
-  Kanban for dragging or the card drawer's List control to move a card.
+  cards have distinct messages. Hover/focus reveals explicit list/card drag
+  handles; touch devices show them persistently. Space lifts/drops, arrows reorder
+  and Escape cancels. Cards can move between lists through the same move API.
+- Lifting an expanded list temporarily closes only that list. Drop, cancellation
+  or a failed save restores its previous expansion state. Other lists retain
+  their state. Failed moves restore the authoritative snapshot and show errors.
+  Drag is disabled during filters and pending inline card writes.
 
 ## Existing API actions
 
@@ -97,6 +107,12 @@ and retry, URL restoration, shared filtering/order, row drawer interactions,
 collapse/rename/archive, mobile creation, light/dark previews and overflow.
 Existing Kanban drag, card drawer and onboarding journeys remain regression
 coverage. Screenshots are indexed in `docs/previews/README.md`.
+
+`e2e/list-editing.spec.ts` covers the single table, inline name/assignment/date
+editing and retry, card cache/drawer synchronization, hover/touch handles,
+cross-list moves, section collapse restoration, failed reorder rollback,
+mobile editors and both themes. Hidden desktop metadata never reserves mobile
+table columns; the visible Card column owns the full narrow-table width.
 
 `e2e/list-header.spec.ts` covers canvas/sidebar separation in both themes, whole
 header pointer dragging, title/menu editing, filtering, keyboard reordering and

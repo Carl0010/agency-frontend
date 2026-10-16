@@ -137,7 +137,7 @@ export interface PortalProject {
   workspaceId: string;
   workspaceName: string;
   name: string;
-  clientName: string | null;
+  icon: string;
   key: string;
   color: string;
   defaultBoardId: string;
@@ -167,15 +167,52 @@ export interface Project {
   id: string;
   workspaceId: string;
   name: string;
-  clientName: string | null;
   key: string;
   color: string;
-  /** Saved icon identifier; optional while older API deployments roll forward. */
-  icon?: string;
+  /** Saved identifier; render unknown values with the folder fallback. */
+  icon: string;
+  teamIds: string[];
+  access: 'edit' | 'admin';
+  starredByMe: boolean;
   defaultBoardId: string;
   archivedAt: string | null;
   createdAt: string;
 }
+
+export type TeamRole = 'admin' | 'member';
+export type MemberProjectAccess = 'edit' | 'admin';
+export type ProjectIconName = 'folder' | 'board' | 'briefcase' | 'code' | 'megaphone' | 'pen' | 'globe' | 'rocket';
+export interface Team {
+  id: string;
+  workspaceId: string;
+  name: string;
+  memberCount: number;
+  myRole: TeamRole | null;
+  archivedAt: string | null;
+  createdAt: string;
+}
+export interface TeamMember {
+  userId: string;
+  name: string;
+  avatarUrl: string | null;
+  role: TeamRole;
+  guest: boolean;
+  access: GuestAccess | null;
+  status: 'active' | 'invited';
+}
+export interface TeamDetail extends Team { members: TeamMember[] }
+export interface ProjectAccess {
+  projectId: string;
+  teams: Pick<Team, 'id' | 'name' | 'memberCount'>[];
+  members: {
+    userId: string;
+    name: string;
+    avatarUrl: string | null;
+    role: Role;
+    access: MemberProjectAccess;
+  }[];
+}
+export interface ProjectStar { projectId: string; starredByMe: boolean }
 
 export interface Label {
   id: string;
@@ -227,7 +264,7 @@ export interface Board {
   project: {
     id: string;
     name: string;
-    clientName: string | null;
+    icon: string;
     key: string;
     color: string;
     workspaceId: string;
@@ -300,7 +337,7 @@ export interface ErrorEnvelope {
 // Slice 2: chat, notifications, search
 // ---------------------------------------------------------------------------
 
-export type ChannelKind = 'client' | 'internal';
+export type ChannelKind = 'shared' | 'internal';
 
 export interface Channel {
   id: string;
@@ -353,7 +390,7 @@ export interface AppNotification {
   url: string;
   readAt: string | null;
   createdAt: string;
-  fromClient: boolean;
+  fromGuest: boolean;
 }
 
 export interface NotificationFeed extends Page<AppNotification> {

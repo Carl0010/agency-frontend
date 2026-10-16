@@ -13,6 +13,8 @@ import { api, errorMessage } from '@/lib/api';
 import type { Page, Project } from '@/lib/types';
 import { useWorkspaceChannels } from '@/lib/unread';
 import { useWorkspace } from '@/lib/workspace';
+import { useAccessSync } from '@/lib/access-sync';
+import { useTeams } from '@/lib/teams';
 import { ModuleRail } from './module-rail';
 import { ThemeToggle } from './theme-toggle';
 import { workspaceModule } from './workspace-modules';
@@ -22,6 +24,7 @@ import { WorkspaceSidebar, type SidebarData } from './workspace-sidebar';
 /** Module rail and contextual sidebar for all member routes; never imported by the guest portal. */
 export function WorkspaceShell({ children }: { children: ReactNode }) {
   const ws = useWorkspace();
+  useAccessSync();
   const pathname = usePathname();
   const activeModule = workspaceModule(pathname, `/w/${ws.slug}`);
   const { projectId } = useParams<{ projectId?: string }>();
@@ -29,15 +32,17 @@ export function WorkspaceShell({ children }: { children: ReactNode }) {
   const [sidebarVisible, setSidebarVisible] = useState(true);
   const close = useCallback(() => setOpen(false), []);
   const projects = useQuery({ queryKey: ['projects', ws.id], queryFn: () => api.get<Page<Project>>(`/workspaces/${ws.id}/projects`) });
+  const teams = useTeams(ws.id);
+  const starred = useQuery({ queryKey: ['projects', ws.id, { starred: true }], queryFn: () => api.get<Page<Project>>(`/workspaces/${ws.id}/projects?starred=true`) });
   // One subscription owner: mounting mobile navigation must not double-count live activity.
   const unread = useWorkspaceChannels();
   // Clear the old route's drawer before paint so a quick reopen belongs to the new route.
   useLayoutEffect(() => { close(); }, [pathname, close]);
 
   const data: SidebarData = {
-    projects: projects.data?.data ?? [], pending: projects.isPending,
-    error: projects.error ? errorMessage(projects.error) : null,
-    retry: () => { void projects.refetch(); }, channels: unread.channels,
+    projects: projects.data?.data ?? [], teams: teams.data?.data ?? [], starred: starred.data?.data ?? [], pending: projects.isPending,
+    error: projects.error || teams.error || starred.error ? errorMessage(projects.error ?? teams.error ?? starred.error) : null,
+    retry: () => { void projects.refetch(); void teams.refetch(); void starred.refetch(); }, channels: unread.channels,
   };
   const search = () => {
     close();
@@ -50,7 +55,7 @@ export function WorkspaceShell({ children }: { children: ReactNode }) {
       <a href="#workspace-content" className="sr-only z-50 rounded-md bg-surface p-3 text-primary focus:not-sr-only focus:fixed focus:left-4 focus:top-4">Skip to content</a>
       <header aria-label="Application bar" data-testid="workspace-header" className="grid h-14 shrink-0 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 border-b border-border bg-surface px-3 sm:gap-4 sm:px-5 lg:grid-cols-[1fr_minmax(20rem,36rem)_1fr]">
         <div className="flex min-w-0 items-center gap-3">
-          <Button variant="ghost" size="icon" className="lg:hidden" aria-label="Open navigation" aria-expanded={open} aria-haspopup="dialog" data-tour={projectId ? 'client-channel' : undefined} onClick={() => setOpen(true)}><Icon name="menu" className="size-5" /></Button>
+          <Button variant="ghost" size="icon" className="lg:hidden" aria-label="Open navigation" aria-expanded={open} aria-haspopup="dialog" data-tour={projectId ? 'shared-channel' : undefined} onClick={() => setOpen(true)}><Icon name="menu" className="size-5" /></Button>
           <Button variant="ghost" size="icon" className="hidden lg:inline-flex" aria-label={sidebarVisible ? 'Close sidebar' : 'Open sidebar'} aria-expanded={sidebarVisible} aria-controls="desktop-sidebar" onClick={() => setSidebarVisible((visible) => !visible)}><Icon name="menu" className="size-5" /></Button>
           <Link href={`/w/${ws.slug}/projects`} aria-label="Agency home" className="hidden min-w-0 items-center gap-2.5 rounded-md sm:flex"><BrandMark /><span className="truncate text-body font-semibold">Agency</span></Link>
         </div>

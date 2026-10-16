@@ -6,13 +6,15 @@ import { DuePill } from '@/components/due-pill';
 import { Markdown } from '@/components/markdown';
 import { useToast } from '@/components/toast';
 import { Avatar, Button, LABEL_BG, Spinner } from '@/components/ui';
-import { api, ApiError, errorMessage } from '@/lib/api';
+import { api, errorMessage } from '@/lib/api';
 import { MentionScopeContext } from '@/lib/mention-scope';
 import { applyTile, useProjectRealtime, useRoom } from '@/lib/realtime';
 import { timeAgo, toLocalInput } from '@/lib/time';
-import type { Board, CardDetail as Detail, CardTile, Label, Member, Page } from '@/lib/types';
+import type { Board, CardDetail as Detail, CardTile, Label, Page } from '@/lib/types';
 import { useNow } from '@/lib/use-now';
 import { useWorkspace } from '@/lib/workspace';
+import { useProjectPeople } from '@/lib/project-people';
+import { ProjectError } from '@/components/projects/project-error';
 import { Attachments } from './attachments';
 import { Checklists } from './checklists';
 import { Comments } from './comments';
@@ -43,7 +45,7 @@ export function CardDetail({ cardId, boardHref, layout = 'page' }: { cardId: str
 
   if (card.isPending) return <Spinner />;
   if (card.error) {
-    return <p className="p-8 text-center text-secondary-foreground">{card.error instanceof ApiError && card.error.status === 404 ? 'This card does not exist or you cannot see it.' : errorMessage(card.error)}</p>;
+    return <ProjectError error={card.error} retry={() => void card.refetch()} />;
   }
   const c = card.data;
   const createdBy = (
@@ -183,7 +185,7 @@ function Popover({ label, children }: { label: string; children: (close: () => v
 
 function Assignees({ card, onToggle }: { card: Detail; onToggle: (userId: string, on: boolean) => Promise<void> }) {
   const ws = useWorkspace();
-  const members = useQuery({ queryKey: ['members', ws.id], queryFn: () => api.get<Page<Member>>(`/workspaces/${ws.id}/members`) });
+  const members = useProjectPeople(ws.id, card.projectId);
   const assignable = (members.data?.data ?? []).filter((m) => m.status === 'active' && m.role !== 'guest');
   const assigned = new Set(card.assignees.map((a) => a.id));
   return (
@@ -194,6 +196,7 @@ function Assignees({ card, onToggle }: { card: Detail; onToggle: (userId: string
       <Popover label="Assign members">
         {() => (
           <ul className="space-y-0.5">
+            {members.error ? <li role="alert" className="text-label text-danger-text">{errorMessage(members.error)} <Button variant="ghost" onClick={() => void members.refetch()}>Retry people</Button></li> : null}
             {assignable.map((m) => (
               <li key={m.userId}>
                 <label className="tap flex cursor-pointer items-center gap-2 rounded px-2 py-1 text-sm hover:bg-background">

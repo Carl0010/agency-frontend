@@ -92,7 +92,7 @@ test('List view shares board filters, creation, ordering, list actions and the n
   await expect(views.getByRole('button', { name: 'List', exact: true })).toHaveAttribute('aria-pressed', 'true');
   const rows = page.getByTestId('card-row');
   await expect(rows).toHaveCount(3);
-  await expect(list(page, 'To do').getByRole('link').first()).toContainText('Audit client onboarding');
+  await expect(list(page, 'To do').getByTestId('card-row').first().getByRole('button', { name: /^Edit name for/ })).toHaveText('Audit client onboarding');
   await expect(page.getByRole('columnheader', { name: 'Assignees', exact: true }).first()).toBeVisible();
   await expect(rows.first().getByRole('cell').last().getByLabel('1 comment', { exact: true })).toBeVisible();
   await page.screenshot({ path: info.outputPath('list-view-desktop.png'), fullPage: true, animations: 'disabled', style: 'nextjs-portal { visibility: hidden; }' });

@@ -1,8 +1,8 @@
 # Agency design system
 
-Accepted direction, 2026-10-15: a calm, precise workspace for small agencies.
+Accepted direction, 2026-10-15: a calm, precise workspace for teams.
 Use warm gray surfaces, deep green actions, legible compact typography, and
-clear boundaries between navigation, work content and client communication.
+clear boundaries between navigation, work content and guest communication.
 The palette is Agency's own; it does not copy a product's branding.
 
 ## Research and decisions
@@ -86,7 +86,7 @@ control/focus boundaries at least 3:1 on their actual adjacent background.
 
 ### Content color exceptions
 
-Clients choose card-label and project colors. Those use `bg-label-*` through
+Members choose card-label and project colors. Those use `bg-label-*` through
 `content-colors.ts`, not brand/status utilities. Blue labels are actually blue;
 `blue-*` is no longer secretly remapped to green. Color dots do not replace
 project names, and label selection retains its text/accessible label.
@@ -206,11 +206,11 @@ including metadata bounds and access to list headings and bottom actions.
 <Button>Save changes</Button>
 <Button variant="secondary">Cancel</Button>
 <Button variant="danger">Delete attachment</Button>
-<Field label="Project name" hint="Use a name your client recognizes.">
+<Field label="Project name" hint="Use a name your team recognizes.">
   <Input name="name" required />
 </Field>
 <Badge tone="warning">Due soon</Badge>
-<PageHeader title="Clients" description="All your client work in one place." />
+<PageHeader title="Projects" description="Work shared with you and your teams." />
 ```
 
 - Shared `Button` supports primary, secondary, ghost and danger plus default,

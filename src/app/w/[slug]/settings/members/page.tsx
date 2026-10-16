@@ -10,6 +10,8 @@ import { api, ApiError, errorMessage } from '@/lib/api';
 import { useSession } from '@/lib/session';
 import type { Member, Page, Seats } from '@/lib/types';
 import { useWorkspace } from '@/lib/workspace';
+import { TeamPicker } from '@/components/teams/team-picker';
+import { useTeams } from '@/lib/teams';
 
 /** Members, roles and the seat meter (AC5, AC7, AC8). Seat numbers come from the API, never computed here. */
 export default function MembersPage() {
@@ -19,6 +21,8 @@ export default function MembersPage() {
   const qc = useQueryClient();
   const toast = useToast();
   const [inviteError, setInviteError] = useState<string | null>(null);
+  const [inviting, setInviting] = useState(false);
+  const teams = useTeams(ws.id);
   const canManage = ws.role === 'owner' || ws.role === 'admin';
 
   const members = useQuery({
@@ -43,8 +47,11 @@ export default function MembersPage() {
     const formEl = e.currentTarget;
     const form = new FormData(formEl);
     setInviteError(null);
+    setInviting(true);
     try {
-      await api.post(`/workspaces/${ws.id}/members/invites`, { email: form.get('email'), role: form.get('role') });
+      const teamIds = form.getAll('teamIds').map(String);
+      if (teamIds.length > 50) throw new Error('Choose at most 50 teams.');
+      await api.post(`/workspaces/${ws.id}/members/invites`, { email: form.get('email'), role: form.get('role'), teamIds });
       formEl.reset();
       toast('Invite sent.', 'info');
       await refresh();
@@ -52,7 +59,7 @@ export default function MembersPage() {
       if (err instanceof ApiError && err.code === 'seat_limit_reached') {
         setInviteError(`All ${String(err.details.included)} seats are in use. Revoke an invite or deactivate a member to free one.`);
       } else setInviteError(errorMessage(err));
-    }
+    } finally { setInviting(false); }
   }
 
   const full = seats.data?.full ?? false;
@@ -81,8 +88,9 @@ export default function MembersPage() {
               <option value="member">Member</option>
               <option value="admin">Admin</option>
             </select>
-            <Button type="submit">Send invite</Button>
+            <Button type="submit" disabled={inviting || teams.isPending || Boolean(teams.error)}>Send invite</Button>
           </div>
+          <div className="mt-4"><TeamPicker workspaceId={ws.id} disabled={inviting} /></div>
           <p className="mt-2 text-xs text-muted-foreground">A pending invite holds a seat until it is accepted or revoked.</p>
         </form>
       ) : null}
@@ -114,7 +122,7 @@ export default function MembersPage() {
                       <Button
                         variant="secondary"
                         onClick={async () => {
-                          if (await confirmAction({ title: 'Promote to member?', description: `${m.name} will see every project in the workspace and use a seat.`, confirmLabel: 'Promote to member', tone: 'primary' })) {
+                          if (await confirmAction({ title: 'Promote to member?', description: `${m.name} will keep access to their existing projects and use a seat. Share other projects or add them to teams separately.`, confirmLabel: 'Promote to member', tone: 'primary' })) {
                             act.mutate(() => api.patch(`/workspaces/${ws.id}/members/${m.userId}`, { role: 'member' }));
                           }
                         }}

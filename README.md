@@ -1,7 +1,7 @@
 # Agency frontend
 
 The web client for Agency: boards and cards, a chat channel per project, a restricted portal for
-client guests, Trello import and billing. Next.js (App Router), Tailwind CSS v4 and TanStack Query.
+guests, Trello import and billing. Next.js (App Router), Tailwind CSS v4 and TanStack Query.
 
 The API lives in the backend repository, [agency-mvp](https://github.com/Carl0010/agency-mvp). This
 app holds no business rules; it renders what the API returns.

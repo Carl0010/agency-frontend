@@ -1,6 +1,8 @@
 'use client';
 
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { TeamPicker } from '@/components/teams/team-picker';
+import { useTeams } from '@/lib/teams';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
 import { AuthCard, FormError } from '@/components/auth-card';
@@ -12,7 +14,7 @@ import { useSession } from '@/lib/session';
 import type { Page, Project, Seats, TemplateSummary, Workspace } from '@/lib/types';
 
 type Step = 1 | 2 | 3 | 4;
-const LABELS = ['Workspace', 'First client project', 'Invite your team', 'Bring your work over'] as const;
+const LABELS = ['Workspace', 'First project', 'Invite your team', 'Bring your work over'] as const;
 
 /**
  * The 4-step setup stepper (§3.5, AC20–AC24). Every step is skippable. The
@@ -192,10 +194,11 @@ function WorkspaceStep({ ws, header, footer, onDone, onSkip }: StepProps & { onD
 }
 
 // ---------------------------------------------------------------------------
-// Step 2 — first client project (AC22)
+// Step 2 — first project (AC22)
 // ---------------------------------------------------------------------------
 
 function ProjectStep({ ws, header, footer, onDone, onSkip }: StepProps & { onDone: () => Promise<void>; onSkip: () => Promise<void> }) {
+  const teams = useTeams(ws.id);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const existing = ws.setup?.projectId ?? null;
@@ -207,11 +210,10 @@ function ProjectStep({ ws, header, footer, onDone, onSkip }: StepProps & { onDon
     setError(null);
     try {
       if (!existing) {
-        const clientName = formText(form, 'clientName');
         // One transaction on the server: project, board, three lists, both channels.
         await api.post<Project>(`/workspaces/${ws.id}/projects`, {
           name: formText(form, 'name'),
-          ...(clientName ? { clientName } : {}),
+          teamIds: form.getAll('teamIds').map(String),
         });
       }
       await onDone();
@@ -222,7 +224,7 @@ function ProjectStep({ ws, header, footer, onDone, onSkip }: StepProps & { onDon
   }
 
   return (
-    <AuthCard title="Your first client project" footer={footer}>
+    <AuthCard title="Your first project" footer={footer}>
       {header}
       <form onSubmit={(e) => void onSubmit(e)} className="space-y-4">
         <FormError message={error} />
@@ -233,12 +235,10 @@ function ProjectStep({ ws, header, footer, onDone, onSkip }: StepProps & { onDon
             <Field label="Project name" hint="e.g. “Acme — Q4 site rebuild”">
               <Input name="name" required maxLength={120} />
             </Field>
-            <Field label="Client name">
-              <Input name="clientName" maxLength={120} />
-            </Field>
+            <TeamPicker workspaceId={ws.id} disabled={busy} />
           </>
         )}
-        <StepButtons busy={busy} label={existing ? 'Continue' : 'Create project'} onSkip={onSkip} />
+        <StepButtons busy={busy || (!existing && (teams.isPending || Boolean(teams.error)))} label={existing ? 'Continue' : 'Create project'} onSkip={onSkip} />
       </form>
     </AuthCard>
   );
@@ -257,6 +257,7 @@ interface InviteRow {
 }
 
 function InviteStep({ ws, header, footer, onDone, onSkip }: StepProps & { onDone: () => Promise<void>; onSkip: () => Promise<void> }) {
+  const teams = useTeams(ws.id);
   const qc = useQueryClient();
   const seats = useQuery({ queryKey: ['seats', ws.id], queryFn: () => api.get<Seats>(`/workspaces/${ws.id}/seats`) });
   const [rows, setRows] = useState<InviteRow[]>([{ key: 0, email: '', role: 'member', error: null, sent: false }]);
@@ -266,15 +267,17 @@ function InviteStep({ ws, header, footer, onDone, onSkip }: StepProps & { onDone
 
   const update = (key: number, patch: Partial<InviteRow>) => setRows((rs) => rs.map((r) => (r.key === key ? { ...r, ...patch } : r)));
 
-  async function onSubmit(e: FormEvent) {
+  async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    const teamIds = new FormData(e.currentTarget).getAll('teamIds').map(String);
+    if (teamIds.length > 50) { update(rows[0]!.key, { error: 'Choose at most 50 teams.' }); return; }
     setBusy(true);
     let failed = false;
     let sent = false;
     for (const row of rows) {
       if (row.sent || !row.email.trim()) continue;
       try {
-        await api.post(`/workspaces/${ws.id}/members/invites`, { email: row.email.trim(), role: row.role });
+        await api.post(`/workspaces/${ws.id}/members/invites`, { email: row.email.trim(), role: row.role, teamIds });
         update(row.key, { sent: true, error: null });
         sent = true;
       } catch (err) {
@@ -345,8 +348,9 @@ function InviteStep({ ws, header, footer, onDone, onSkip }: StepProps & { onDone
             + Add another
           </button>
         ) : null}
-        <p className="text-xs text-muted-foreground">Client guests are free and don&apos;t use a seat — invite them from a project later.</p>
-        <StepButtons busy={busy} label="Send invites" onSkip={onSkip} disabled={!rows.some((r) => r.email.trim() && !r.sent)} />
+        <p className="text-xs text-muted-foreground">Guests are free and don&apos;t use a seat — invite them from a project later.</p>
+        <TeamPicker workspaceId={ws.id} disabled={busy} />
+        <StepButtons busy={busy || teams.isPending || Boolean(teams.error)} label="Send invites" onSkip={onSkip} disabled={!rows.some((r) => r.email.trim() && !r.sent)} />
       </form>
     </AuthCard>
   );
@@ -432,7 +436,7 @@ function WorkStep({
           </button>
           <button type="button" className={card} disabled={busy !== null} onClick={() => setPicking(true)}>
             <span className="font-medium">Start from a template</span>
-            <span className="text-sm text-secondary-foreground">Client onboarding, Design sprint or Website build — with example cards.</span>
+            <span className="text-sm text-secondary-foreground">Project onboarding, Design sprint or Website build — with example cards.</span>
           </button>
           <button type="button" className={card} disabled={busy !== null} onClick={() => void startEmpty()}>
             <span className="font-medium">Start empty</span>

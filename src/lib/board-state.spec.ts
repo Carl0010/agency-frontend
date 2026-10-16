@@ -11,7 +11,7 @@ function tile(id: string, listId: string, position: number): CardTile {
 
 const board: Board = {
   id: 'b', name: 'Board', projectId: 'p', boards: null,
-  project: { id: 'p', name: 'P', clientName: null, key: 'P', color: 'blue', workspaceId: 'w', archivedAt: null },
+  project: { id: 'p', name: 'P', icon: 'folder', key: 'P', color: 'blue', workspaceId: 'w', archivedAt: null },
   lists: [
     { id: 'todo', name: 'To do', position: 1024, cards: [tile('a', 'todo', 1024), tile('b', 'todo', 2048), tile('c', 'todo', 3072)] },
     { id: 'doing', name: 'Doing', position: 2048, cards: [tile('d', 'doing', 1024)] },

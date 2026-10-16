@@ -108,7 +108,7 @@ test('project header shows the saved icon and color without board counts, with a
   await page.reload();
   const header = page.getByTestId('board-project-header');
   const marker = header.getByTestId('project-icon');
-  const sidebarMarker = page.getByTestId('rail-project').filter({ hasText: 'Acme site rebuild' }).getByTestId('project-icon');
+  const sidebarMarker = page.getByRole('complementary', { name: 'Workspace sidebar' }).getByTestId('rail-project').filter({ hasText: 'Acme site rebuild' }).getByTestId('project-icon');
   await expect(marker).toHaveAttribute('data-icon', 'rocket'); await expect(sidebarMarker).toHaveAttribute('data-icon', 'rocket');
   expect(await marker.evaluate((element) => getComputedStyle(element).backgroundColor)).toBe(await sidebarMarker.evaluate((element) => getComputedStyle(element).backgroundColor));
   await expect(header).not.toContainText(/\d+ cards? in \d+ lists?/);

@@ -92,7 +92,7 @@ function BillingScreen() {
           </span>
         </div>
         <p className="mt-1 text-sm text-secondary-foreground">
-          Up to {b.plan.seatsIncluded} seats (owner, admins, members) · unlimited client guests · unlimited projects.
+          Up to {b.plan.seatsIncluded} seats (owner, admins, members) · unlimited guests · unlimited projects.
         </p>
         <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
           <div>

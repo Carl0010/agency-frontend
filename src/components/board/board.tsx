@@ -31,9 +31,11 @@ import { api, errorMessage } from '@/lib/api';
 import { findCard, moveCardLocal, moveListLocal, upsertCard, upsertList } from '@/lib/board-state';
 import { isFiltering, matchesFilters, parseFilters, writeFilters, type BoardFilters } from '@/lib/filters';
 import { useProjectRealtime } from '@/lib/realtime';
-import type { Board, CardTile, Label, Member, Page, Project } from '@/lib/types';
+import type { Board, CardTile, Label, Page, Project } from '@/lib/types';
 import { useNow } from '@/lib/use-now';
 import { useWorkspace } from '@/lib/workspace';
+import { useProjectPeople } from '@/lib/project-people';
+import { ProjectError } from '@/components/projects/project-error';
 import { AddList } from './add-list';
 import { BoardListView } from './list-view';
 import { CardTileView } from './card-tile';
@@ -97,11 +99,11 @@ export function BoardScreen({ boardId, projectId }: { boardId: string; projectId
   const [mobileListId, setMobileListId] = useState<string | null>(null);
 
   useProjectRealtime(projectId);
-  // Board views omit icon metadata; read the existing scoped project endpoint.
+  // The scoped project supplies member access; board data also includes the icon.
   const project = useQuery({ queryKey: ['project', projectId], queryFn: () => api.get<Project>(`/projects/${projectId}`) });
   useEffect(() => { if (project.error) toast(errorMessage(project.error)); }, [project.error, toast]);
   const board = useQuery({ queryKey: ['board', boardId], queryFn: () => api.get<Board>(`/boards/${boardId}`) });
-  const members = useQuery({ queryKey: ['members', ws.id], queryFn: () => api.get<Page<Member>>(`/workspaces/${ws.id}/members`) });
+  const members = useProjectPeople(ws.id, projectId);
   const labels = useQuery({ queryKey: ['labels', ws.id], queryFn: () => api.get<Page<Label>>(`/workspaces/${ws.id}/labels`) });
 
   const filters = useMemo(() => parseFilters(new URLSearchParams(params.toString())), [params]);
@@ -134,7 +136,7 @@ export function BoardScreen({ boardId, projectId }: { boardId: string; projectId
   );
 
   if (board.isPending) return <Spinner />;
-  if (board.error) return <p className="p-8 text-center text-secondary-foreground">{errorMessage(board.error)}</p>;
+  if (board.error) return <ProjectError error={board.error} retry={() => void board.refetch()} />;
 
   const shown = drag?.board ?? board.data;
   const qs = params.toString();
@@ -217,7 +219,7 @@ export function BoardScreen({ boardId, projectId }: { boardId: string; projectId
       <div className="flex min-w-0 flex-1 flex-col">
         <div data-testid="board-project-header" className="flex shrink-0 flex-wrap items-center gap-x-4 gap-y-1 border-b border-border bg-surface px-4 py-2">
           <div className="flex min-w-0 grow basis-40 items-center gap-2.5">
-            <ProjectIcon project={{ color: project.data?.color ?? shown.project.color, icon: project.data?.icon }} />
+            <ProjectIcon project={{ color: project.data?.color ?? shown.project.color, icon: project.data?.icon ?? shown.project.icon }} />
             <h1 className="min-w-0 max-w-full truncate text-lg font-semibold leading-6" data-testid="board-title">
               {shown.project.name}
             </h1>
@@ -257,7 +259,7 @@ export function BoardScreen({ boardId, projectId }: { boardId: string; projectId
         ) : null}
 
 
-        {view === 'list' ? <BoardListView editingListId={editingListId} onListCreated={onListCreated} onListEditFinished={onListEditFinished} board={shown} filters={filters} now={now} cardHref={cardHref} /> : <DndContext
+        {view === 'list' ? <BoardListView editingListId={editingListId} onListCreated={onListCreated} onListEditFinished={onListEditFinished} board={shown} filters={filters} now={now} cardHref={cardHref} members={activeMembers} activeDrag={drag} onDragStart={onDragStart} onDragOver={onDragOver} onDragEnd={onDragEnd} onDragCancel={() => setDrag(null)} /> : <DndContext
           sensors={sensors}
           collisionDetection={collision}
           onDragStart={onDragStart}

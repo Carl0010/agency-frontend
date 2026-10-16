@@ -1,0 +1,169 @@
+import { createHash, randomBytes } from 'node:crypto';
+import { Client } from 'pg';
+import { expect, test, type APIRequestContext, type Browser, type Page } from '@playwright/test';
+import { signupToBoard, type Account } from './helpers';
+
+const DATABASE_URL = process.env.DATABASE_URL ?? 'postgres://agency:agency@127.0.0.1:55433/agency';
+async function ownerApi(request: APIRequestContext, account: Account) {
+  const response = await request.post('/api/v1/auth/login', { data: { email: account.email, password: account.password } });
+  expect(response.ok()).toBe(true);
+  const { accessToken } = await response.json() as { accessToken: string };
+  const headers = { Authorization: `Bearer ${accessToken}` };
+  return async <T,>(method: 'GET' | 'POST' | 'PUT' | 'DELETE', path: string, data?: object): Promise<T> => {
+    const result = await request.fetch(`/api/v1${path}`, { method, headers, data });
+    expect(result.ok(), `${method} ${path}: ${result.status()}`).toBe(true);
+    return result.status() === 204 ? undefined as T : await result.json() as T;
+  };
+}
+async function accept(browser: Browser, email: string, name: string, mobile = false) {
+  const token = randomBytes(32).toString('base64url');
+  const db = new Client({ connectionString: DATABASE_URL });
+  await db.connect();
+  try {
+    const result = await db.query('UPDATE membership SET invite_token_hash = $1 WHERE status = \'invited\' AND user_id = (SELECT id FROM "user" WHERE lower(email) = lower($2))', [createHash('sha256').update(token).digest('hex'), email]);
+    expect(result.rowCount).toBe(1);
+  } finally { await db.end(); }
+  const page = await (await browser.newContext({ viewport: mobile ? { width: 390, height: 844 } : { width: 1440, height: 1000 } })).newPage();
+  await page.goto(`/invite/${token}`);
+  await page.getByLabel('Your name').fill(name);
+  await page.getByLabel('Choose a password').fill('invitee-password-123');
+  await page.getByRole('button', { name: 'Accept invite' }).click();
+  return page;
+}
+async function skipTour(page: Page) {
+  const skip = page.getByTestId('coach-mark').getByRole('button', { name: 'Skip tour' });
+  if (await skip.isVisible()) await skip.click();
+}
+
+test('empty access, team sharing, scoped assignment, personal stars and live unsharing', async ({ browser, request }, info) => {
+  const { page: owner, account } = await signupToBoard(browser, { viewport: { width: 1440, height: 1000 } });
+  const call = await ownerApi(request, account);
+  const projectId = new URL(account.boardUrl).pathname.split('/')[4]!;
+  const slug = new URL(account.boardUrl).pathname.split('/')[2]!;
+  const project = await call<{ workspaceId: string }>('GET', `/projects/${projectId}`);
+  await owner.goto(`/w/${slug}/settings/teams`);
+  await owner.getByLabel('Team name', { exact: true }).fill('Delivery');
+  await owner.getByRole('button', { name: 'Create team', exact: true }).click();
+  await owner.getByRole('link', { name: /Delivery.*Team admin/ }).click();
+  await expect(owner.getByText('Last admin')).toBeVisible();
+  const teamId = new URL(owner.url()).pathname.split('/').pop()!;
+  await expect(owner.getByRole('button', { name: 'Leave team', exact: true })).toHaveCount(0);
+  await owner.goto(account.boardUrl);
+  await owner.getByRole('button', { name: 'Share', exact: true }).click();
+  const share = owner.getByRole('dialog', { name: 'Share project', exact: true });
+  await share.getByLabel('Team to share', { exact: true }).selectOption(teamId);
+  await share.getByRole('button', { name: 'Share team', exact: true }).click();
+  await expect(share.getByRole('button', { name: 'Unshare Delivery' })).toBeVisible();
+  await share.getByRole('button', { name: 'Close Share project' }).click();
+  await owner.goto(`/w/${slug}/settings/members`);
+  const email = `access-member-${Date.now()}@example.test`;
+  await owner.getByLabel('Email', { exact: true }).fill(email);
+  await owner.getByRole('checkbox', { name: /Delivery/ }).uncheck();
+  await owner.getByRole('button', { name: 'Send invite', exact: true }).click();
+  await expect(owner.getByTestId('member-row').filter({ hasText: email })).toBeVisible();
+  const member = await accept(browser, email, 'Delivery Member');
+  await expect(member.getByRole('heading', { name: 'No projects shared with you yet' })).toBeVisible();
+  await member.goto(account.boardUrl);
+  await expect(member.getByRole('heading', { name: "You don't have access to this project" })).toBeVisible();
+  await member.getByRole('link', { name: 'Back to projects' }).click();
+  const roster = await call<{ data: { userId: string; email: string }[] }>('GET', `/workspaces/${project.workspaceId}/members`);
+  const userId = roster.data.find((person) => person.email === email)!.userId;
+  const board = await call<{ lists: { id: string }[] }>('GET', `/boards/${account.boardId}`);
+  const card = await call<{ id: string }>('POST', `/lists/${board.lists[0]!.id}/cards`, { title: 'Scoped assignment check' });
+  await owner.goto(account.boardUrl); await owner.getByTestId('card-tile').click();
+  const inspector = owner.getByRole('dialog', { name: 'Card details' });
+  await inspector.getByRole('button', { name: 'Assign members', exact: true }).click();
+  await expect(inspector.getByRole('checkbox', { name: /Delivery Member/ })).toHaveCount(0);
+  await owner.goto(`/w/${slug}/settings/teams/${teamId}`);
+  await owner.getByLabel('Person to add', { exact: true }).selectOption(userId);
+  await owner.getByRole('button', { name: 'Add person', exact: true }).click();
+  await expect(owner.getByTestId('team-member-row').filter({ hasText: 'Delivery Member' })).toBeVisible();
+  // The realtime contract guarantees narrowing events, not notifications of new grants.
+  await member.getByRole('button', { name: 'Refresh projects', exact: true }).click();
+  await expect(member.getByRole('complementary', { name: 'Workspace sidebar' }).getByRole('link', { name: 'Acme site rebuild', exact: true })).toBeVisible();
+  await member.goto(account.boardUrl); await skipTour(member);
+  await expect(member.getByTestId('board-title')).toHaveText('Acme site rebuild');
+  await expect(member.getByRole('button', { name: 'Share', exact: true })).toHaveCount(0);
+  await expect(member.getByTestId('guests-button')).toHaveCount(0);
+  await owner.goto(account.boardUrl);
+  const sidebar = owner.getByRole('complementary', { name: 'Workspace sidebar' });
+  await sidebar.getByRole('button', { name: 'Project actions for Acme site rebuild' }).click();
+  await owner.getByRole('button', { name: 'Star Acme site rebuild', exact: true }).click();
+  await expect(sidebar.getByRole('region', { name: 'Starred', exact: true })).toBeVisible();
+  await expect(member.getByRole('region', { name: 'Starred', exact: true })).toHaveCount(0);
+  await owner.keyboard.press('Escape'); await owner.reload();
+  await expect(sidebar.getByRole('region', { name: 'Starred', exact: true }).getByRole('link', { name: 'Acme site rebuild', exact: true })).toBeVisible();
+  await owner.screenshot({ path: info.outputPath('project-teams-light.png'), fullPage: true, animations: 'disabled' });
+  await owner.getByRole('button', { name: 'Share', exact: true }).click();
+  await expect(share.getByRole('button', { name: 'Unshare Delivery' })).toBeVisible();
+  await owner.screenshot({ path: info.outputPath('project-sharing-light.png'), fullPage: true, animations: 'disabled' });
+  await share.getByRole('button', { name: 'Unshare Delivery' }).click();
+  await owner.getByRole('alertdialog', { name: 'Unshare team?' }).getByRole('button', { name: 'Unshare team', exact: true }).click();
+  await expect(member.getByRole('heading', { name: "You don't have access to this project" })).toBeVisible();
+  await expect(member.getByTestId('rail-project')).toHaveCount(0);
+  // The former assignee candidate cannot be assigned after losing access.
+  const candidates = await call<{ data: { userId: string }[] }>('GET', `/workspaces/${project.workspaceId}/members?mentionable=true&projectId=${projectId}&surface=card`);
+  expect(candidates.data.some((person) => person.userId === userId)).toBe(false);
+  expect(card.id).toBeTruthy();
+  await owner.context().close(); await member.context().close();
+});
+
+test('a team admin invites a guest with default comment access to exactly the shared projects', async ({ browser, request }, info) => {
+  const { page: owner, account } = await signupToBoard(browser);
+  const call = await ownerApi(request, account);
+  const projectId = new URL(account.boardUrl).pathname.split('/')[4]!;
+  const slug = new URL(account.boardUrl).pathname.split('/')[2]!;
+  const project = await call<{ workspaceId: string }>('GET', `/projects/${projectId}`);
+  const team = await call<{ id: string }>('POST', `/workspaces/${project.workspaceId}/teams`, { name: 'Partners' });
+  await call('PUT', `/projects/${projectId}/teams/${team.id}`);
+  await call('POST', `/workspaces/${project.workspaceId}/projects`, { name: 'Private financial review' });
+  const adminEmail = `team-admin-${Date.now()}@example.test`;
+  await call('POST', `/workspaces/${project.workspaceId}/members/invites`, { email: adminEmail, role: 'member', teamIds: [team.id] });
+  const admin = await accept(browser, adminEmail, 'Partners Admin', true);
+  const roster = await call<{ data: { userId: string; email: string }[] }>('GET', `/workspaces/${project.workspaceId}/members`);
+  await call('PUT', `/teams/${team.id}/members/${roster.data.find((person) => person.email === adminEmail)!.userId}`, { role: 'admin' });
+  await admin.goto(`/w/${slug}/settings/teams/${team.id}`); await skipTour(admin);
+  await admin.getByRole('button', { name: 'Switch to dark mode', exact: true }).click();
+  const email = `team-guest-${Date.now()}@example.test`;
+  await admin.getByLabel('Guest email', { exact: true }).fill(email);
+  await expect(admin.getByLabel('Team guest access', { exact: true })).toHaveValue('comment');
+  await admin.getByRole('button', { name: 'Invite guest to team', exact: true }).click();
+  await expect(admin.getByTestId('team-member-row').filter({ hasText: email.split('@')[0] })).toBeVisible();
+  await admin.screenshot({ path: info.outputPath('team-guests-mobile-dark.png'), fullPage: true, animations: 'disabled' });
+  expect(await admin.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  const guest = await accept(browser, email, 'Partner Guest', true);
+  await expect(guest).toHaveURL(new RegExp(`/portal/${projectId}$`));
+  await expect(guest.getByTestId('guest-chip')).toContainText('Can comment');
+  await expect(guest.getByTestId('portal-switcher')).toHaveCount(0);
+  await expect(guest.locator('body')).not.toContainText('Private financial review');
+  await expect(guest.getByTestId('module-rail')).toHaveCount(0);
+  await expect(guest.getByRole('navigation', { name: 'Project sections' }).getByRole('link')).toHaveText(['Board', 'Shared']);
+  await owner.context().close(); await admin.context().close(); await guest.context().close();
+});
+
+test('team management preserves failed names, archives/restores, and enforces the last admin in the UI', async ({ browser }, info) => {
+  const { page, account } = await signupToBoard(browser, { viewport: { width: 390, height: 844 } });
+  const slug = new URL(account.boardUrl).pathname.split('/')[2]!;
+  await page.goto(`/w/${slug}/settings/teams`);
+  await page.getByLabel('Team name', { exact: true }).fill('Studio');
+  await page.getByRole('button', { name: 'Create team', exact: true }).click();
+  await expect(page.getByRole('link', { name: /Studio.*Team admin/ })).toBeVisible();
+  await page.getByLabel('Team name', { exact: true }).fill('Studio');
+  await page.getByRole('button', { name: 'Create team', exact: true }).click();
+  await expect(page.getByRole('alert')).toBeVisible();
+  await expect(page.getByLabel('Team name', { exact: true })).toHaveValue('Studio');
+  await page.getByRole('link', { name: /Studio.*Team admin/ }).click();
+  await expect(page.getByRole('button', { name: 'Leave team', exact: true })).toHaveCount(0);
+  await page.getByLabel('Rename team', { exact: true }).fill('Design studio');
+  await page.getByRole('button', { name: 'Rename team', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Design studio', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Archive team', exact: true }).click();
+  await page.getByRole('alertdialog', { name: 'Archive team?' }).getByRole('button', { name: 'Archive team', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Restore team', exact: true })).toBeVisible();
+  await expect(page.getByLabel('Rename team')).toHaveCount(0);
+  await page.getByRole('button', { name: 'Restore team', exact: true }).click();
+  await page.getByRole('alertdialog', { name: 'Restore team?' }).getByRole('button', { name: 'Restore team', exact: true }).click();
+  await expect(page.getByLabel('Rename team')).toHaveValue('Design studio');
+  await page.screenshot({ path: info.outputPath('team-settings-mobile-light.png'), fullPage: true, animations: 'disabled' });
+  await page.context().close();
+});

@@ -12,9 +12,9 @@ The guest portal keeps its separate navigation and imports none of this shell.
 | Module rail | Switch high-level areas | Projects, Inbox with live unread count, Workspace |
 | Sidebar identity | Identify workspace and selected module | Workspace name and current module label |
 | App bar | Global actions and navigation visibility | Centered search palette trigger, hamburger, Agency home, labelled light/dark switch |
-| Projects sidebar | Browse client work and project surfaces | Projects overview, import, project list, create button, per-project menu, current project's Board/Chat/internal Team |
+| Projects sidebar | Browse shared work and project surfaces | Projects overview, import, team groups, Starred, create button, per-project menu, current project's Board/Shared/internal Team |
 | Inbox sidebar | Browse activity and configure delivery | All notifications and notification preferences |
-| Workspace sidebar | Manage people, preferences and subscription | Members, notifications, owner-only billing |
+| Workspace sidebar | Manage people, preferences and subscription | Members, teams, notifications, owner-only billing |
 | Sidebar footer | Resume setup, understand trial status, account actions | Setup progress, trial link, user identity/role, log out |
 | Project/page header | Describe and act on the current view | Project title, sharing, collaborators, archive; page-specific primary actions |
 | Content toolbars | Manipulate the current content | Kanban/List presentation, card filters, list selection, message/thread controls |
@@ -22,18 +22,18 @@ The guest portal keeps its separate navigation and imports none of this shell.
 
 The module rail is global navigation. The neighboring sidebar shows only the
 selected module's destinations. Do not duplicate all workspace settings inside
-the Projects sidebar or repeat Board/Chat/Team tabs above content. Page actions
+the Projects sidebar or repeat Board/Shared/Team tabs above content. Page actions
 remain local: card creation, dragging, message composition, sharing and
 destructive operations belong beside the content they affect.
 
 ## Module destinations
 
-- **Projects** opens the projects overview. Project boards, cards, client Chat,
+- **Projects** opens the projects overview. Project boards, cards, Shared channel,
   internal Team, import and global search results belong to this module.
 - **Inbox** opens workspace activity, retaining its live unread badge across
   all member screens. The sidebar's notification preferences link moves into
   the Workspace module because preferences live under workspace settings.
-- **Workspace** opens Members. The contextual sidebar contains Members,
+- **Workspace** opens Members. The contextual sidebar contains Members, Teams,
   Notifications and owner-only Billing; existing API permissions still apply.
 
 Module selection comes from the current URL, including direct links, reloads
@@ -167,18 +167,27 @@ member navigation directory in the guest portal's transitive import graph.
 
 ## Project actions
 
-The Client projects heading has an Add project button and no outbound arrow;
+The Projects heading has an Add project button and no outbound arrow;
 the Projects overview link above already owns that destination. The current project
 expands automatically without a decorative chevron. Its native creation dialog creates
 through the existing API and navigates to the returned default board. A separate
 menu beside each project contains Open board, Edit project and Copy project link;
 it is never nested inside the project link. The editor supports project name,
-optional client name and the eight server-defined colors. Create/edit failures
+eight server-defined colors and a predefined icon picker. Creation also shows team selection. Create/edit failures
 stay visible and preserve form input. The API decides authorization and billing.
 
-Saved custom icons and per-user stars are not in the API yet. See
-[the implementation handoff](handoffs/PROJECT_PERSONALIZATION.md). Do not add a
-pretend Starred list or silently persist project settings only in the browser.
+Saved icons and personal stars use the live API; see
+[the personalization record](handoffs/PROJECT_PERSONALIZATION.md). Starred reads
+the complete personal collection, separately from team groups. Projects shared
+with several teams can appear under each, with one expanded set of active project
+sections. Projects without a visible team group remain under Other projects.
+
+Share opens the project access dialog only for project admins. It manages teams,
+direct member edit/admin grants and direct guest grants. Workspace → Teams owns
+team names, membership, team roles, guest levels and archive/restore. The API
+remains authoritative for access and billing gates. People pickers use the scoped
+project roster. [Contract integration](handoffs/BACKEND_CONTRACT_UPGRADE.md) records
+access-change cache handling and the difference between new grants and revocation.
 
 ## Themes
 
