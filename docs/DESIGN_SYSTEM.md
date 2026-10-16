@@ -42,6 +42,7 @@ component library to fix an individual screen.
 | Role / utility | Value | Use |
 | --- | --- | --- |
 | `bg-background` | `#F7F8F5` | App canvas and quiet navigation rail |
+| `bg-board-canvas` | `#EEF2F6` light / `#151F27` dark | Cool neutral board work area, distinct from the warm sidebar; pair with foreground/secondary/muted text |
 | `bg-surface` | `#FFFFFF` | Cards, forms, dialogs, main headers |
 | `bg-subtle` | `#F0F2EE` | Board lanes, code, secondary control hover |
 | `bg-muted` | `#E7EBE5` | Neutral selected/pressed surfaces |
@@ -149,15 +150,23 @@ piece of information. Reuse the semantic type and color tokens above.
 | Card title | 15px / 24px, medium | Up to three visible lines; full title in the control label and tooltip |
 | Labels and facts | 12px / 16px | Readable label names, due state, checklist/file/comment counts |
 | Card footer | 12px / 16px key; 24px avatars | Identity and ownership in a separate row, even for simple cards |
+| Add list tile | 320px × 60px | Matches column width and the shared list header height |
 | Desktop list | 320px wide; at least 256px tall | Enough text width and a useful empty/drop area |
 | Board gutter | 16px mobile / 24px desktop | Aligns project header, filtering and lists |
 | Between lists / cards | 16px / 12px | Clear grouping without compressing card content |
 | Inside a card | 16px | Common text and metadata inset |
 | Controls | 36px desktop; at least 44px below 640px | Aligned toolbar and accessible mobile touch targets |
 
+The Kanban header itself is the list drag area; do not add a separate grip.
+Keep title click/rename, keyboard reordering and menu/input interaction working.
+The sidebar retains `background`; the board canvas uses `board-canvas` in both
+themes. Add list uses a `border-hover` outline against the canvas for contrast.
+
 Keep list headings and the bottom Add card control outside the list's scrolling
 card area. Long lists scroll internally; users can still identify the list and
-create a card. Empty lists say **No cards yet**; filtered lists with no matches
+create a card. Empty outlines fill the available card area, with the message centered.
+Click Add list to create and focus its real column header instead of opening
+a separate creation form. Empty lists say **No cards yet**; filtered lists with no matches
 say **No matching cards**. Keep one Add card control per list as a separate bordered surface below the
 list panel, with a 12px gap. The form expands inside that separate tile.
 
@@ -227,3 +236,21 @@ Primary fills use `primary-foreground`; inverse/status fills use
 The app bar's labelled toggle saves a browser preference. A before-paint root
 script prevents a light flash on reload; without a saved choice it follows the
 OS. Theme is local presentation state, never workspace/project data.
+
+Board presentation rules live in [Board views](BOARD_VIEWS.md). List view reuses
+the Kanban data, header actions and card composer; compact rows respond to the
+content pane width, including when a card drawer is open.
+
+## Confirmation dialogs
+
+Use `useConfirm` from `src/components/confirmation.tsx`; `ConfirmationProvider`
+is mounted globally. Never call browser confirm, alert or prompt. Existing API
+actions stay in their callers and run only after acceptance. The shared modal
+uses a styled native dialog in the top layer, so it works above drawers and
+other dialogs in both themes, including the guest portal. It owns no business data.
+
+Give each action a specific title, consequence description and confirm verb.
+Destructive actions use the danger button; access grants may use primary. Cancel
+receives initial focus. Escape, close and backdrop dismiss without a mutation;
+Tab stays within the modal and closing restores focus. Requests queue instead
+of replacing one another. Provider teardown dismisses outstanding requests.

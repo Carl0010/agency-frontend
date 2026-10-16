@@ -43,6 +43,7 @@ socket origin.
 - [AGENTS.md](AGENTS.md): rules for anyone (human or AI) changing this code.
 - [docs/DESIGN_SYSTEM.md](docs/DESIGN_SYSTEM.md): tokens, typography, components.
 - [docs/NAVIGATION.md](docs/NAVIGATION.md): what the sidebar, headers and pages each own.
+- [docs/BOARD_VIEWS.md](docs/BOARD_VIEWS.md): Kanban/List behavior and shared board controls.
 - [docs/handoffs/README.md](docs/handoffs/README.md): requested features awaiting API support.
 
 ## History

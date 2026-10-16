@@ -20,6 +20,10 @@ export default tseslint.config(
   {
     files: ['src/**/*.ts', 'src/**/*.tsx'],
     plugins: { 'design-system': designSystem },
-    rules: { 'design-system/semantic-colors': 'error' },
+    rules: {
+      'design-system/semantic-colors': 'error',
+      'no-restricted-globals': ['error', ...['confirm', 'alert', 'prompt'].map((name) => ({ name, message: 'Use the shared in-app confirmation modal or an inline field.' }))],
+      'no-restricted-properties': ['error', ...['window', 'globalThis'].flatMap((object) => ['confirm', 'alert', 'prompt'].map((property) => ({ object, property, message: 'Use the shared in-app confirmation modal or an inline field.' })))],
+    },
   },
 );

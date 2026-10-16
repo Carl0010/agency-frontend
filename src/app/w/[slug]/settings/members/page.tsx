@@ -3,6 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState, type FormEvent } from 'react';
 import { FormError } from '@/components/auth-card';
+import { useConfirm } from '@/components/confirmation';
 import { useToast } from '@/components/toast';
 import { Avatar, Button, GuestChip, Input, Spinner } from '@/components/ui';
 import { api, ApiError, errorMessage } from '@/lib/api';
@@ -13,6 +14,7 @@ import { useWorkspace } from '@/lib/workspace';
 /** Members, roles and the seat meter (AC5, AC7, AC8). Seat numbers come from the API, never computed here. */
 export default function MembersPage() {
   const ws = useWorkspace();
+  const confirmAction = useConfirm();
   const { user } = useSession();
   const qc = useQueryClient();
   const toast = useToast();
@@ -111,8 +113,8 @@ export default function MembersPage() {
                     {canManage && m.status !== 'deactivated' ? (
                       <Button
                         variant="secondary"
-                        onClick={() => {
-                          if (window.confirm(`Make ${m.name} a member? They will see every project and use a seat.`)) {
+                        onClick={async () => {
+                          if (await confirmAction({ title: 'Promote to member?', description: `${m.name} will see every project in the workspace and use a seat.`, confirmLabel: 'Promote to member', tone: 'primary' })) {
                             act.mutate(() => api.patch(`/workspaces/${ws.id}/members/${m.userId}`, { role: 'member' }));
                           }
                         }}
@@ -142,8 +144,8 @@ export default function MembersPage() {
                 {canManage && !isOwner && !isSelf && !isGuest && m.status === 'active' ? (
                   <Button
                     variant="secondary"
-                    onClick={() => {
-                      if (window.confirm(`Deactivate ${m.name}? Their cards and comments stay; the seat is freed.`)) {
+                    onClick={async () => {
+                      if (await confirmAction({ title: 'Deactivate member?', description: `${m.name} will lose workspace access. Their cards and comments stay, and their seat is freed.`, confirmLabel: 'Deactivate member' })) {
                         act.mutate(() => api.del(`/workspaces/${ws.id}/members/${m.userId}`));
                       }
                     }}

@@ -4,6 +4,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Markdown } from '@/components/markdown';
+import { useConfirm } from '@/components/confirmation';
 import { useToast } from '@/components/toast';
 import { Avatar, Button, GuestChip, Spinner } from '@/components/ui';
 import { api, errorMessage } from '@/lib/api';
@@ -119,6 +120,7 @@ function CommentItem({ comment, cardId, onReply }: { comment: Comment; cardId: s
   const { user } = useSession();
   const qc = useQueryClient();
   const toast = useToast();
+  const confirmAction = useConfirm();
   const now = useNow();
   const [editing, setEditing] = useState(false);
   const [editBody, setEditBody] = useState(comment.body ?? '');
@@ -137,7 +139,7 @@ function CommentItem({ comment, cardId, onReply }: { comment: Comment; cardId: s
   }
 
   async function remove() {
-    if (!window.confirm('Delete this comment?')) return;
+    if (!await confirmAction({ title: 'Delete comment?', description: 'This comment will be deleted. Replies remain in the conversation.', confirmLabel: 'Delete comment' })) return;
     try {
       await api.del(`/comments/${comment.id}`);
       applyComment(qc, { ...comment, body: null, deletedAt: new Date().toISOString(), mentionedUserIds: [] });

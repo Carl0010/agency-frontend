@@ -2,6 +2,7 @@
 
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState, type FormEvent } from 'react';
+import { useConfirm } from '@/components/confirmation';
 import { useToast } from '@/components/toast';
 import { Avatar, Button, Input } from '@/components/ui';
 import { api, errorMessage } from '@/lib/api';
@@ -36,6 +37,7 @@ export function GuestsButton({ projectId }: { projectId: string }) {
 function GuestPanel({ projectId, onClose }: { projectId: string; onClose: () => void }) {
   const qc = useQueryClient();
   const toast = useToast();
+  const confirmAction = useConfirm();
   const [email, setEmail] = useState('');
   const [access, setAccess] = useState<GuestAccess>('comment');
   const [busy, setBusy] = useState(false);
@@ -67,7 +69,7 @@ function GuestPanel({ projectId, onClose }: { projectId: string; onClose: () => 
   }
 
   async function remove(g: ProjectGuest) {
-    if (!window.confirm(`Remove ${g.name}'s access to this project? Their comments and messages stay.`)) return;
+    if (!await confirmAction({ title: 'Remove guest access?', description: `${g.name} will lose access to this project. Their comments and messages stay.`, confirmLabel: 'Remove access' })) return;
     try {
       await api.del(`/projects/${projectId}/guests/${g.userId}`);
       await refresh();

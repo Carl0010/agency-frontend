@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import { Suspense, useEffect } from 'react';
 import { FormError } from '@/components/auth-card';
 import { ExportButtons, useBilling } from '@/components/billing/billing-notices';
+import { useConfirm } from '@/components/confirmation';
 import { useToast } from '@/components/toast';
 import { Button, Spinner } from '@/components/ui';
 import { api, errorMessage } from '@/lib/api';
@@ -40,6 +41,7 @@ export default function BillingPage() {
 
 function BillingScreen() {
   const ws = useWorkspace();
+  const confirmAction = useConfirm();
   const billing = useBilling(ws);
   const qc = useQueryClient();
   const toast = useToast();
@@ -132,12 +134,8 @@ function BillingScreen() {
             <Button
               variant="secondary"
               disabled={!b.configured || go.isPending}
-              onClick={() => {
-                if (
-                  window.confirm(
-                    'Cancel the subscription? You keep read-only access: everyone can still log in, read everything and export it. You confirm the cancellation on Stripe.',
-                  )
-                ) {
+              onClick={async () => {
+                if (await confirmAction({ title: 'Continue to subscription cancellation?', description: 'After cancellation, everyone keeps read-only access and can export their work. You will confirm the cancellation on Stripe.', confirmLabel: 'Continue to Stripe' })) {
                   go.mutate('portal-session');
                 }
               }}
