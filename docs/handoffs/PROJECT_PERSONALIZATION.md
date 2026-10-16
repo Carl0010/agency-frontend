@@ -4,8 +4,9 @@ Status: implemented on `feat/teams-project-access`, updated 2026-10-16. This
 document records the completed frontend integration, replacing the original API
 proposal. Verification and release status are recorded in the checkpoint below.
 
-Release is paused at [the project access contract checkpoint](ACCESS_CONTRACT_BLOCKER.md).
-The implementation is saved in a local checkpoint commit; no new PR has been opened yet.
+The [project access contract checkpoint](ACCESS_CONTRACT_BLOCKER.md) is resolved
+by backend `faa34c0`. Star/unstar and failed-request retry acceptance are complete.
+Current verification and local commit status are in [the release handoff](TEAMS_RELEASE_AND_BOARD_GROUPING.md).
 
 ## Saved project metadata
 
@@ -45,7 +46,8 @@ projects are excluded by the API. Project metadata still follows write gates.
 - `e2e/project-menu.spec.ts`: create/edit icon and color, failed saves with retry,
   reload persistence, keyboard/native picker use and mobile editor behavior.
 - `e2e/project-access.spec.ts`: personal Starred collection, independent member
-  preferences, reload, team grouping and live removal of revoked projects.
+  preferences, reload, team grouping, live removal of revoked projects, unstar
+  persistence and failed-star retry without changing the saved preference.
 - `e2e/board-filters.spec.ts`: saved and unknown project icon rendering.
 - Contrast and portal import-boundary checks run with the unit suite.
 - Full frontend checks: lint, typecheck, unit tests, build, and real-API journeys

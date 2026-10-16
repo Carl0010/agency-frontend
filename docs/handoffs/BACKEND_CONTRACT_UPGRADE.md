@@ -6,10 +6,11 @@ the backend is finished, tested and migrated. Frontend implementation follows
 the realtime README and `docs/backend/LANGUAGE.md`. Backend source is unchanged.
 Verification and remaining work are recorded in the release checkpoint below.
 
-Release checkpoint: [the access response mismatch](ACCESS_CONTRACT_BLOCKER.md)
-was confirmed during final review. Work is saved in a local checkpoint commit; no new PR has
-been opened. The listed checks passed, but this discrepancy requires a backend
-contract decision before shipping. The blocker also records remaining visual QA.
+Release follow-up: [the access response mismatch](ACCESS_CONTRACT_BLOCKER.md)
+is resolved by backend `faa34c0`, verified after starting a fresh API process.
+Mobile Teams readability and star/unstar retry coverage are complete. See
+[the release and grouping handoff](TEAMS_RELEASE_AND_BOARD_GROUPING.md) for final
+checks and commit status. No backend source changes were needed.
 
 ## Implemented
 
@@ -59,7 +60,10 @@ retains guest read/comment access. No type-generation dependency was introduced.
 team grant and fresh reads, scoped assignment, personal stars, plain-member
 controls, live unsharing, team-admin guest invitations with default comment,
 guest project isolation, last-admin behavior, rename/archive/restore, failed
-creation retry, desktop light and mobile light/dark layouts.
+creation retry, desktop light and mobile light/dark layouts. It also covers the
+implicit-owner empty access list, promotion to workspace admin, picker exclusions,
+unstar persistence and failed-star retry. Mobile assertions measure selector text
+and identity/control placement rather than only document overflow.
 
 Existing onboarding, guest, chat, project-editor, board and drawer journeys use
 the new contract. The preserved List-table work is verified against this API,

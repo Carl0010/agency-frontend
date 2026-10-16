@@ -1,39 +1,53 @@
-import { createHash, randomBytes } from 'node:crypto';
-import { Client } from 'pg';
-import { expect, test, type APIRequestContext, type Browser, type Page } from '@playwright/test';
-import { signupToBoard, type Account } from './helpers';
+import { expect, test } from '@playwright/test';
+import { signupToBoard } from './helpers';
+import { ownerApi, accept, skipTour } from './access-helpers';
 
-const DATABASE_URL = process.env.DATABASE_URL ?? 'postgres://agency:agency@127.0.0.1:55433/agency';
-async function ownerApi(request: APIRequestContext, account: Account) {
-  const response = await request.post('/api/v1/auth/login', { data: { email: account.email, password: account.password } });
-  expect(response.ok()).toBe(true);
-  const { accessToken } = await response.json() as { accessToken: string };
-  const headers = { Authorization: `Bearer ${accessToken}` };
-  return async <T,>(method: 'GET' | 'POST' | 'PUT' | 'DELETE', path: string, data?: object): Promise<T> => {
-    const result = await request.fetch(`/api/v1${path}`, { method, headers, data });
-    expect(result.ok(), `${method} ${path}: ${result.status()}`).toBe(true);
-    return result.status() === 204 ? undefined as T : await result.json() as T;
-  };
-}
-async function accept(browser: Browser, email: string, name: string, mobile = false) {
-  const token = randomBytes(32).toString('base64url');
-  const db = new Client({ connectionString: DATABASE_URL });
-  await db.connect();
-  try {
-    const result = await db.query('UPDATE membership SET invite_token_hash = $1 WHERE status = \'invited\' AND user_id = (SELECT id FROM "user" WHERE lower(email) = lower($2))', [createHash('sha256').update(token).digest('hex'), email]);
-    expect(result.rowCount).toBe(1);
-  } finally { await db.end(); }
-  const page = await (await browser.newContext({ viewport: mobile ? { width: 390, height: 844 } : { width: 1440, height: 1000 } })).newPage();
-  await page.goto(`/invite/${token}`);
-  await page.getByLabel('Your name').fill(name);
-  await page.getByLabel('Choose a password').fill('invitee-password-123');
-  await page.getByRole('button', { name: 'Accept invite' }).click();
-  return page;
-}
-async function skipTour(page: Page) {
-  const skip = page.getByTestId('coach-mark').getByRole('button', { name: 'Skip tour' });
-  if (await skip.isVisible()) await skip.click();
-}
+test('implicit workspace administrators are absent from direct grants and the sharing picker', async ({ browser, request }) => {
+  const { page, account } = await signupToBoard(browser);
+  const call = await ownerApi(request, account);
+  const projectId = new URL(account.boardUrl).pathname.split('/')[4]!;
+  const project = await call<{ workspaceId: string }>('GET', `/projects/${projectId}`);
+  const fresh = await call<{ members: { userId: string }[] }>('GET', `/projects/${projectId}/access`);
+  expect(fresh.members).toEqual([]);
+  const email = `promoted-${Date.now()}@example.test`;
+  await call('POST', `/workspaces/${project.workspaceId}/members/invites`, { email, role: 'member' });
+  const member = await accept(browser, email, 'Future Admin');
+  await expect(member.getByRole('heading', { name: 'No projects shared with you yet' })).toBeVisible();
+  const roster = await call<{ data: { userId: string; email: string }[] }>('GET', `/workspaces/${project.workspaceId}/members`);
+  const id = roster.data.find((person) => person.email === email)!.userId;
+  await call('PUT', `/projects/${projectId}/members/${id}`, { access: 'edit' });
+  expect((await call<{ members: { userId: string }[] }>('GET', `/projects/${projectId}/access`)).members.map((p) => p.userId)).toEqual([id]);
+  await call('PATCH', `/workspaces/${project.workspaceId}/members/${id}`, { role: 'admin' });
+  expect((await call<{ members: unknown[] }>('GET', `/projects/${projectId}/access`)).members).toEqual([]);
+  await member.goto(account.boardUrl); await skipTour(member);
+  await expect(member.getByRole('button', { name: 'Share', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Share', exact: true }).click();
+  const dialog = page.getByRole('dialog', { name: 'Share project', exact: true });
+  await expect(dialog.getByText('No teams shared.')).toBeVisible();
+  await expect(dialog.getByRole('region', { name: 'Direct project members' }).getByRole('listitem')).toHaveCount(0);
+  await expect(dialog.getByLabel('Person to share with').getByRole('option')).toHaveText(['Choose person']);
+  await page.context().close(); await member.context().close();
+});
+
+test('personal stars preserve state on failure, retry, unstar and reload', async ({ browser }) => {
+  const { page } = await signupToBoard(browser);
+  const sidebar = page.getByRole('complementary', { name: 'Workspace sidebar' });
+  await sidebar.getByRole('button', { name: 'Project actions for Acme site rebuild' }).click();
+  await page.route('**/api/v1/projects/*/star', (route) => route.fulfill({ status: 403, json: { error: { code: 'forbidden', message: 'Please retry this star.' } } }));
+  const star = page.getByRole('button', { name: 'Star Acme site rebuild', exact: true });
+  await star.click();
+  await expect(page.getByTestId('toast').filter({ hasText: 'Please retry this star.' })).toBeVisible();
+  await expect(sidebar.getByRole('region', { name: 'Starred', exact: true })).toHaveCount(0);
+  await expect(star).toBeEnabled();
+  await page.unroute('**/api/v1/projects/*/star'); await star.click();
+  await expect(sidebar.getByRole('region', { name: 'Starred', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Unstar Acme site rebuild', exact: true }).click();
+  await expect(sidebar.getByRole('region', { name: 'Starred', exact: true })).toHaveCount(0);
+  await page.reload();
+  await expect(sidebar.getByRole('link', { name: 'Acme site rebuild', exact: true })).toBeVisible();
+  await expect(sidebar.getByRole('region', { name: 'Starred', exact: true })).toHaveCount(0);
+  await page.context().close();
+});
 
 test('empty access, team sharing, scoped assignment, personal stars and live unsharing', async ({ browser, request }, info) => {
   const { page: owner, account } = await signupToBoard(browser, { viewport: { width: 1440, height: 1000 } });
@@ -129,6 +143,17 @@ test('a team admin invites a guest with default comment access to exactly the sh
   await expect(admin.getByLabel('Team guest access', { exact: true })).toHaveValue('comment');
   await admin.getByRole('button', { name: 'Invite guest to team', exact: true }).click();
   await expect(admin.getByTestId('team-member-row').filter({ hasText: email.split('@')[0] })).toBeVisible();
+  const guestRow = admin.getByTestId('team-member-row').filter({ hasText: email.split('@')[0] });
+  const identity = await guestRow.getByTestId('team-member-identity').boundingBox();
+  const controls = await guestRow.getByTestId('team-member-controls').boundingBox();
+  expect(controls!.y).toBeGreaterThanOrEqual(identity!.y + identity!.height);
+  expect(await guestRow.locator('p').first().evaluate((node) => node.scrollWidth <= node.clientWidth)).toBe(true);
+  expect((await admin.getByLabel('Person to add', { exact: true }).boundingBox())!.width).toBeGreaterThan(250);
+  expect(await guestRow.getByRole('combobox').evaluate((node: HTMLSelectElement) => {
+    const style = getComputedStyle(node); const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d')!; context.font = style.font;
+    return context.measureText(node.selectedOptions[0]!.text).width + parseFloat(style.paddingLeft) + parseFloat(style.paddingRight) + 20 <= node.clientWidth;
+  })).toBe(true);
   await admin.screenshot({ path: info.outputPath('team-guests-mobile-dark.png'), fullPage: true, animations: 'disabled' });
   expect(await admin.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   const guest = await accept(browser, email, 'Partner Guest', true);

@@ -19,7 +19,7 @@ function useTeamWrite(teamId?: string) {
   const qc = useQueryClient();
   return useMutation({ mutationFn: (write: () => Promise<unknown>) => write(), onSuccess: async (saved) => {
     if (teamId && saved && typeof saved === 'object' && 'members' in saved) qc.setQueryData(['team', teamId], saved);
-    await Promise.all(['teams', 'team', 'projects', 'project', 'members', 'project-people', 'project-access'].map((key) => qc.invalidateQueries({ queryKey: [key] })));
+    await Promise.all(['teams', 'team', 'projects', 'project', 'members', 'project-people', 'project-access', 'assignable'].map((key) => qc.invalidateQueries({ queryKey: [key] })));
   } });
 }
 
@@ -71,14 +71,16 @@ export function TeamScreen({ teamId }: { teamId: string }) {
       {t.members.map((member) => {
         const lastAdmin = !member.guest && member.role === 'admin' && adminCount === 1;
         const self = member.userId === user?.id;
-        return <li key={member.userId} className="flex flex-wrap items-center gap-3 py-3" data-testid="team-member-row">
-          <Avatar person={{ id: member.userId, ...member }} size={28} /><div className="min-w-0 flex-1"><p className="truncate text-label font-medium">{member.name}{self ? ' (you)' : ''}</p><p className="text-caption text-muted-foreground">{member.guest ? 'Guest' : member.role === 'admin' ? 'Team admin' : 'Team member'}{member.status === 'invited' ? ' · invited' : ''}{lastAdmin ? ' · Last admin' : ''}</p></div>
+        return <li key={member.userId} className="flex flex-col gap-2 py-3 sm:flex-row sm:items-center sm:gap-3" data-testid="team-member-row">
+          <div className="flex min-w-0 flex-1 items-center gap-3" data-testid="team-member-identity"><Avatar person={{ id: member.userId, ...member }} size={28} /><div className="min-w-0 flex-1"><p className="break-words text-label font-medium">{member.name}{self ? ' (you)' : ''}</p><p className="text-caption text-muted-foreground">{member.guest ? 'Guest' : member.role === 'admin' ? 'Team admin' : 'Team member'}{member.status === 'invited' ? ' · invited' : ''}{lastAdmin ? ' · Last admin' : ''}</p></div></div>
+          <div className="flex flex-wrap items-center gap-2 sm:shrink-0" data-testid="team-member-controls">
           {canManage && !archived && !lastAdmin ? <Select aria-label={`${member.guest ? 'Guest access' : 'Team role'} for ${member.name}`} value={member.guest ? member.access ?? 'comment' : member.role} disabled={act.isPending} className="w-auto" onChange={(event) => {
             const value = event.target.value; act.mutate(() => api.put(`/teams/${teamId}/members/${member.userId}`, member.guest ? { access: value } : { role: value }));
           }}>{member.guest ? <><option value="comment">Can comment</option><option value="read">Can view</option></> : <><option value="member">Team member</option><option value="admin">Team admin</option></>}</Select> : member.guest ? <Badge>{member.access === 'comment' ? 'Can comment' : 'Can view'}</Badge> : null}
           {!readOnly && !archived && !lastAdmin && (canManage || self) ? <Button variant="ghost" disabled={act.isPending} aria-label={`${self ? 'Leave team' : `Remove ${member.name}`}`} onClick={async () => {
             if (await confirm({ title: self ? 'Leave team?' : 'Remove person from team?', description: 'Access through this team will end. Other project grants and shared teams remain. A guest loses workspace membership if this was their last team or project.', confirmLabel: self ? 'Leave team' : 'Remove person' })) act.mutate(() => api.del(`/teams/${teamId}/members/${member.userId}`));
           }}>{self ? 'Leave' : 'Remove'}</Button> : null}
+          </div>
         </li>;
       })}
     </ul></section>
@@ -87,7 +89,7 @@ export function TeamScreen({ teamId }: { teamId: string }) {
         event.preventDefault(); const data = new FormData(event.currentTarget);
         act.mutate(() => api.put(`/teams/${teamId}/members/${personId}`, selected?.role === 'guest' ? { access: data.get('access') } : { role: data.get('role') }), { onSuccess: () => setPersonId('') });
       }}><h2 className="font-semibold">Add workspace person</h2><div className="flex flex-wrap gap-2">
-        <Select aria-label="Person to add" value={personId} required onChange={(event) => setPersonId(event.target.value)} className="min-w-0 flex-1"><option value="" disabled>Choose person</option>{available.map((member) => <option key={member.userId} value={member.userId}>{member.name}{member.role === 'guest' ? ' (guest)' : ''}{member.status === 'invited' ? ' (invited)' : ''}</option>)}</Select>
+        <Select aria-label="Person to add" value={personId} required onChange={(event) => setPersonId(event.target.value)} className="min-w-0 basis-full sm:flex-1 sm:basis-auto"><option value="" disabled>Choose person</option>{available.map((member) => <option key={member.userId} value={member.userId}>{member.name}{member.role === 'guest' ? ' (guest)' : ''}{member.status === 'invited' ? ' (invited)' : ''}</option>)}</Select>
         {selected?.role === 'guest' ? <Select name="access" aria-label="New team guest access" defaultValue="comment" className="w-auto"><option value="comment">Can comment</option><option value="read">Can view</option></Select> : <Select name="role" aria-label="New team role" defaultValue="member" className="w-auto"><option value="member">Team member</option><option value="admin">Team admin</option></Select>}
         <Button type="submit" disabled={act.isPending || !selected}>Add person</Button></div>
       </form>

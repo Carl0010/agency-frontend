@@ -22,11 +22,13 @@ export function ProjectSharing({ project, onClose }: { project: Project; onClose
   const access = useQuery({ queryKey: ['project-access', project.id], queryFn: () => api.get<ProjectAccess>(`/projects/${project.id}/access`) });
   const act = useMutation({ mutationFn: (write: () => Promise<ProjectAccess>) => write(), onSuccess: async (saved) => {
     qc.setQueryData(['project-access', project.id], saved);
-    await Promise.all(['projects', 'project', 'teams', 'project-people'].map((key) => qc.invalidateQueries({ queryKey: [key] })));
+    await Promise.all(['projects', 'project', 'teams', 'project-people', 'assignable'].map((key) => qc.invalidateQueries({ queryKey: [key] })));
   } });
   const sharedTeams = new Set(access.data?.teams.map((team) => team.id));
   const direct = new Set(access.data?.members.map((member) => member.userId));
   const availableTeams = (teams.data?.data ?? []).filter((team) => !sharedTeams.has(team.id));
+  // The contract rejects direct grants to implicit workspace administrators (422).
+  // Only the add-person choices are restricted; render the access response as returned.
   const availableMembers = (roster.data?.data ?? []).filter((member) => member.role === 'member' && member.status !== 'deactivated' && !direct.has(member.userId));
   const queryError = access.error ?? teams.error ?? roster.error;
   if (project.access !== 'admin') return null;

@@ -1,8 +1,21 @@
 # Project access response: contract mismatch
 
-Status: confirmed 2026-10-16; frontend release paused under the user's explicit
+Status: resolved 2026-10-16 by backend commit `faa34c0`, verified against a fresh
+backend process. This record preserves the original finding under the user's explicit
 instruction: “If the contract seems wrong or missing something, stop and report
 it instead of working around it in the client.” Backend source was not changed.
+
+## Resolution
+
+Backend `faa34c0` excludes implicit workspace owners/admins from the access list,
+does not store creator grants for them, and rejects redundant direct grants with
+`422 validation_failed`. The frontend picker offers only workspace member roles;
+the access response is rendered without client-side filtering. The real-API
+`e2e/project-access.spec.ts` regression confirms a fresh owner's empty access list,
+a directly granted member disappearing after promotion to workspace admin, their
+continued admin access, and exclusion from the Share picker. The original findings
+and checkpoint below are historical; current completion is tracked in
+[the release handoff](TEAMS_RELEASE_AND_BOARD_GROUPING.md).
 
 ## Expected
 
@@ -12,7 +25,7 @@ workspace owners/admins are not listed because they always have access.
 OpenAPI's `ProjectAccessView.members` description also says owners/admins see
 projects without being listed.
 
-## Observed
+## Originally observed (before faa34c0)
 
 A fresh disposable signup, followed by project creation with `{ name, teamIds: [] }`,
 returns this shape from the access endpoint (identifiers and names omitted):
@@ -35,7 +48,7 @@ The backend read at
 owner/admin memberships. The frontend does not silently filter the response to
 hide this discrepancy.
 
-## Resolution needed from the backend owner
+## Original requested resolution
 
 Either return the documented collection without workspace owners/admins, or
 explicitly revise the contract and define the UI semantics of editing/removing
@@ -43,7 +56,7 @@ their stored direct grants when implicit admin access remains. Cover a project
 created by an owner and a member subsequently promoted to workspace admin.
 Do not change the frontend's authorization or grant representation as a workaround.
 
-## Frontend state to resume
+## Original frontend checkpoint
 
 - Branch: `feat/teams-project-access`, based on the existing board/panel work in
   PR #4. Integration changes are saved in a local checkpoint commit; no new PR was opened.
