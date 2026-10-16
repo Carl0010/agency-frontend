@@ -170,6 +170,8 @@ export interface Project {
   clientName: string | null;
   key: string;
   color: string;
+  /** Saved icon identifier; optional while older API deployments roll forward. */
+  icon?: string;
   defaultBoardId: string;
   archivedAt: string | null;
   createdAt: string;

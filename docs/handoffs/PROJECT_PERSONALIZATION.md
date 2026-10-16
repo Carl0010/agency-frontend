@@ -1,8 +1,11 @@
 # Project icons and personal stars
 
-Status: proposed; custom icons, star/unstar and the sidebar Starred section are
-not implemented. Requested by the user on 2026-10-15. This handoff is intended
-for another session. Do not replace shared project data with local storage.
+Status: partially integrated, updated 2026-10-16. The current local backend has
+project icon and personal-star implementations. The frontend renders saved icons
+in the member board header and sidebar, with a folder fallback for unknown/missing
+identifiers. The icon picker, star/unstar controls and sidebar Starred section are
+still unimplemented. Requested on 2026-10-15; remaining work is for another session.
+Do not replace shared project data with local storage.
 
 ## Existing capabilities
 
@@ -13,17 +16,25 @@ the existing project color. The Projects page also retains its create flow.
 
 Backend on this machine: `../agency-mvp-clone` (API only). Read its AGENTS.md and
 backend architecture/domain/conventions/language docs before changing it.
-Current project DTOs accept name, optional clientName and color. Colors are
+Current local project DTOs accept name, optional clientName, color and icon. Colors are
 slate, red, orange, amber, green, teal, blue, violet. Existing contracts:
 
 - POST `/workspaces/:workspaceId/projects` creates a project and default board.
-- PATCH `/projects/:projectId` updates name, clientName (null clears) and color.
-- GET workspace projects returns Project views without icons or personal stars.
+- PATCH `/projects/:projectId` updates name, clientName (null clears), color and icon.
+- GET workspace projects returns member Project views with icon and starredByMe;
+  the local controller supports `?starred=true`.
+- GET `/projects/:projectId` returns the saved icon. The current board response
+  omits it, so the header uses this scoped project query, shared with existing
+  project consumers. Failures are shown and the board remains usable with a fallback.
 
-There is no persisted icon field or per-user project-star API as inspected.
-The contracts below are proposals to finalize with the backend owner.
+The local backend now contains the icon allowlist, project-star relation and
+PUT/DELETE star handlers. Confirm the deployed contract and required backend
+checks with its owner before completing the remaining frontend integration.
 
-## Proposed contract and model
+## Original contract and verification checklist
+
+The checklist below records the original proposal. Verify the local backend's
+implementation, release status and policy decisions before marking its items done.
 
 1. Add `icon` to the project aggregate, persistence, create/update DTOs and member
    Project views. Default `folder` for existing rows. Use a closed allowlist:
@@ -62,7 +73,8 @@ The contracts below are proposals to finalize with the backend owner.
 - Add a Starred section above Client projects, visible when the user has active
   starred projects. Entries open their boards and keep unread/active states.
   The regular project list remains complete. Use the same project row component.
-- Provide the predefined icon picker and existing background/color picker in the
+- Saved icon rendering is implemented in `projects/project-icon.tsx` and reused
+  by the member board header and sidebar. Provide the predefined icon picker and existing background/color picker in the
   project editor, plus a live preview. Name each radio option and preserve focus.
   Metadata is shared across workspace members; stars are personal.
 - Keep Starred order deterministic using the API's documented ordering. Decide

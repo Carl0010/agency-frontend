@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { ProjectEditor } from '@/components/projects/project-editor';
 import { ProjectMenu } from '@/components/projects/project-menu';
+import { ProjectIcon } from '@/components/projects/project-icon';
 import { usePathname, useRouter } from 'next/navigation';
 import { Icon, type IconName } from '@/components/icon';
 import { SetupChip } from '@/components/onboarding/setup-chip';
@@ -11,7 +12,6 @@ import { TrialPill } from '@/components/billing/billing-notices';
 import { Avatar, Button } from '@/components/ui';
 import { useToast } from '@/components/toast';
 import { errorMessage } from '@/lib/api';
-import { PROJECT_ICON_BG } from '@/lib/content-colors';
 import { useSession } from '@/lib/session';
 import type { Channel, Project } from '@/lib/types';
 import { useWorkspace } from '@/lib/workspace';
@@ -96,7 +96,7 @@ export function WorkspaceSidebar({ data, projectId, activeModule, onNavigate, on
                   <li key={project.id}>
                     <div className="flex items-center gap-1">
                       <Link href={`${projectBase}/b/${project.defaultBoardId}`} onClick={onNavigate} aria-current={current ? 'location' : undefined} data-testid="rail-project" className={`ui-nav-link tap min-w-0 flex-1 ${current ? 'bg-subtle font-medium text-foreground' : ''}`}>
-                        <span className={`flex size-7 shrink-0 items-center justify-center rounded-lg text-foreground ${PROJECT_ICON_BG[project.color] ?? 'bg-subtle'}`}><Icon name="board" className="size-4" /></span>
+                        <ProjectIcon project={project} />
                         <span className="min-w-0 flex-1 truncate">{project.name}</span>
                         {unread ? <UnreadDot label={`Unread messages in ${project.name}`} /> : null}
                       </Link>

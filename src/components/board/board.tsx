@@ -21,16 +21,17 @@ import { horizontalListSortingStrategy, SortableContext, sortableKeyboardCoordin
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Icon } from '@/components/icon';
 import { ProjectActions } from '@/components/project-chrome';
+import { ProjectIcon } from '@/components/projects/project-icon';
 import { useToast } from '@/components/toast';
 import { Avatar, Button, Spinner } from '@/components/ui';
 import { api, errorMessage } from '@/lib/api';
 import { findCard, moveCardLocal, moveListLocal, upsertCard, upsertList } from '@/lib/board-state';
 import { isFiltering, matchesFilters, parseFilters, writeFilters, type BoardFilters } from '@/lib/filters';
 import { useProjectRealtime } from '@/lib/realtime';
-import type { Board, CardTile, Label, Member, Page } from '@/lib/types';
+import type { Board, CardTile, Label, Member, Page, Project } from '@/lib/types';
 import { useNow } from '@/lib/use-now';
 import { useWorkspace } from '@/lib/workspace';
 import { AddList } from './add-list';
@@ -96,20 +97,26 @@ export function BoardScreen({ boardId, projectId }: { boardId: string; projectId
   const [mobileListId, setMobileListId] = useState<string | null>(null);
 
   useProjectRealtime(projectId);
+  // Board views omit icon metadata; read the existing scoped project endpoint.
+  const project = useQuery({ queryKey: ['project', projectId], queryFn: () => api.get<Project>(`/projects/${projectId}`) });
+  useEffect(() => { if (project.error) toast(errorMessage(project.error)); }, [project.error, toast]);
   const board = useQuery({ queryKey: ['board', boardId], queryFn: () => api.get<Board>(`/boards/${boardId}`) });
   const members = useQuery({ queryKey: ['members', ws.id], queryFn: () => api.get<Page<Member>>(`/workspaces/${ws.id}/members`) });
   const labels = useQuery({ queryKey: ['labels', ws.id], queryFn: () => api.get<Page<Label>>(`/workspaces/${ws.id}/labels`) });
 
   const filters = useMemo(() => parseFilters(new URLSearchParams(params.toString())), [params]);
-  const setFilters = (f: BoardFilters) => {
-    const next = writeFilters(new URLSearchParams(params.toString()), f).toString();
-    router.replace(next ? `${pathname}?${next}` : pathname, { scroll: false });
+  const setFilters = (update: (current: BoardFilters) => BoardFilters) => {
+    // Client-only filters use Next's integrated History API. Compose against the
+    // current URL so rapid selections cannot replace one another with stale props.
+    const current = new URLSearchParams(window.location.search);
+    const next = writeFilters(current, update(parseFilters(current))).toString();
+    window.history.replaceState(null, '', `${pathname}${next ? `?${next}` : ''}${window.location.hash}`);
   };
   const filtering = isFiltering(filters);
   const view = params.get('view') === 'list' ? 'list' : 'kanban';
   const setView = (nextView: 'kanban' | 'list') => {
     setDrag(null); // A cancelled drag preview must never become the other view's data.
-    const next = new URLSearchParams(params.toString());
+    const next = new URLSearchParams(window.location.search);
     if (nextView === 'list') next.set('view', 'list'); else next.delete('view');
     const query = next.toString();
     router.push(query ? `${pathname}?${query}` : pathname, { scroll: false });
@@ -133,7 +140,6 @@ export function BoardScreen({ boardId, projectId }: { boardId: string; projectId
   const qs = params.toString();
   const cardHref = (cardId: string) => `/w/${ws.slug}/p/${projectId}/b/${boardId}/c/${cardId}${qs ? `?${qs}` : ''}`;
   const activeMembers = (members.data?.data ?? []).filter((m) => m.status === 'active' && m.role !== 'guest');
-  const totalCards = shown.lists.reduce((n, l) => n + l.cards.length, 0);
   const selectedList = shown.lists.find((l) => l.id === mobileListId) ?? shown.lists[0];
 
   function onDragStart(e: DragStartEvent) {
@@ -210,14 +216,11 @@ export function BoardScreen({ boardId, projectId }: { boardId: string; projectId
     <div data-testid="board-canvas" className="flex h-full bg-board-canvas">
       <div className="flex min-w-0 flex-1 flex-col">
         <div data-testid="board-project-header" className="flex shrink-0 flex-wrap items-center gap-x-4 gap-y-1 border-b border-border bg-surface px-4 py-2">
-          <div className="flex min-w-0 grow basis-40 flex-wrap items-baseline gap-x-3 gap-y-0.5">
+          <div className="flex min-w-0 grow basis-40 items-center gap-2.5">
+            <ProjectIcon project={{ color: project.data?.color ?? shown.project.color, icon: project.data?.icon }} />
             <h1 className="min-w-0 max-w-full truncate text-lg font-semibold leading-6" data-testid="board-title">
               {shown.project.name}
             </h1>
-            <p className="flex min-w-0 flex-wrap items-center gap-x-2 text-caption text-muted-foreground">
-              {shown.project.clientName ? <><span className="truncate">{shown.project.clientName}</span><span aria-hidden="true">·</span></> : null}
-              <span>{totalCards} {totalCards === 1 ? 'card' : 'cards'} in {shown.lists.length} {shown.lists.length === 1 ? 'list' : 'lists'}</span>
-            </p>
           </div>
           <div className="flex max-w-full flex-wrap items-center gap-2">
             <ProjectActions projectId={projectId} />
@@ -253,7 +256,6 @@ export function BoardScreen({ boardId, projectId }: { boardId: string; projectId
           </div>
         ) : null}
 
-        {filtering ? <p className="mx-4 mt-3 shrink-0 text-caption text-muted-foreground">{view === 'kanban' ? 'Filters are on — clear them to drag cards.' : 'Filters apply to cards in every list.'}</p> : null}
 
         {view === 'list' ? <BoardListView editingListId={editingListId} onListCreated={onListCreated} onListEditFinished={onListEditFinished} board={shown} filters={filters} now={now} cardHref={cardHref} /> : <DndContext
           sensors={sensors}

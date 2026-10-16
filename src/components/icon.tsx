@@ -30,6 +30,13 @@ const paths = {
   arrow: <path d="M7 17 17 7M7 7h10v10" />,
   list: <><path d="M9 5h12M9 12h12M9 19h12" /><path d="M3 5h.01M3 12h.01M3 19h.01" strokeWidth="3" /></>,
   board: <><rect x="3" y="4" width="18" height="16" rx="3" /><path d="M9 4v16M15 4v16" /></>,
+  folder: <path d="M3 7a2 2 0 0 1 2-2h5l2 2h7a2 2 0 0 1 2 2v10H3V7Z" />,
+  briefcase: <><rect x="3" y="7" width="18" height="14" rx="2" /><path d="M8 7V3h8v4M3 12a20 20 0 0 0 18 0M12 11v4" /></>,
+  code: <><path d="m8 6-6 6 6 6m8-12 6 6-6 6M14 3l-4 18" /></>,
+  megaphone: <><path d="m3 10 17-6v16L3 14v-4ZM7 15l2 6h4l-2-5M20 9h2v6h-2" /></>,
+  pen: <><path d="m4 16 12-12 4 4L8 20l-5 1 1-5ZM13 7l4 4" /></>,
+  globe: <><circle cx="12" cy="12" r="9" /><ellipse cx="12" cy="12" rx="4" ry="9" /><path d="M3 12h18" /></>,
+  rocket: <><path d="M9 9c3-5 7-6 12-6 0 5-1 9-6 12l-6-6ZM9 9 4 9l-2 5 6-1m7 2v5l-5 2 1-6M6 17l-3 4 4-2" /><circle cx="16" cy="8" r="1.5" /></>,
   import: <><path d="M12 3v12m-4-4 4 4 4-4M4 16v4h16v-4" /></>,
   close: <path d="m6 6 12 12M6 18 18 6" />,
 } as const;

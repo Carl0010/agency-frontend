@@ -28,6 +28,8 @@ For navigation changes also read [sidebar responsibilities](docs/NAVIGATION.md).
   active; do not add a blocking backdrop, focus trap or document scroll lock.
 - Board presentations follow [docs/BOARD_VIEWS.md](docs/BOARD_VIEWS.md). Keep view/filter
   state in the URL and server ordering unchanged; reuse the shared list header and composers.
+  Keep view tabs left, search/filters right, and filters in the anchored popover.
+  Project headers show their saved icon and name without card/list-count descriptions.
 - Use `useConfirm` from `components/confirmation.tsx` for confirmations. Browser
   confirm/alert/prompt calls are lint errors; preserve API authorization and error handling.
 - A new token needs a purpose and documented foreground/background pairing. Run the contrast tests.

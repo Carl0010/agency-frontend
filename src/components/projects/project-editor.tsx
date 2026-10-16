@@ -12,7 +12,7 @@ import { channelsKey } from '@/lib/unread';
 import type { Project } from '@/lib/types';
 import { useWorkspace } from '@/lib/workspace';
 
-/** Only fields supported by the project API. Icons and stars are a documented API handoff. */
+/** Name/client/color editor; the icon picker and personal-star controls remain a documented handoff. */
 export function ProjectEditor({ project, onClose, onSaved }: {
   project?: Project; onClose: () => void; onSaved: (project: Project) => void;
 }) {

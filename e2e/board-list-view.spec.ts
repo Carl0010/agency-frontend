@@ -41,7 +41,7 @@ test('Add list creates a full column immediately and focuses its inline name wit
   // Board controls share one compact row, leaving the work area close to the app bar.
   const toolbar = page.getByTestId('board-toolbar');
   const views = toolbar.getByRole('group', { name: 'Board view', exact: true });
-  const search = toolbar.getByRole('searchbox', { name: 'Filter cards' });
+  const search = toolbar.getByRole('searchbox', { name: 'Search by card name' });
   const [toolbarBox, viewsBox, searchBox, projectBox, barBox, listsBox] = await Promise.all([toolbar.boundingBox(), views.boundingBox(), search.boundingBox(), page.getByTestId('board-project-header').boundingBox(), page.getByTestId('workspace-header').boundingBox(), page.getByTestId('board-lists').boundingBox()]);
   expect(toolbarBox!.height).toBeLessThanOrEqual(56);
   expect(projectBox!.height).toBeLessThanOrEqual(56);
@@ -100,7 +100,7 @@ test('List view shares board filters, creation, ordering, list actions and the n
   await page.screenshot({ path: info.outputPath('list-view-dark.png'), fullPage: true, animations: 'disabled', style: 'nextjs-portal { visibility: hidden; }' });
   await page.reload();
   await expect(page.getByTestId('board-list-view')).toBeVisible();
-  const filter = page.getByRole('searchbox', { name: 'Filter cards' });
+  const filter = page.getByRole('searchbox', { name: 'Search by card name' });
   await filter.fill('Review'); await expect(rows).toHaveCount(1);
   await expect(list(page, 'To do').getByText('No matching cards')).toBeVisible();
   await views.getByRole('button', { name: 'Kanban', exact: true }).click();

@@ -7,12 +7,24 @@ and card ordering. The guest portal remains separate.
 
 ## Switching and navigation
 
-A labelled Kanban/List control shares a compact toolbar with search and filters
-below the project header. It has no dedicated full-width row. The default is
+A labelled Kanban/List control stays left in a compact toolbar, with search and
+filter controls aligned right. The header shows the project's saved icon/color
+and name, without card/list counts or client-description metadata. The default is
 Kanban; `?view=list` selects List. Changing the presentation preserves filters
 and unrelated URL parameters, without scrolling the document. Filters keep the
 view parameter. Reload, shareable URLs and browser history restore the selected
 presentation. Unknown view values safely render Kanban.
+
+The card search placeholder is **Search by card name**. Filters open a native
+anchored popover, with member names/avatars, label choices, due date, selected
+counts and Reset/Done actions. Selection updates the same URL filters immediately.
+The panel is non-modal and never expands the header or shifts board content.
+It clamps to the viewport, repositions on resize/scroll and keeps long option
+lists scrollable. Escape/outside click dismiss; Close/Done returns to the trigger.
+Reset preserves card search; the toolbar Clear resets all filters. Reload restores
+the selected filters with the panel closed. Filtering still disables Kanban drag.
+Client-only filter changes use Next's integrated History API and compose against
+the latest URL, so quick selections accumulate without a server navigation per click.
 
 Opening a card uses the existing non-modal drawer and carries the view/filter
 query into the card URL. Closing returns to that same presentation; focus returns
@@ -74,6 +86,10 @@ handling; failed creation preserves entered text for retry. Backend authorizatio
 and subscription gates remain authoritative.
 
 ## Verification
+
+`e2e/board-filters.spec.ts` covers right alignment, stable board height, combined
+filter selection/reset, keyboard focus and dismissal, reload, both views, mobile
+resize/overflow and saved project icons with unknown-identifier fallback.
 
 `e2e/board-list-view.spec.ts` covers compact toolbar/header height, the 200px empty area,
 exact Add list dimensions, immediate creation, focused naming, failed creation/rename

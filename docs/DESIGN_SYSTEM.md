@@ -145,7 +145,7 @@ piece of information. Reuse the semantic type and color tokens above.
 
 | Element | Type / dimensions | Purpose |
 | --- | --- | --- |
-| Project title | 18px / 24px, semibold | Compact project header; client and board counts beside it at 12px / 16px, wrapping as needed |
+| Project title | 18px / 24px, semibold | Saved project icon/color beside the name; no card/list counts or client-description line |
 | List heading | 14px / 20px, semibold | Stable header with a separate count badge and action target |
 | Card title | 15px / 24px, medium | Up to three visible lines; full title in the control label and tooltip |
 | Labels and facts | 12px / 16px | Readable label names, due state, checklist/file/comment counts |
@@ -178,9 +178,19 @@ wrap independently from the footer so dates, counts, keys and assignees cannot
 compete for one row. Plain cards still show their key.
 
 The global app bar is 56px high. Board chrome uses a compact project row and
-one toolbar shared by the Kanban/List switch, card search and filters. Do not
+one toolbar with the Kanban/List switch on the left and card search, Filters and
+Clear aligned right. Search says **Search by card name**. Do not
 give the view switch its own full-width row or repeat the empty-list guidance
 in a separate banner. The toolbar wraps on mobile while keeping 44px targets.
+
+Filters open a non-modal native popover anchored to their button, with member
+names/avatars, label names/colors, due date, selection counts, Reset and Done.
+Opening or changing filters never inserts a header row or moves board content.
+Keep the panel within the viewport and update its position on resize/scroll and
+selection changes. Focus Close on open; Escape/outside click dismiss, and explicit
+close/Done returns focus to the trigger. Reset clears structured filters while
+preserving card search; toolbar Clear resets everything. Active filters persist
+in the URL but never cause the popover to open automatically after reload.
 
 The project header wraps as the available board pane narrows, including when
 the card drawer is open. Filters use the shared input and consistent control

@@ -64,8 +64,8 @@ test('header padding and title both reorder columns while controls retain normal
   await list(page, 'Upcoming').getByRole('button', { name: 'Upcoming', exact: true }).click();
   await expect(list(page, 'Upcoming').getByRole('textbox', { name: 'List name', exact: true })).toBeFocused();
   await page.keyboard.press('Escape');
-  await page.getByRole('searchbox', { name: 'Filter cards' }).fill('Review');
-  await expect(page.getByText('Filters are on — clear them to drag cards.')).toBeVisible();
+  await page.getByRole('searchbox', { name: 'Search by card name' }).fill('Review');
+  await expect(list(page, 'Upcoming').getByRole('button', { name: 'Upcoming', exact: true })).not.toHaveAttribute('aria-roledescription', 'sortable');
   await dragHeader(page, list(page, 'Upcoming').getByTestId('list-header'), progress.getByTestId('list-header'), true);
   await expect.poll(() => order(page)).toEqual(['List Upcoming', 'List In progress', 'List Done']);
   await page.context().close();
