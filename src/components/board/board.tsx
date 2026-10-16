@@ -32,7 +32,9 @@ import { findCard, moveCardLocal, moveListLocal, upsertCard, upsertList } from '
 import { isFiltering, matchesFilters, parseFilters, writeFilters, type BoardFilters } from '@/lib/filters';
 import { useProjectRealtime } from '@/lib/realtime';
 import type { Board, CardTile, Label, Page, Project } from '@/lib/types';
-import { useNow } from '@/lib/use-now';
+import { useGroupingClock } from '@/lib/use-grouping-clock';
+import { parseGrouping } from '@/lib/board-grouping';
+import { useSession } from '@/lib/session';
 import { useWorkspace } from '@/lib/workspace';
 import { useProjectPeople } from '@/lib/project-people';
 import { ProjectError } from '@/components/projects/project-error';
@@ -41,6 +43,8 @@ import { BoardListView } from './list-view';
 import { CardTileView } from './card-tile';
 import { FilterBar } from './filter-bar';
 import { ListColumn } from './list-column';
+import { GroupedBoard } from './grouped-board';
+import { GroupingSelect } from './grouping-select';
 
 type Drag = { type: 'card' | 'list'; activeId: string; board: Board; snapshot: Board };
 
@@ -91,7 +95,8 @@ export function BoardScreen({ boardId, projectId }: { boardId: string; projectId
   const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
-  const now = useNow();
+  const { user } = useSession();
+  const timezone = user?.timezone ?? 'UTC';
   const [drag, setDrag] = useState<Drag | null>(null);
   const [editingListId, setEditingListId] = useState<string | null>(null);
   const onListCreated = (id: string) => { setMobileListId(id); setEditingListId(id); };
@@ -103,6 +108,8 @@ export function BoardScreen({ boardId, projectId }: { boardId: string; projectId
   const project = useQuery({ queryKey: ['project', projectId], queryFn: () => api.get<Project>(`/projects/${projectId}`) });
   useEffect(() => { if (project.error) toast(errorMessage(project.error)); }, [project.error, toast]);
   const board = useQuery({ queryKey: ['board', boardId], queryFn: () => api.get<Board>(`/boards/${boardId}`) });
+  const now = useGroupingClock(board.data, timezone);
+  const grouping = parseGrouping(params.get('group'));
   const members = useProjectPeople(ws.id, projectId);
   const labels = useQuery({ queryKey: ['labels', ws.id], queryFn: () => api.get<Page<Label>>(`/workspaces/${ws.id}/labels`) });
 
@@ -235,13 +242,13 @@ export function BoardScreen({ boardId, projectId }: { boardId: string; projectId
           </div>
         </div>
         <FilterBar filters={filters} onChange={setFilters} members={activeMembers} labels={labels.data?.data ?? []} leading={
-          <div role="group" aria-label="Board view" className="inline-flex shrink-0 gap-0.5 rounded-lg border border-border bg-background p-0.5">
+          <div className="flex flex-wrap items-center gap-3"><div role="group" aria-label="Board view" className="inline-flex shrink-0 gap-0.5 rounded-lg border border-border bg-background p-0.5">
             <button type="button" aria-pressed={view === 'kanban'} onClick={() => setView('kanban')} className={`ui-button tap min-h-8 gap-1.5 px-2.5 ${view === 'kanban' ? 'bg-surface text-foreground shadow-sm' : 'text-muted-foreground hover:bg-subtle'}`}><Icon name="board" />Kanban</button>
             <button type="button" aria-pressed={view === 'list'} onClick={() => setView('list')} className={`ui-button tap min-h-8 gap-1.5 px-2.5 ${view === 'list' ? 'bg-surface text-foreground shadow-sm' : 'text-muted-foreground hover:bg-subtle'}`}><Icon name="list" />List</button>
-          </div>
+          </div><GroupingSelect /></div>
         } />
 
-        {view === 'kanban' && shown.lists.length ? (
+        {grouping === 'list' && view === 'kanban' && shown.lists.length ? (
           <div className="flex shrink-0 gap-2 overflow-x-auto border-b border-border bg-surface px-4 py-2 sm:hidden" role="tablist" aria-label="Lists">
             {shown.lists.map((l) => (
               <button
@@ -259,7 +266,7 @@ export function BoardScreen({ boardId, projectId }: { boardId: string; projectId
         ) : null}
 
 
-        {view === 'list' ? <BoardListView editingListId={editingListId} onListCreated={onListCreated} onListEditFinished={onListEditFinished} board={shown} filters={filters} now={now} cardHref={cardHref} members={activeMembers} activeDrag={drag} onDragStart={onDragStart} onDragOver={onDragOver} onDragEnd={onDragEnd} onDragCancel={() => setDrag(null)} /> : <DndContext
+        {grouping !== 'list' ? <GroupedBoard key={`${grouping}:${view}`} board={board.data} grouping={grouping} view={view} filters={filters} now={now} timezone={timezone} members={activeMembers} cardHref={cardHref} /> : view === 'list' ? <BoardListView editingListId={editingListId} onListCreated={onListCreated} onListEditFinished={onListEditFinished} board={shown} filters={filters} now={now} cardHref={cardHref} members={activeMembers} activeDrag={drag} onDragStart={onDragStart} onDragOver={onDragOver} onDragEnd={onDragEnd} onDragCancel={() => setDrag(null)} /> : <DndContext
           sensors={sensors}
           collisionDetection={collision}
           onDragStart={onDragStart}

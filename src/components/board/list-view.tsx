@@ -6,7 +6,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { useIsMutating } from '@tanstack/react-query';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { Icon } from '@/components/icon';
 import { LABEL_BG } from '@/components/ui';
 import { isFiltering, matchesFilters, type BoardFilters } from '@/lib/filters';
@@ -92,9 +92,15 @@ function CardRow({ card, projectKey, now, href, selected, members, disabled, hid
   const sortable = useSortable({ id: card.id, data: { type: 'card', listId: card.listId }, disabled });
   const cardKey = `${projectKey}-${card.number}`;
   return <tr ref={sortable.setNodeRef} hidden={hidden} data-testid="card-row" data-card-row-id={card.id} style={{ transform: CSS.Translate.toString(sortable.transform), transition: sortable.transition }} className={`group/list-row ${selected ? 'bg-primary-subtle' : 'hover:bg-background'} ${sortable.isDragging ? 'opacity-30' : ''}`}>
+    <CardRowCells card={card} cardKey={cardKey} now={now} href={href} selected={selected} members={members} handle={<DragHandle sortable={sortable} disabled={disabled} label={`Move card ${cardKey}`} />} />
+  </tr>;
+}
+
+export function CardRowCells({ card, cardKey, now, href, selected, members, handle }: { card: CardTile; cardKey: string; now: Date; href: string; selected: boolean; members: Member[]; handle: ReactNode }) {
+  return <>
     <td className="border-b border-border-subtle px-2 py-1 align-middle">
       <div className="flex min-w-0 items-center gap-1">
-        <DragHandle sortable={sortable} disabled={disabled} label={`Move card ${cardKey}`} />
+        {handle}
         <Link href={href} scroll={false} data-card-id={card.id} data-tour="card" aria-label={`${cardKey}: ${card.title}`} aria-expanded={selected} aria-controls={selected ? 'card-drawer' : undefined} title="Open card details" className="tap inline-flex shrink-0 items-center rounded-md px-1 font-mono text-caption text-muted-foreground hover:bg-muted hover:text-primary">{cardKey}</Link>
         <RowName card={card} cardKey={cardKey} />
       </div>
@@ -107,7 +113,7 @@ function CardRow({ card, projectKey, now, href, selected, members, disabled, hid
     <td className="hidden border-b border-border-subtle px-2 py-1 align-middle @3xl:table-cell"><RowDue card={card} cardKey={cardKey} now={now} /></td>
     <td className="hidden border-b border-border-subtle px-2 py-1 align-middle @3xl:table-cell"><Labels card={card} /></td>
     <td className="hidden border-b border-border-subtle px-2 py-1 align-middle @3xl:table-cell"><Activity card={card} /></td>
-  </tr>;
+  </>;
 }
 
 function Labels({ card }: { card: CardTile }) {

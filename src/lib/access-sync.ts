@@ -15,7 +15,7 @@ export function useAccessSync() {
     const refetch = () => { void qc.invalidateQueries(); };
     const changed = () => {
       // Drop project content immediately, while retaining unrelated form drafts.
-      const sensitive = new Set(['project', 'projects', 'board', 'card', 'channels', 'messages', 'comments', 'search', 'notifications', 'project-access', 'project-guests', 'project-people']);
+      const sensitive = new Set(['project', 'projects', 'board', 'card', 'channels', 'messages', 'comments', 'search', 'notifications', 'project-access', 'project-guests', 'project-people', 'assignable']);
       void qc.resetQueries({ predicate: (query) => sensitive.has(String(query.queryKey[0])) });
       refetch();
       void refreshSession().catch((error: unknown) => toast(errorMessage(error)));

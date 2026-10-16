@@ -2,6 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { Comments } from '@/components/card/comments';
 import { DuePill } from '@/components/due-pill';
 import { Markdown } from '@/components/markdown';
@@ -21,13 +22,14 @@ import { useNow } from '@/lib/use-now';
  * payload does not carry them (AC9).
  */
 export function PortalCard({ project, cardId }: { project: PortalProject; cardId: string }) {
+  const params = useSearchParams();
   const now = useNow();
   const card = useQuery({ queryKey: ['card', cardId], queryFn: () => api.get<CardDetail>(`/cards/${cardId}`) });
   useProjectRealtime(project.id);
   useRoom(card.data ? `card:${cardId}` : null, {});
 
   const back = (
-    <Link href={`/portal/${project.id}`} className="tap inline-flex items-center text-sm text-primary">
+    <Link href={`/portal/${project.id}${params.get('group') === 'due' ? '?group=due' : ''}`} className="tap inline-flex items-center text-sm text-primary">
       ← Board
     </Link>
   );

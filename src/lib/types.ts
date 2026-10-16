@@ -214,6 +214,13 @@ export interface ProjectAccess {
 }
 export interface ProjectStar { projectId: string; starredByMe: boolean }
 
+/** Board grouping contracts; DueWindow is evaluated in the viewer's profile timezone. */
+export type DueWindow = 'overdue' | 'today' | 'next_7_days' | 'later' | 'none' | 'done';
+export type RescheduleTarget = Exclude<DueWindow, 'overdue'>;
+export interface Assignable { userId: string; name: string; avatarUrl: string | null }
+export interface ChangeAssigneesRequest { add?: string[]; remove?: string[] }
+export interface RescheduleCardRequest { to: RescheduleTarget; dueAt?: string }
+
 export interface Label {
   id: string;
   name: string;

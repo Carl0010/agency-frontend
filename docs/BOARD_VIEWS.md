@@ -1,9 +1,51 @@
 # Board views
 
 Implemented: Kanban and List are two presentations of the same member board.
-No new backend endpoints or business rules are required. Both read the existing
-board query, use TanStack Query for server state and retain the server's list
-and card ordering. The guest portal remains separate.
+Both read the existing board query and use TanStack Query for server state.
+List grouping retains the server's list and card ordering. Assignee and due-date
+grouping use the published atomic-assignment and reschedule writes described
+below. The guest portal remains separate.
+
+## Grouping
+
+The compact **Group by** switch offers List (default), Assignee and Due date in
+both Kanban and List. `?group=list|assignee|due` composes with presentation, search
+and structured filters, survives reload/history and travels into the card drawer.
+Unknown values fall back to List. Switching grouping never changes stored lists,
+positions or cards and never requires another board read.
+
+- Assignee shows assignable people from `GET /projects/:id/assignable`, including
+  empty groups, plus Unassigned. A card appears once per assignee, in board order
+  (list order, then card position). Existing assignments remain visible even if a
+  person is no longer assignable; that person's group cannot receive new drops.
+- Due date always shows Overdue, Today, Next 7 days, Later, No due date and Done.
+  It applies the API's `DueWindow` in the viewer's profile timezone from `/me`:
+  completed first, then no date, overdue before now, today before the next local
+  midnight, the following seven calendar days, and later. This differs from the
+  existing 48-hour due pill and the elapsed-week filter. Cards sort by due date,
+  with board order for ties. DST uses calendar boundaries, not 24-hour increments.
+- A clock recomputes at due expiration, local midnight, tab visibility changes
+  and board-cache changes from realtime `card.updated` events.
+- These groups cannot be reordered. Card handles move between whole groups;
+  dropping within the current group does nothing. List grouping retains existing
+  card/list ordering. Filtering disables every drag, while row editors and links
+  remain available. Lapsed workspaces cannot drag.
+- Assignee drops call one atomic `PATCH /cards/:id/assignees` with `remove` for the
+  source and `add` for the target. Unassigned omits the corresponding person;
+  other assignees remain. Multiple occurrences use unique drag identifiers.
+- Due drops call `POST /cards/:id/reschedule`. Today and Next 7 days are chosen
+  by the server in the caller's timezone; None clears the date and Done completes
+  it. Overdue is never a target. Later opens a labelled modal, retains the draft
+  on failure and asks for a date after the next seven days. Date selection uses
+  the profile timezone even if the browser uses another. Cancel makes no write.
+- Writes preview optimistically in shared board/card caches, restore the card on
+  API failure (including 422/402/403), show the error and refetch authoritative
+  data. Keyboard Space lifts/drops, arrows follow displayed group order, Escape
+  cancels. Successful drops expand collapsed destinations and return focus to
+  the moved card's handle; cancellation/failure returns focus to its source.
+- Guests get List and Due date only, with read-only tiles and no drag/assignee
+  controls. Returning from a portal card preserves due grouping. The portal
+  imports no member board or workspace navigation.
 
 ## Switching and navigation
 

@@ -2,13 +2,17 @@
 
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 import { CardTileView } from '@/components/board/card-tile';
 import { Spinner } from '@/components/ui';
 import { api, errorMessage } from '@/lib/api';
 import { useProjectRealtime } from '@/lib/realtime';
 import type { Board, CardTile, PortalProject } from '@/lib/types';
-import { useNow } from '@/lib/use-now';
+import { useGroupingClock } from '@/lib/use-grouping-clock';
+import { boardGroups, parseGrouping } from '@/lib/board-grouping';
+import { GroupingSelect } from '@/components/board/grouping-select';
+import { useSession } from '@/lib/session';
 
 /**
  * The guest board (§3.6): the same list/card rendering as the workspace board,
@@ -17,21 +21,25 @@ import { useNow } from '@/lib/use-now';
  * nothing downstream expects them.
  */
 export function PortalBoard({ project }: { project: PortalProject }) {
-  const now = useNow();
+  const { user } = useSession();
+  const params = useSearchParams();
+  const grouping = parseGrouping(params.get('group'), true);
   const [active, setActive] = useState(0);
   const board = useQuery({
     queryKey: ['board', project.defaultBoardId],
     queryFn: () => api.get<Board>(`/boards/${project.defaultBoardId}`),
   });
   useProjectRealtime(project.id);
+  const now = useGroupingClock(board.data, user?.timezone ?? 'UTC');
 
   if (board.isPending) return <Spinner />;
   if (board.error) return <p className="p-8 text-center text-secondary-foreground">{errorMessage(board.error)}</p>;
-  const lists = board.data.lists;
+  const lists = grouping === 'due' ? boardGroups(board.data, 'due', [], now, user?.timezone ?? 'UTC') : board.data.lists;
   const tile = (c: CardTile): CardTile => ({ ...c, assignees: [] });
 
   return (
     <div className="flex h-full flex-col" data-testid="portal-board">
+      <div className="border-b border-border bg-surface px-3 py-2"><GroupingSelect guest /></div>
       {/* < 640px: one list at a time with a horizontal selector (§3.7). */}
       <div className="flex gap-1 overflow-x-auto border-b border-border-subtle bg-surface px-2 py-1 sm:hidden" role="tablist" aria-label="Lists">
         {lists.map((l, i) => (
@@ -62,7 +70,7 @@ export function PortalBoard({ project }: { project: PortalProject }) {
             <ol className="min-h-0 space-y-2 overflow-y-auto">
               {l.cards.map((c) => (
                 <li key={c.id}>
-                  <Link href={`/portal/${project.id}/c/${c.id}`} data-testid="portal-card" className="block rounded-md focus-visible:outline-2 focus-visible:outline-ring">
+                  <Link href={`/portal/${project.id}/c/${c.id}${grouping === 'due' ? '?group=due' : ''}`} data-testid="portal-card" className="block rounded-md focus-visible:outline-2 focus-visible:outline-ring">
                     <CardTileView card={tile(c)} projectKey={project.key} now={now} />
                   </Link>
                 </li>
