@@ -146,6 +146,8 @@ test('due drags set Today, ask for Later, cancel and retry without changing list
   await expect(page.getByRole('table', { name: 'Board cards' })).toBeVisible();
   await expect(group(page, 'No due date')).toContainText('Plan the launch');
   await page.setViewportSize({ width: 390, height: 844 });
+  await expect(page.getByRole('button', { name: 'List', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByRole('table', { name: 'Board cards' })).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await page.screenshot({ path: info.outputPath('group-list-mobile-dark.png'), fullPage: true, animations: 'disabled', style: 'nextjs-portal { visibility: hidden; }' });
   await page.context().close();
@@ -178,6 +180,8 @@ test('guest due grouping is read-only, excludes assignees and survives returning
   await expect(guest.locator('[data-group-card-handle], [aria-roledescription="draggable"]')).toHaveCount(0);
   await guest.getByTestId('portal-card').click(); await guest.getByRole('link', { name: '← Board', exact: true }).click();
   await expect(guest.getByRole('combobox', { name: 'Group by' })).toHaveValue('due');
+  await guest.getByRole('tab', { name: 'No due date', exact: true }).click();
+  await expect(guest.getByTestId('portal-card')).toContainText('Guest visible card');
   await guest.screenshot({ path: info.outputPath('group-guest-mobile.png'), fullPage: true, animations: 'disabled', style: 'nextjs-portal { visibility: hidden; }' });
   expect(await guest.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await page.context().close(); await guest.context().close();

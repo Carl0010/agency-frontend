@@ -107,10 +107,10 @@ test('empty access, team sharing, scoped assignment, personal stars and live uns
   await expect(member.getByRole('region', { name: 'Starred', exact: true })).toHaveCount(0);
   await owner.keyboard.press('Escape'); await owner.reload();
   await expect(sidebar.getByRole('region', { name: 'Starred', exact: true }).getByRole('link', { name: 'Acme site rebuild', exact: true })).toBeVisible();
-  await owner.screenshot({ path: info.outputPath('project-teams-light.png'), fullPage: true, animations: 'disabled' });
+  await owner.screenshot({ path: info.outputPath('project-teams-light.png'), fullPage: true, animations: 'disabled', style: 'nextjs-portal { visibility: hidden; }' });
   await owner.getByRole('button', { name: 'Share', exact: true }).click();
   await expect(share.getByRole('button', { name: 'Unshare Delivery' })).toBeVisible();
-  await owner.screenshot({ path: info.outputPath('project-sharing-light.png'), fullPage: true, animations: 'disabled' });
+  await owner.screenshot({ path: info.outputPath('project-sharing-light.png'), fullPage: true, animations: 'disabled', style: 'nextjs-portal { visibility: hidden; }' });
   await share.getByRole('button', { name: 'Unshare Delivery' }).click();
   await owner.getByRole('alertdialog', { name: 'Unshare team?' }).getByRole('button', { name: 'Unshare team', exact: true }).click();
   await expect(member.getByRole('heading', { name: "You don't have access to this project" })).toBeVisible();
@@ -154,7 +154,7 @@ test('a team admin invites a guest with default comment access to exactly the sh
     const context = canvas.getContext('2d')!; context.font = style.font;
     return context.measureText(node.selectedOptions[0]!.text).width + parseFloat(style.paddingLeft) + parseFloat(style.paddingRight) + 20 <= node.clientWidth;
   })).toBe(true);
-  await admin.screenshot({ path: info.outputPath('team-guests-mobile-dark.png'), fullPage: true, animations: 'disabled' });
+  await admin.screenshot({ path: info.outputPath('team-guests-mobile-dark.png'), fullPage: true, animations: 'disabled', style: 'nextjs-portal { visibility: hidden; }' });
   expect(await admin.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   const guest = await accept(browser, email, 'Partner Guest', true);
   await expect(guest).toHaveURL(new RegExp(`/portal/${projectId}$`));
@@ -189,6 +189,6 @@ test('team management preserves failed names, archives/restores, and enforces th
   await page.getByRole('button', { name: 'Restore team', exact: true }).click();
   await page.getByRole('alertdialog', { name: 'Restore team?' }).getByRole('button', { name: 'Restore team', exact: true }).click();
   await expect(page.getByLabel('Rename team')).toHaveValue('Design studio');
-  await page.screenshot({ path: info.outputPath('team-settings-mobile-light.png'), fullPage: true, animations: 'disabled' });
+  await page.screenshot({ path: info.outputPath('team-settings-mobile-light.png'), fullPage: true, animations: 'disabled', style: 'nextjs-portal { visibility: hidden; }' });
   await page.context().close();
 });

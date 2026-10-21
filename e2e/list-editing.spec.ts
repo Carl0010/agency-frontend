@@ -65,6 +65,8 @@ test('mobile rows keep inline editors, drawer access and drag handles reachable 
   const due = page.getByRole('dialog', { name: `Due date for ${first.key}` });
   const box = (await due.boundingBox())!; expect(box.x).toBeGreaterThanOrEqual(12); expect(box.x + box.width).toBeLessThanOrEqual(378);
   await due.getByLabel('Due date', { exact: true }).fill('2026-11-21T09:00'); await due.getByRole('button', { name: 'Save', exact: true }).click();
+  await expect(due).toBeHidden();
+  await expect(task.getByRole('button', { name: `Edit due date for ${first.key}` }).getByTestId('due-pill')).toBeVisible();
   await page.screenshot({ path: info.outputPath('list-table-mobile.png'), fullPage: true, animations: 'disabled', style: 'nextjs-portal { visibility: hidden; }' });
   expect(await page.getByTestId('board-list-view').evaluate((element) => element.scrollWidth <= element.clientWidth)).toBe(true);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
@@ -107,6 +109,7 @@ test('one compact table supports inline name, assignment and due-date editing wi
   await due.getByLabel('Due date', { exact: true }).fill('2026-11-20T10:30');
   await due.getByLabel('Mark due date complete').check(); await due.getByRole('button', { name: 'Save', exact: true }).click();
   await expect(due).toBeHidden(); await expect(dueTrigger.getByTestId('due-pill')).toHaveAttribute('data-state', 'done');
+  await expect(page.getByTestId('toast')).toHaveCount(0);
   await page.screenshot({ path: info.outputPath('list-table-desktop.png'), fullPage: true, animations: 'disabled', style: 'nextjs-portal { visibility: hidden; }' });
   await page.getByRole('button', { name: 'Switch to dark mode' }).click();
   await page.screenshot({ path: info.outputPath('list-table-dark.png'), fullPage: true, animations: 'disabled', style: 'nextjs-portal { visibility: hidden; }' });

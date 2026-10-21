@@ -4,7 +4,7 @@ Status: implemented on `feat/teams-project-access`, 2026-10-16. The user confirm
 the backend is finished, tested and migrated. Frontend implementation follows
 `../agency-mvp-clone/apps/api/contract/CHANGELOG.md` (2026-10-16), `openapi.yaml`,
 the realtime README and `docs/backend/LANGUAGE.md`. Backend source is unchanged.
-Verification and remaining work are recorded in the release checkpoint below.
+Verification and completion are recorded in the release follow-up below.
 
 Release follow-up: [the access response mismatch](ACCESS_CONTRACT_BLOCKER.md)
 is resolved by backend `faa34c0`, verified after starting a fresh API process.

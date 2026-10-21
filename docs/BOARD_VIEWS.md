@@ -139,6 +139,14 @@ and subscription gates remain authoritative.
 
 ## Verification
 
+`e2e/board-grouping.spec.ts` covers URL/filter composition, reload/history,
+atomic assignee swaps in both presentations, Today and Later drops, rejected
+Overdue targets, failed-write rollback, collapsed destination focus, due expiration,
+realtime updates and read-only guest grouping. Captures wait for the selected
+presentation and error-toast dismissal; the mobile grouped List preview asserts
+that the table is visible. Grouping and timezone unit checks pin the clock and
+cover non-UTC midnight and daylight saving boundaries.
+
 `e2e/board-filters.spec.ts` covers right alignment, stable board height, combined
 filter selection/reset, keyboard focus and dismissal, reload, both views, mobile
 resize/overflow and saved project icons with unknown-identifier fallback.

@@ -1,41 +1,49 @@
 # Finish the teams release, then board grouping
 
-Status: checkpointed at the user's request, 2026-10-16; implementation is in place,
-final preview refresh/review remains. The user subsequently requested committing,
-pushing the feature branch and continuing another day, superseding the original
-no-push instruction below. No PR is opened by this session.
+Status: done, 2026-10-21. Implementation, preview review and all required checks
+are complete on `feat/teams-project-access`. No handoff tasks remain. The accepted
+scope below is retained as the implementation record.
 
-## Checkpoint and resumption
+## Completion record
 
-- Backend `faa34c0` was verified using a fresh API dev process. The owner access
-  reproduction and member-to-admin promotion regression pass. The Share picker
-  already restricted choices to member roles; it does not filter access responses.
-  `ACCESS_CONTRACT_BLOCKER.md` is resolved.
-- Mobile Teams now stacks identity above controls and gives the add-person select
-  a full row. Browser checks verify readable selector text and control placement.
-  Star failure/retry, unstar and reload persistence have acceptance coverage.
-  The three whitespace warnings were already cleaned in `a358014`.
-- Grouping is implemented for member Kanban/List, with URL composition, assignable
-  people, atomic swaps, all six timezone-aware due windows, reschedule/Later,
-  optimistic rollback, keyboard focus/collapsed destinations and boundary/realtime
-  refresh. The portal has read-only due grouping and preserves it on card return.
-- Lint, typecheck, 155 unit tests and the production build passed. Five grouping
-  journeys and five access/Teams/star journeys passed against the real backend.
-  The full 59-check browser suite passed (3.5 minutes) with
-  `BACKEND_DIR=/home/chandan/Desktop/agency-mvp-clone PW_CHANNEL=chrome npm run test:e2e`.
-  Four checks use panel-motion presentation fixtures; the new access/grouping
-  journeys use the real API, with intercepted requests only for failure recovery.
-- Remaining: rerun the due-drag journey with its latest screenshot-settling waits,
-  review the mobile grouped List screenshot after it actually reaches List, and
-  save refreshed previews (Teams, sharing, icon picker, editable List and grouping).
-  The previous grouped mobile screenshot captured the preceding Kanban transition
-  and a deliberate test-error toast; do not publish that image as the List preview.
-  The waits were corrected, but their refreshed capture still needs review.
-- Update the preview index, mark this handoff done only after the remaining visual
-  work and verification pass, then follow the user's next release instructions.
-  Backend source was not changed. Existing PR #4 remains unchanged.
+- Backend `faa34c0` was started in a fresh API process and is unchanged. The owner
+  access reproduction and member-to-admin promotion check pass. The Share picker
+  offers only member roles; it does not filter the access response. See the
+  [resolved blocker](ACCESS_CONTRACT_BLOCKER.md).
+- Teams controls stack beneath each person's identity on mobile, and the
+  add-person selector gets a full row. Tests verify text fits and control placement.
+  Star failure/retry, unstar and reload persistence are covered. Whitespace warnings
+  were cleaned in `a358014`; release follow-up is committed in `9920563`.
+- Board grouping is committed in `b678768`: member Kanban/List, URL/filter
+  composition, assignable people, atomic swaps, timezone-aware due windows,
+  reschedule/Later, optimistic rollback, keyboard focus/collapsed destinations,
+  boundary/realtime refresh and the separate read-only guest due presentation.
+- Fifteen [saved previews](../previews/README.md) were refreshed and visually
+  reviewed in light/dark themes and at desktop/mobile widths: grouping, the guest
+  portal, populated and editable List tables, Teams, sharing, stars and icon editing.
+  The mobile grouped capture shows the selected List table. Captures wait for saved
+  dates and deliberate error toasts to settle; guest captures show the visible card.
+- The drawer-history motion regression waits for the drawer's full open width
+  before testing Back. This avoids starting the closing check during its opening
+  transition. All four focused motion checks pass; no app motion behavior changed.
+- Passed: lint, typecheck, 155 unit tests, production build and the complete
+  59-check browser suite (3.9 minutes). Four browser checks use motion fixtures; the
+  access/grouping journeys use the real API and intercept only failure cases.
+- Preview-index links and PNG dimensions are verified. No API contract discrepancy
+  remains. Final verification and preview records are committed separately from
+  the implementation. This resumed session does not push or open a PR.
 
-## Original handoff
+Verification commands:
+
+```sh
+npm run lint
+npm run typecheck
+npm test -- --runInBand
+npm run build
+BACKEND_DIR=/home/chandan/Desktop/agency-mvp-clone PW_CHANNEL=chrome npm run test:e2e
+```
+
+## Accepted handoff
 
 Written by the backend session for the frontend session.
 The backend is finished, tested and pushed on `refactor/api-domains` (latest commit `faa34c0`) in

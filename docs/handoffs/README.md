@@ -5,9 +5,8 @@ Completed handoffs remain as implementation and contract records. Include curren
 authorization, acceptance criteria, test plan and what remains unimplemented.
 Never represent a proposal as a completed feature.
 
-- [Teams release and board grouping](TEAMS_RELEASE_AND_BOARD_GROUPING.md): checkpointed
-  at the user's request. Access, mobile Teams, stars and grouping are implemented;
-  refreshed preview capture/review remains before marking the handoff done.
+- [Teams release and board grouping](TEAMS_RELEASE_AND_BOARD_GROUPING.md): completed
+  2026-10-21, including 15 reviewed previews, 155 unit tests and all 59 browser checks.
 - [Resolved access contract mismatch](ACCESS_CONTRACT_BLOCKER.md): backend
   `faa34c0` excludes implicit workspace administrators; real-API regression covers
   fresh projects, promotion and the sharing picker.
