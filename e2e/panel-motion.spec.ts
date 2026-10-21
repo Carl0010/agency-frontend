@@ -1,7 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 
-// Presentation-only fixtures keep motion/focus checks independent of the pending
-// backend contract upgrade. Real-API navigation journeys remain separate.
+// Presentation-only fixtures isolate motion/focus checks from API latency.
+// Real-API navigation journeys remain separate.
 async function workspace(page: Page) {
   const person = { id: 'owner', name: 'Motion Owner', avatarUrl: null, active: true };
   const project = { id: 'project', workspaceId: 'workspace', name: 'Motion project', teamIds: [], access: 'admin', starredByMe: false, key: 'MP', color: 'green', icon: 'folder', defaultBoardId: 'board', archivedAt: null, createdAt: '2026-10-16T00:00:00Z' };
@@ -76,6 +76,9 @@ test('card inspector animates both directions, including history, and restores b
   await expect(tile).toBeFocused();
   await tile.click();
   await expect(drawer).toBeVisible();
+  // Visibility is true on the first opening frame. History-close checks begin
+  // only after the preceding opening transition reaches its full width.
+  await expect.poll(async () => (await frame.boundingBox())?.width).toBe(512);
   const back = await widths(page, '.card-drawer-frame', () => page.goBack());
   expect(back.some((width) => width > 1 && width < 511)).toBe(true);
   await expect(frame).toHaveCount(0);
