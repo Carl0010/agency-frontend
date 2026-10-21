@@ -50,6 +50,8 @@ For navigation changes also read [sidebar responsibilities](docs/NAVIGATION.md).
   with current capabilities, proposed contracts, acceptance criteria and implementation status.
   Implement supported UI independently; do not fake missing server state in local storage.
 - Do not add component-library dependencies or duplicate button/input variants for a single screen.
+- Use shared skeletons from `components/skeleton.tsx` for initial content queries.
+  Preserve existing content during background refreshes; keep progress labels for operations.
 - Use the shared `Select` for select fields; `.ui-select` owns field/menu styling.
   Keep native select props and option text. Call sites own width/layout, not appearance.
 - Preserve the generated Next.js instructions above.

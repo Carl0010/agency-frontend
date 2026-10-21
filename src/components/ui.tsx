@@ -114,7 +114,8 @@ export function Avatar({ person, size = 24 }: { person: Pick<PersonRef, 'id' | '
 
 export function Spinner({ label = 'Loading…' }: { label?: string }) {
   return (
-    <div role="status" className="flex items-center justify-center p-8 text-sm text-muted-foreground">
+    <div role="status" className="flex items-center justify-center gap-3 p-8 text-sm text-muted-foreground">
+      <span aria-hidden="true" className="size-4 shrink-0 animate-spin rounded-full border-2 border-border border-t-primary motion-reduce:animate-none" />
       {label}
     </div>
   );

@@ -301,3 +301,17 @@ Destructive actions use the danger button; access grants may use primary. Cancel
 receives initial focus. Escape, close and backdrop dismiss without a mutation;
 Tab stays within the modal and closing restores focus. Requests queue instead
 of replacing one another. Provider teardown dismisses outstanding requests.
+
+## Loading states
+
+`components/skeleton.tsx` owns the shared loading shapes: board columns/List rows,
+card details, project/team tiles, people rows, settings fields and conversation
+messages. Use the layout closest to the incoming content and reserve its space.
+Keep useful already-loaded content visible during background refetches; skeletons
+are for initial pending queries. Do not add artificial delays to show them.
+
+Use semantic `muted`, `subtle`, `surface` and `border` tokens in both themes. A
+single polite status announces the region's loading label; decorative shapes are
+hidden from assistive technology and expose no pretend inputs or buttons. The
+subtle opacity animation stops for reduced motion. Labelled spinners remain for
+operations whose layout is unknown, such as signing in or reading an import.

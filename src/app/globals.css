@@ -217,3 +217,8 @@
 }
 
 html[data-theme='dark'] { color-scheme: dark; }
+
+/* Keep loading geometry steady; motion changes only the decorative shapes. */
+.skeleton-shape { animation: skeleton-breathe 1.8s ease-in-out infinite; }
+@keyframes skeleton-breathe { 0%, 100% { opacity: .55; } 50% { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .skeleton-shape { animation: none; } }
