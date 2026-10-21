@@ -17,3 +17,9 @@ Never represent a proposal as a completed feature.
   release handoff; this session does not push or open a PR.
 - [Project icons and personal stars](PROJECT_PERSONALIZATION.md): implemented
   picker, saved icons, personal star controls and the authoritative Starred section.
+
+- [One card in several projects](CARD_PLACEMENTS.md): blocked at contract audit,
+  2026-10-21. [Verified people-read gap](CARD_PLACEMENTS_CONTRACT_BLOCKER.md): a
+  card's assignable/mentionable people can belong only to a hidden placement;
+  the existing project roster cannot supply them. Backend contract decision needed
+  before frontend implementation, as the handoff explicitly requires.
