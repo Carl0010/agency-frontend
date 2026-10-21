@@ -1,0 +1,41 @@
+<template>
+  <style>
+    @font-face { font-family: 'Geist'; src: url('assets/fonts/Geist-Variable.woff2') format('woff2'); font-weight: 100 900; }
+    #root { position: absolute; inset: 0; overflow: hidden; font-family: 'Geist', sans-serif; background: var(--green); }
+    #r-stage { position: absolute; inset: 0; }
+    #r-l1 { position: absolute; left: 192px; top: 250px; font-size: 160px; line-height: 180px; font-weight: 700; letter-spacing: -0.05em; color: #fff; white-space: nowrap; }
+    #r-l1 .w { display: inline-block; margin-right: 0.22em; }
+    #r-win { position: absolute; left: 186px; top: 450px; width: 1640px; height: 300px; overflow: hidden; }
+    #r-col { position: absolute; left: 0; top: 0; }
+    .opt { height: 300px; font-size: 240px; line-height: 300px; font-weight: 700; letter-spacing: -0.055em; color: var(--hl); white-space: nowrap; }
+  </style>
+  <div id="root" data-composition-id="roll" data-width="1920" data-height="1080" data-layout-allow-overflow>
+    <div id="r-stage">
+      <div id="r-l1"><span class="w">One</span><span class="w">place</span><span class="w">for</span></div>
+      <div id="r-win" data-layout-allow-overflow>
+        <div id="r-col">
+          <div class="opt">boards</div><div class="opt">cards</div><div class="opt">chat</div><div class="opt">clients</div>
+          <div class="opt">files</div><div class="opt">search</div><div class="opt">everything.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    (function () {
+      const tl = gsap.timeline({ paused: true });
+      tl.fromTo("#r-l1 .w", { opacity: 0, filter: "blur(10px)", scale: 1.2 }, { opacity: 1, filter: "blur(0px)", scale: 1, duration: 0.2, stagger: 0.06, ease: "expo.out" }, 0);
+      tl.fromTo("#r-col", { y: 300, filter: "blur(0px)" }, { y: 0, duration: 0.18, ease: "expo.out" }, 0.08);
+
+      // Slot machine: each roll a little slower, landing on "everything."
+      const steps = [0.22, 0.32, 0.42, 0.52, 0.62, 0.74];
+      steps.forEach((t, i) => {
+        const last = i === steps.length - 1;
+        tl.to("#r-col", { y: -(i + 1) * 300, duration: last ? 0.3 : 0.1, ease: last ? "back.out(1.6)" : "power2.inOut" }, t);
+      });
+
+      // Whip up into the board.
+      tl.to("#r-stage", { y: -700, filter: "blur(18px)", opacity: 0, duration: 0.2, ease: "power3.in" }, 1.875 - 0.2);
+      window.__timelines["roll"] = tl;
+    })();
+  </script>
+</template>
