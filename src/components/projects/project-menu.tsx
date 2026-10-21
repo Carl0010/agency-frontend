@@ -19,7 +19,7 @@ export function ProjectMenu({ project, onNavigate }: { project: Project; onNavig
   const popover = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState({ top: 0, left: 0 });
   const [editing, setEditing] = useState(false);
-  const board = `/w/${ws.slug}/p/${project.id}/b/${project.defaultBoardId}`;
+  const board = `/w/${ws.id}/p/${project.id}/b/${project.defaultBoardId}`;
   const dismiss = () => popover.current?.hidePopover();
   return <>
     <Button variant="ghost" size="icon" aria-label={`Project actions for ${project.name}`} popoverTarget={id} onClick={(event) => {

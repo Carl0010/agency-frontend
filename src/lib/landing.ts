@@ -3,9 +3,9 @@ import type { Page, PortalProject, Workspace } from './types';
 
 const LAST_WS = 'agency:lastWorkspace';
 
-export function rememberWorkspace(slug: string): void {
+export function rememberWorkspace(workspaceId: string): void {
   try {
-    localStorage.setItem(LAST_WS, slug);
+    localStorage.setItem(LAST_WS, workspaceId);
   } catch {
     // Storage disabled — landing falls back to the first workspace.
   }
@@ -33,10 +33,10 @@ export async function landingPath(): Promise<string> {
   } catch {
     last = null;
   }
-  const ws = data.find((w) => w.slug === last) ?? data[0];
+  const ws = data.find((w) => w.id === last || w.slug === last) ?? data[0];
   if (!ws) return '/onboarding';
   if (needsOnboarding(ws)) return '/onboarding';
-  return `/w/${ws.slug}/projects`;
+  return `/w/${ws.id}/projects`;
 }
 
 /** Only same-origin relative paths are honoured as post-login destinations. */

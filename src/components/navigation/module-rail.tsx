@@ -9,7 +9,7 @@ import type { WorkspaceModule } from './workspace-modules';
 /** The 56px rail switches modules; the neighboring sidebar owns their details. */
 export function ModuleRail({ activeModule, onNavigate }: { activeModule: WorkspaceModule; onNavigate?: () => void }) {
   const ws = useWorkspace();
-  const base = `/w/${ws.slug}`;
+  const base = `/w/${ws.id}`;
   return (
     <div className="flex h-full flex-col" data-testid="module-rail">
       <nav aria-label="Main modules" className="flex min-h-0 flex-1 flex-col items-center gap-2 overflow-y-auto px-1 py-3">

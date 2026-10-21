@@ -1,12 +1,14 @@
 'use client';
 
+import { LoadingSkeleton } from '@/components/skeleton';
+
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Markdown } from '@/components/markdown';
 import { useConfirm } from '@/components/confirmation';
 import { useToast } from '@/components/toast';
-import { Avatar, Button, GuestChip, Spinner } from '@/components/ui';
+import { Avatar, Button, GuestChip } from '@/components/ui';
 import { api, errorMessage } from '@/lib/api';
 import { applyComment } from '@/lib/realtime';
 import { useSession } from '@/lib/session';
@@ -70,7 +72,7 @@ export function Comments({ cardId, canPost = true }: { cardId: string; canPost?:
   return (
     <section aria-label="Comments" className="space-y-4">
       <h2 className="text-sm font-semibold text-secondary-foreground">Comments</h2>
-      {comments.isPending ? <Spinner /> : null}
+      {comments.isPending ? <LoadingSkeleton variant="messages" className="p-4 sm:p-6" /> : null}
       <ol className="space-y-4">
         {roots.map((root) => (
           <li key={root.id}>

@@ -1,5 +1,7 @@
 'use client';
 
+import { LoadingSkeleton } from '@/components/skeleton';
+
 import { formText } from '@/lib/form';
 
 import Link from 'next/link';
@@ -7,7 +9,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { FormError } from '@/components/auth-card';
 import { useConfirm } from '@/components/confirmation';
-import { Avatar, Badge, Button, EmptyState, Field, Input, PageHeader, Select, Spinner } from '@/components/ui';
+import { Avatar, Badge, Button, EmptyState, Field, Input, PageHeader, Select } from '@/components/ui';
 import { api, ApiError, errorMessage } from '@/lib/api';
 import { useSession } from '@/lib/session';
 import { useTeams } from '@/lib/teams';
@@ -36,8 +38,8 @@ export function TeamsScreen() {
     <FormError message={create.error ? errorMessage(create.error) : teams.error ? errorMessage(teams.error) : null} />
     {teams.error ? <Button variant="secondary" onClick={() => void teams.refetch()}>Retry teams</Button> : null}
     <label className="tap mb-4 flex items-center gap-2 text-label"><input type="checkbox" checked={archived} onChange={(event) => setArchived(event.target.checked)} />Include archived teams</label>
-    {teams.isPending ? <Spinner /> : teams.data?.data.length ? <ul className="grid gap-3 sm:grid-cols-2">{teams.data.data.map((team) => <li key={team.id}>
-      <Link href={`/w/${ws.slug}/settings/teams/${team.id}`} className="ui-panel flex min-h-24 items-center gap-3 p-4 hover:border-border-hover"><span className="min-w-0 flex-1"><span className="block truncate font-semibold">{team.name}</span><span className="text-label text-muted-foreground">{team.memberCount} people{team.myRole ? ` · ${team.myRole === 'admin' ? 'Team admin' : 'Team member'}` : ''}</span></span>{team.archivedAt ? <Badge>Archived</Badge> : null}</Link>
+    {teams.isPending ? <LoadingSkeleton variant="cards" className="p-4 sm:p-6" /> : teams.data?.data.length ? <ul className="grid gap-3 sm:grid-cols-2">{teams.data.data.map((team) => <li key={team.id}>
+      <Link href={`/w/${ws.id}/settings/teams/${team.id}`} className="ui-panel flex min-h-24 items-center gap-3 p-4 hover:border-border-hover"><span className="min-w-0 flex-1"><span className="block truncate font-semibold">{team.name}</span><span className="text-label text-muted-foreground">{team.memberCount} people{team.myRole ? ` · ${team.myRole === 'admin' ? 'Team admin' : 'Team member'}` : ''}</span></span>{team.archivedAt ? <Badge>Archived</Badge> : null}</Link>
     </li>)}</ul> : !teams.error ? <EmptyState title="No teams yet" description="Create a team, add people, and share projects with it." icon="people" /> : null}
   </main>;
 }
@@ -48,7 +50,7 @@ export function TeamScreen({ teamId }: { teamId: string }) {
   const team = useQuery({ queryKey: ['team', teamId], queryFn: ({ signal }) => api.get<TeamDetail>(`/teams/${teamId}`, signal) });
   const roster = useQuery({ queryKey: ['members', ws.id], queryFn: () => api.get<Page<Member>>(`/workspaces/${ws.id}/members`) });
   const act = useTeamWrite(teamId); const [personId, setPersonId] = useState('');
-  if (team.isPending) return <Spinner />;
+  if (team.isPending) return <LoadingSkeleton variant="cards" className="p-4 sm:p-6" />;
   if (team.error) return <main className="ui-page"><PageHeader title={team.error instanceof ApiError && team.error.code === 'not_found' ? 'Team unavailable' : 'Could not load team'} /><FormError message={errorMessage(team.error)} /><Button variant="secondary" onClick={() => void team.refetch()}>Retry team</Button></main>;
   const t = team.data; const archived = Boolean(t.archivedAt);
   const canManage = !readOnly && (ws.role === 'owner' || ws.role === 'admin' || t.myRole === 'admin');
@@ -57,7 +59,7 @@ export function TeamScreen({ teamId }: { teamId: string }) {
   const available = (roster.data?.data ?? []).filter((member) => member.status !== 'deactivated' && !members.has(member.userId));
   const selected = available.find((member) => member.userId === personId);
   return <main className="ui-page max-w-3xl">
-    <Link href={`/w/${ws.slug}/settings/teams`} className="mb-4 inline-block text-label text-primary">← All teams</Link>
+    <Link href={`/w/${ws.id}/settings/teams`} className="mb-4 inline-block text-label text-primary">← All teams</Link>
     <PageHeader title={t.name} description={`${t.memberCount} people${archived ? ' · Archived' : ''}`} actions={canManage ? <Button variant="secondary" disabled={act.isPending} onClick={async () => {
       if (await confirm({ title: archived ? 'Restore team?' : 'Archive team?', description: archived ? 'Team memberships and project shares become active again.' : 'People who see projects only through this team will lose that access until the team is restored.', confirmLabel: archived ? 'Restore team' : 'Archive team', tone: archived ? 'primary' : 'danger' })) act.mutate(() => api.post(`/teams/${teamId}/${archived ? 'restore' : 'archive'}`));
     }}>{archived ? 'Restore team' : 'Archive team'}</Button> : null} />

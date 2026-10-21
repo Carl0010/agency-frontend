@@ -186,12 +186,12 @@ test('AC27 + AC28 invited people skip setup: a member lands on projects with the
 
 test('billing screen: owner sees plan and trial; forced cancel drops to read-only with export still working', async ({ browser }) => {
   const { page, account } = await signupToBoard(browser);
-  const slug = new URL(account.boardUrl).pathname.split('/')[2] ?? '';
+  const workspaceId = new URL(account.boardUrl).pathname.split('/')[2] ?? '';
 
   await expect(page.getByTestId('trial-pill').filter({ visible: true })).toContainText('14 days left in trial');
   await page.getByRole('navigation', { name: 'Main modules' }).getByRole('link', { name: 'Workspace', exact: true }).click();
   await page.getByRole('link', { name: 'Billing', exact: true }).click();
-  await expect(page).toHaveURL(new RegExp(`/w/${slug}/settings/billing$`));
+  await expect(page).toHaveURL(new RegExp(`/w/${workspaceId}/settings/billing$`));
   await expect(page.getByTestId('billing-status')).toHaveText('Trial');
   await expect(page.getByTestId('billing-seats')).toHaveText('1 of 5 seats used');
   await expect(page.getByRole('button', { name: 'Add payment method' })).toBeVisible();
@@ -201,8 +201,8 @@ test('billing screen: owner sees plan and trial; forced cancel drops to read-onl
   // The demo's forced cancellation, applied the way the webhook would leave it.
   await sqlQuery(
     `UPDATE subscription SET status = 'canceled', stripe_subscription_id = $2, canceled_at = now(), data_delete_after = now() + interval '90 days'
-      WHERE workspace_id = (SELECT id FROM workspace WHERE slug = $1)`,
-    [slug, `sub_e2e_${Date.now()}`],
+      WHERE workspace_id = $1`,
+    [workspaceId, `sub_e2e_${Date.now()}`],
   );
   await page.goto(account.boardUrl);
   await expect(page.getByTestId('read-only-banner')).toContainText('read-only');
@@ -215,7 +215,7 @@ test('billing screen: owner sees plan and trial; forced cancel drops to read-onl
 
   const download = page.waitForEvent('download');
   await page.getByTestId('read-only-banner').getByRole('button', { name: 'Export JSON' }).click();
-  expect((await download).suggestedFilename()).toBe(`${slug}-export.json`);
+  expect((await download).suggestedFilename()).toMatch(/-export\.json$/);
 
   // Writes are refused with the server's message; nothing changes.
   await page.getByTestId('add-card-end').first().click();

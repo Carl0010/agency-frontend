@@ -1,5 +1,7 @@
 'use client';
 
+import { LoadingSkeleton } from '@/components/skeleton';
+
 import { formText } from '@/lib/form';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -26,7 +28,7 @@ export function GuestPanel({ projectId, canManage }: { projectId: string; canMan
     <p className="text-label text-muted-foreground">Guests see the board and Shared channel, without assignees or the internal channel. Guests never use a seat. Guests in shared teams are managed from that team.</p>
     <FormError message={guests.error ? errorMessage(guests.error) : act.error ? errorMessage(act.error) : null} />
     {guests.error ? <Button variant="secondary" onClick={() => void guests.refetch()}>Retry guests</Button> : null}
-    {guests.isPending ? <p role="status">Loading guests…</p> : null}
+    {guests.isPending ? <LoadingSkeleton label="Loading guests" count={3} className="px-2" /> : null}
     {canManage && !invitesBlocked ? <form className="flex flex-wrap gap-2" onSubmit={(event) => {
       event.preventDefault(); const form = event.currentTarget; const data = new FormData(form);
       act.mutate(() => api.post(`/projects/${projectId}/guests`, { email: formText(data, 'email'), access: data.get('access') }), { onSuccess: () => form.reset() });

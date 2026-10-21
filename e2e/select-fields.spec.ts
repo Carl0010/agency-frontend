@@ -36,8 +36,8 @@ test('select menus use the theme, retain native keyboard behavior and work insid
   expect(box.x).toBeGreaterThanOrEqual(0); expect(box.x + box.width).toBeLessThanOrEqual(390);
   await page.screenshot({ path: info.outputPath('select-menu-mobile.png'), fullPage: true, animations: 'disabled', style: 'nextjs-portal { visibility: hidden; }' });
   await page.keyboard.press('Escape');
-  const slug = new URL(account.boardUrl).pathname.split('/')[2]!;
-  await page.goto(`/w/${slug}/settings/members`);
+  const workspaceId = new URL(account.boardUrl).pathname.split('/')[2]!;
+  await page.goto(`/w/${workspaceId}/settings/members`);
   const role = page.getByRole('combobox', { name: 'Role', exact: true });
   await role.click(); await role.getByRole('option', { name: 'Admin', exact: true }).click();
   expect(await role.evaluate((node: HTMLSelectElement) => new FormData(node.form!).get('role'))).toBe('admin');

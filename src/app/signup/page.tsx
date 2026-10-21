@@ -32,7 +32,7 @@ export default function SignupPage() {
         noRetry: true,
       });
       signIn(res);
-      rememberWorkspace(res.workspace.slug);
+      rememberWorkspace(res.workspace.id);
       router.replace('/onboarding');
     } catch (err) {
       setError(errorMessage(err));

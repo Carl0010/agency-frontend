@@ -28,7 +28,7 @@ export function NotificationBell({ active, onNavigate }: { active?: boolean; onN
   const n = count.data ?? 0;
   return (
     <Link
-      href={`/w/${ws.slug}/inbox`}
+      href={`/w/${ws.id}/inbox`}
       aria-label={n ? `Inbox, ${n} unread` : 'Inbox'}
       data-testid="notification-bell"
       aria-current={active ? 'location' : undefined}

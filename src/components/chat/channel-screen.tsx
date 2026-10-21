@@ -1,8 +1,9 @@
 'use client';
 
+import { LoadingSkeleton } from '@/components/skeleton';
+
 import { useQuery } from '@tanstack/react-query';
 import { ProjectActions } from '@/components/project-chrome';
-import { Spinner } from '@/components/ui';
 import { api } from '@/lib/api';
 import type { ChannelKind, Project } from '@/lib/types';
 import { useWorkspace } from '@/lib/workspace';
@@ -14,7 +15,7 @@ export function ChannelScreen({ projectId, kind }: { projectId: string; kind: Ch
   const ws = useWorkspace();
   const project = useQuery({ queryKey: ['project', projectId], queryFn: () => api.get<Project>(`/projects/${projectId}`) });
 
-  if (project.isPending) return <Spinner />;
+  if (project.isPending) return <LoadingSkeleton variant="messages" className="p-4 sm:p-6" />;
   if (project.error) return <ProjectError error={project.error} retry={() => void project.refetch()} />;
 
   return (
@@ -33,7 +34,7 @@ export function ChannelScreen({ projectId, kind }: { projectId: string; kind: Ch
           kind={kind}
           audience="member"
           canPost
-          linkBase={`/w/${ws.slug}/p/${projectId}/${kind === 'shared' ? 'chat' : 'team'}`}
+          linkBase={`/w/${ws.id}/p/${projectId}/${kind === 'shared' ? 'chat' : 'team'}`}
         />
       </div>
     </div>

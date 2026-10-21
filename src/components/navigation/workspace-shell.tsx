@@ -26,7 +26,7 @@ export function WorkspaceShell({ children }: { children: ReactNode }) {
   const ws = useWorkspace();
   useAccessSync();
   const pathname = usePathname();
-  const activeModule = workspaceModule(pathname, `/w/${ws.slug}`);
+  const activeModule = workspaceModule(pathname, `/w/${ws.id}`);
   const { projectId } = useParams<{ projectId?: string }>();
   const [open, setOpen] = useState(false);
   const [sidebarVisible, setSidebarVisible] = useState(true);
@@ -57,7 +57,7 @@ export function WorkspaceShell({ children }: { children: ReactNode }) {
         <div className="flex min-w-0 items-center gap-3">
           <Button variant="ghost" size="icon" className="lg:hidden" aria-label="Open navigation" aria-expanded={open} aria-haspopup="dialog" data-tour={projectId ? 'shared-channel' : undefined} onClick={() => setOpen(true)}><Icon name="menu" className="size-5" /></Button>
           <Button variant="ghost" size="icon" className="hidden lg:inline-flex" aria-label={sidebarVisible ? 'Close sidebar' : 'Open sidebar'} aria-expanded={sidebarVisible} aria-controls="desktop-sidebar" onClick={() => setSidebarVisible((visible) => !visible)}><Icon name="menu" className="size-5" /></Button>
-          <Link href={`/w/${ws.slug}/projects`} aria-label="Agency home" className="hidden min-w-0 items-center gap-2.5 rounded-md sm:flex"><BrandMark /><span className="truncate text-body font-semibold">Agency</span></Link>
+          <Link href={`/w/${ws.id}/projects`} aria-label="Agency home" className="hidden min-w-0 items-center gap-2.5 rounded-md sm:flex"><BrandMark /><span className="truncate text-body font-semibold">Agency</span></Link>
         </div>
         <button type="button" aria-label="Search workspace" onClick={search} className="tap flex min-h-9 min-w-0 items-center gap-2 rounded-lg border border-border bg-background px-3 text-label text-muted-foreground hover:border-input hover:bg-subtle">
           <Icon name="search" /><span className="truncate">Search<span className="hidden sm:inline"> cards, comments and messages</span></span><kbd className="ml-auto hidden shrink-0 rounded border border-border bg-surface px-1.5 text-caption sm:inline">⌘ / Ctrl K</kbd>

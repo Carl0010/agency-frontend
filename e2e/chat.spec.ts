@@ -167,9 +167,9 @@ test('⌘K palette: debounced search, ↵ navigates to the message, ⌘↵ opens
 
 test('inbox and notification preferences render', async ({ browser }) => {
   const { page, account } = await signupToBoard(browser);
-  const slug = new URL(account.boardUrl).pathname.split('/')[2];
+  const workspaceId = new URL(account.boardUrl).pathname.split('/')[2];
   await page.getByRole('navigation', { name: 'Main modules' }).getByTestId('notification-bell').click();
-  await expect(page).toHaveURL(`/w/${slug}/inbox`);
+  await expect(page).toHaveURL(`/w/${workspaceId}/inbox`);
   await expect(page.getByRole('heading', { name: 'Inbox' })).toBeVisible();
   await page.getByRole('link', { name: 'Preferences', exact: true }).click();
   const grid = page.getByTestId('preferences-grid');

@@ -75,7 +75,7 @@ export function CommandPalette() {
     if (!hit) {
       if (debounced.length >= 2) {
         setOpen(false);
-        router.push(`/w/${ws.slug}/search?q=${encodeURIComponent(debounced)}`);
+        router.push(`/w/${ws.id}/search?q=${encodeURIComponent(debounced)}`);
       }
       return;
     }

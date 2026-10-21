@@ -2,7 +2,7 @@
 
 import { closestCenter, pointerWithin, DndContext, DragOverlay, KeyboardSensor, MouseSensor, TouchSensor, useDraggable, useDroppable, useSensor, useSensors, type KeyboardCoordinateGetter } from '@dnd-kit/core';
 import { useIsMutating, useQuery, useQueryClient } from '@tanstack/react-query';
-import Link from 'next/link';
+import { CardLink } from '@/components/card/card-link';
 import { useEffect, useRef, useState } from 'react';
 import { FormError } from '@/components/auth-card';
 import { Icon } from '@/components/icon';
@@ -113,7 +113,7 @@ function GroupCard({ card, groupId, groupName, board, view, now, members, href, 
   const cardKey = `${board.project.key}-${card.number}`;
   const handle = <button type="button" ref={drag.setActivatorNodeRef} {...drag.attributes} {...drag.listeners} disabled={disabled} aria-label={`Move ${cardKey} from ${groupName}`} data-group-card-handle data-card-id={card.id} data-group-id={groupId} title="Space to lift, arrows to change group, Space to drop" className="tap inline-flex size-8 shrink-0 cursor-grab items-center justify-center rounded-md text-muted-foreground hover:bg-muted disabled:cursor-not-allowed disabled:opacity-30"><Icon name="grip" className="size-3.5" /></button>;
   if (view === 'list') return <tr ref={drag.setNodeRef} data-testid="card-row" data-card-row-id={card.id} className={`group/list-row hover:bg-background ${drag.isDragging ? 'opacity-30' : ''}`}><CardRowCells card={card} cardKey={cardKey} now={now} href={href} selected={false} members={members} handle={handle} /></tr>;
-  return <div ref={drag.setNodeRef} className={`relative ${drag.isDragging ? 'opacity-30' : ''}`}><div className="absolute right-1 top-1 z-10 rounded-md bg-surface">{handle}</div><Link href={href} scroll={false} data-card-id={card.id} className="block rounded-lg focus-visible:outline-2 focus-visible:outline-ring [&_[data-testid=card-tile-title]]:pr-6" aria-label={`${cardKey}: ${card.title}`}><CardTileView card={card} projectKey={board.project.key} now={now} /></Link></div>;
+  return <div ref={drag.setNodeRef} className={`relative ${drag.isDragging ? 'opacity-30' : ''}`}><div className="absolute right-1 top-1 z-10 rounded-md bg-surface">{handle}</div><CardLink cardId={card.id} href={href} scroll={false} data-card-id={card.id} className="block rounded-lg focus-visible:outline-2 focus-visible:outline-ring [&_[data-testid=card-tile-title]]:pr-6" aria-label={`${cardKey}: ${card.title}`}><CardTileView card={card} projectKey={board.project.key} now={now} /></CardLink></div>;
 }
 
 function LaterDate({ timezone, pending, onClose, onSave }: { timezone: string; pending: boolean; onClose: () => void; onSave: (picked: string) => Promise<void> }) {

@@ -46,7 +46,7 @@ export function TrialPill({ ws, onNavigate }: { ws: Workspace; onNavigate?: () =
   const text = `${pill.daysLeft} ${pill.daysLeft === 1 ? 'day' : 'days'} left in trial`;
   return (
     <Link
-      href={`/w/${ws.slug}/settings/billing`}
+      href={`/w/${ws.id}/settings/billing`}
       onClick={onNavigate}
       data-testid="trial-pill"
       data-amber={pill.amber ? 'true' : 'false'}
@@ -110,7 +110,7 @@ function OwnerBanner({ ws, billing }: { ws: Workspace; billing: Billing }) {
       return null;
     }
   });
-  const billingHref = `/w/${ws.slug}/settings/billing`;
+  const billingHref = `/w/${ws.id}/settings/billing`;
   if (!b) return null;
   switch (b.kind) {
     case 'trial':
@@ -191,7 +191,7 @@ export function BillingBanners({ ws }: { ws: Workspace }) {
             <span className="flex-1">
               You have {billing.data.seats.used} members on a {billing.data.seats.included}-seat plan. Deactivate one member to continue inviting.
             </span>
-            <Link className="font-medium underline" href={`/w/${ws.slug}/settings/members`}>
+            <Link className="font-medium underline" href={`/w/${ws.id}/settings/members`}>
               Manage members
             </Link>
           </Banner>

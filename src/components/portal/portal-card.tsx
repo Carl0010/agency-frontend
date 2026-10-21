@@ -1,5 +1,7 @@
 'use client';
 
+import { LoadingSkeleton } from '@/components/skeleton';
+
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
@@ -7,7 +9,7 @@ import { Comments } from '@/components/card/comments';
 import { DuePill } from '@/components/due-pill';
 import { Markdown } from '@/components/markdown';
 import { useToast } from '@/components/toast';
-import { LABEL_BG, Spinner } from '@/components/ui';
+import { LABEL_BG } from '@/components/ui';
 import { api, ApiError, errorMessage } from '@/lib/api';
 import { MentionScopeContext } from '@/lib/mention-scope';
 import { useProjectRealtime, useRoom } from '@/lib/realtime';
@@ -33,7 +35,7 @@ export function PortalCard({ project, cardId }: { project: PortalProject; cardId
       ← Board
     </Link>
   );
-  if (card.isPending) return <Spinner />;
+  if (card.isPending) return <LoadingSkeleton variant="form" className="p-4 sm:p-6" />;
   if (card.error) {
     return (
       <div className="p-8 text-center text-secondary-foreground">

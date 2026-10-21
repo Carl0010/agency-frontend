@@ -1,9 +1,10 @@
 'use client';
 
+import { LoadingSkeleton } from '@/components/skeleton';
+
 import { useQueryClient } from '@tanstack/react-query';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, type ReactNode } from 'react';
-import { Spinner } from '@/components/ui';
 import { refreshSession } from '@/lib/api';
 import { useUserEvent } from '@/lib/realtime';
 import { useSession } from '@/lib/session';
@@ -30,6 +31,6 @@ export default function PortalRoot({ children }: { children: ReactNode }) {
     void refreshSession().then(() => qc.invalidateQueries());
   });
 
-  if (!user) return <Spinner />;
+  if (!user) return <LoadingSkeleton variant="cards" label="Loading workspace" className="p-4 sm:p-6" />;
   return <div className="h-full">{children}</div>;
 }

@@ -4,21 +4,21 @@ import { expect, test, type Page } from '@playwright/test';
 // Real-API navigation journeys remain separate.
 async function workspace(page: Page) {
   const person = { id: 'owner', name: 'Motion Owner', avatarUrl: null, active: true };
-  const project = { id: 'project', workspaceId: 'workspace', name: 'Motion project', teamIds: [], access: 'admin', starredByMe: false, key: 'MP', color: 'green', icon: 'folder', defaultBoardId: 'board', archivedAt: null, createdAt: '2026-10-16T00:00:00Z' };
+  const project = { id: 'project', workspaceId: '11111111-1111-4111-8111-111111111111', name: 'Motion project', teamIds: [], access: 'admin', starredByMe: false, key: 'MP', color: 'green', icon: 'folder', defaultBoardId: 'board', archivedAt: null, createdAt: '2026-10-16T00:00:00Z' };
   const card = { id: 'card', listId: 'list', boardId: 'board', projectId: 'project', number: 1, title: 'Review motion', position: 1, hasDescription: false, dueAt: null, dueCompletedAt: null, archivedAt: null, assignees: [], labels: [], commentCount: 0, attachmentCount: 0, checklistDone: 0, checklistTotal: 0 };
   await page.route('**/api/v1/**', async (route) => {
     const path = new URL(route.request().url()).pathname.replace('/api/v1', '');
     let json: unknown = { data: [], nextCursor: null };
     if (path === '/auth/refresh') json = { accessToken: 'presentation-fixture', user: { ...person, email: 'motion@example.test', timezone: 'UTC', emailVerified: true, tourCompletedAt: '2026-10-16T00:00:00Z' } };
-    else if (path === '/workspaces/by-slug/motion') json = { id: 'workspace', name: 'Motion workspace', slug: 'motion', onboardingState: {}, role: 'member', subscription: { status: 'active', trialEndsAt: null }, setup: null, createdAt: '2026-10-16T00:00:00Z' };
-    else if (path === '/workspaces/workspace/projects') json = { data: [project], nextCursor: null };
+    else if (path === '/workspaces/11111111-1111-4111-8111-111111111111') json = { id: '11111111-1111-4111-8111-111111111111', name: 'Motion workspace', slug: 'motion', onboardingState: {}, role: 'member', subscription: { status: 'active', trialEndsAt: null }, setup: null, createdAt: '2026-10-16T00:00:00Z' };
+    else if (path === '/workspaces/11111111-1111-4111-8111-111111111111/projects') json = { data: [project], nextCursor: null };
     else if (path === '/projects/project') json = project;
     else if (path === '/boards/board') json = { id: 'board', name: 'Board', projectId: 'project', project, boards: null, lists: [{ id: 'list', name: 'To do', position: 1, cards: [card] }] };
     else if (path === '/cards/card') json = { ...card, key: 'MP', description: null, listName: 'To do', createdAt: '2026-10-16T00:00:00Z', createdBy: person, checklists: [], attachments: [] };
     else if (path === '/notifications') json = { data: [], nextCursor: null, unreadCount: 0 };
     await route.fulfill({ json });
   });
-  await page.goto('/w/motion/p/project/b/board');
+  await page.goto('/w/11111111-1111-4111-8111-111111111111/p/project/b/board');
   await expect(page.getByTestId('card-tile')).toBeVisible();
 }
 

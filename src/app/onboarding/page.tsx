@@ -1,12 +1,14 @@
 'use client';
 
+import { LoadingSkeleton } from '@/components/skeleton';
+
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { TeamPicker } from '@/components/teams/team-picker';
 import { useTeams } from '@/lib/teams';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
 import { AuthCard, FormError } from '@/components/auth-card';
-import { Button, Field, Input, Spinner, Select } from '@/components/ui';
+import { Button, Field, Input, Select } from '@/components/ui';
 import { api, ApiError, errorMessage } from '@/lib/api';
 import { formText } from '@/lib/form';
 import { rememberWorkspace } from '@/lib/landing';
@@ -49,12 +51,12 @@ export default function OnboardingPage() {
     setStep((s) => s ?? (ws.setup!.step as Step));
   }, [workspaces.data, ws, router]);
 
-  if (!ws?.setup || step === null) return <Spinner />;
+  if (!ws?.setup || step === null) return <LoadingSkeleton variant="form" className="p-4 sm:p-6" />;
 
   const refresh = async (): Promise<Workspace> => {
     const fresh = await api.get<Workspace>(`/workspaces/${ws.id}`);
     await qc.invalidateQueries({ queryKey: ['workspaces'] });
-    await qc.invalidateQueries({ queryKey: ['workspace', fresh.slug] });
+    await qc.invalidateQueries({ queryKey: ['workspace', fresh.id] });
     return fresh;
   };
   /** Records progress and moves on; a skip is remembered as a skip, not as done. */
@@ -68,7 +70,7 @@ export default function OnboardingPage() {
   const finish = async (path: (fresh: Workspace) => string, patch: Record<string, unknown> = {}) => {
     await api.patch(`/workspaces/${ws.id}/onboarding`, { ...patch, completed: true });
     const fresh = await refresh();
-    rememberWorkspace(fresh.slug);
+    rememberWorkspace(fresh.id);
     router.replace(path(fresh));
   };
 
@@ -92,7 +94,7 @@ export default function OnboardingPage() {
     <button
       type="button"
       className="text-secondary-foreground underline-offset-2 hover:underline"
-      onClick={() => void finish((f) => `/w/${f.slug}/projects`)}
+      onClick={() => void finish((f) => `/w/${f.id}/projects`)}
     >
       Finish setup later
     </button>
@@ -149,13 +151,13 @@ function WorkspaceStep({ ws, header, footer, onDone, onSkip }: StepProps & { onD
   const slugOk = slug === ws.slug || (slugValid && availability.data?.available === true);
   const slugHint =
     slug === ws.slug
-      ? `Your workspace lives at /w/${slug}`
+      ? `Your permanent workspace address is /w/${ws.id}`
       : !slugValid
         ? '3–40 lowercase letters, digits or dashes.'
         : availability.isFetching
           ? 'Checking…'
           : availability.data?.available
-            ? `✓ /w/${slug} is available`
+            ? `✓ This legacy alias is available`
             : 'That address is taken or reserved.';
 
   async function onSubmit(e: FormEvent) {
@@ -181,7 +183,7 @@ function WorkspaceStep({ ws, header, footer, onDone, onSkip }: StepProps & { onD
         <Field label="Agency name">
           <Input value={name} onChange={(e) => setName(e.target.value)} required maxLength={120} />
         </Field>
-        <Field label="Workspace address" hint={<span data-testid="slug-hint">{slugHint}</span>}>
+        <Field label="Workspace alias" hint={<span data-testid="slug-hint">{slugHint}</span>}>
           <Input value={slug} onChange={(e) => setSlug(e.target.value.toLowerCase())} required />
         </Field>
         <Field label="Timezone">
@@ -392,16 +394,16 @@ function WorkStep({
     run(t.id, async () => {
       const project = await targetProject(t.name);
       const applied = await api.post<{ projectId: string; boardId: string }>(`/projects/${project.id}/template`, { templateId: t.id });
-      await finish((f) => `/w/${f.slug}/p/${applied.projectId}/b/${applied.boardId}`);
+      await finish((f) => `/w/${f.id}/p/${applied.projectId}/b/${applied.boardId}`);
     });
 
   const startEmpty = () =>
     run('empty', async () => {
       const project = ws.setup?.projectId ? await api.get<Project>(`/projects/${ws.setup.projectId}`) : null;
-      await finish((f) => (project ? `/w/${f.slug}/p/${project.id}/b/${project.defaultBoardId}` : `/w/${f.slug}/projects`), { startedEmpty: true });
+      await finish((f) => (project ? `/w/${f.id}/p/${project.id}/b/${project.defaultBoardId}` : `/w/${f.id}/projects`), { startedEmpty: true });
     });
 
-  const importTrello = () => run('import', () => finish((f) => `/w/${f.slug}/import`));
+  const importTrello = () => run('import', () => finish((f) => `/w/${f.id}/import`));
 
   const card = 'flex flex-col items-start gap-1 rounded-lg border border-border bg-surface p-4 text-left hover:border-primary-border hover:shadow-sm disabled:opacity-60';
   return (
@@ -411,7 +413,7 @@ function WorkStep({
       {picking ? (
         <div className="space-y-3">
           <p className="text-sm text-secondary-foreground">Pick a starting board. You can rename, move or delete anything afterwards.</p>
-          {templates.isPending ? <Spinner /> : null}
+          {templates.isPending ? <LoadingSkeleton variant="form" className="p-4 sm:p-6" /> : null}
           <div className="grid gap-3 sm:grid-cols-3">
             {(templates.data?.data ?? []).map((t) => (
               <button key={t.id} type="button" className={card} disabled={busy !== null} onClick={() => void applyTemplate(t)} aria-label={`Use the ${t.name} template`}>

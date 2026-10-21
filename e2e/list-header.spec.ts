@@ -78,7 +78,7 @@ test('header title supports keyboard reorder, Escape cancellation and API failur
   const title = list(page, 'To do').getByRole('button', { name: 'To do', exact: true });
   const todoId = await list(page, 'To do').getAttribute('data-list-id');
   await title.click({ trial: true });
-  await title.focus(); await page.keyboard.press('Space');
+  await title.focus(); await page.keyboard.press('Space', { delay: 50 });
   await expect(title).toHaveAttribute('aria-pressed', 'true');
   // aria-pressed updates before DnD's first measurement; wait for its initial target.
   await expect(page.getByRole('status')).toContainText(`over droppable area list:${todoId}`);
@@ -89,22 +89,22 @@ test('header title supports keyboard reorder, Escape cancellation and API failur
   await expect(title).not.toHaveAttribute('aria-pressed', 'true');
   await expect.poll(() => order(page)).toEqual(['List To do', 'List In progress', 'List Done']);
   await title.click({ trial: true });
-  await title.focus(); await page.keyboard.press('Space');
+  await title.focus(); await page.keyboard.press('Space', { delay: 50 });
   await expect(title).toHaveAttribute('aria-pressed', 'true');
   await expect(page.getByRole('status')).toContainText(`over droppable area list:${todoId}`);
   await page.keyboard.press('ArrowRight');
   await expect(page.getByRole('status')).toContainText(`over droppable area list:${progressId}`);
-  await page.keyboard.press('Space');
+  await page.keyboard.press('Space', { delay: 50 });
   await expect.poll(() => order(page)).toEqual(['List In progress', 'List To do', 'List Done']);
   await expect(page.getByRole('textbox', { name: 'List name', exact: true })).toHaveCount(0);
   await page.route('**/api/v1/lists/*/position', (route) => route.fulfill({ status: 500, json: { error: { code: 'internal', message: 'Please try again.' } } }));
   await title.click({ trial: true });
-  await title.focus(); await page.keyboard.press('Space');
+  await title.focus(); await page.keyboard.press('Space', { delay: 50 });
   await expect(title).toHaveAttribute('aria-pressed', 'true');
   await expect(page.getByRole('status')).toContainText(`over droppable area list:${todoId}`);
   await page.keyboard.press('ArrowLeft');
   await expect(page.getByRole('status')).toContainText(`over droppable area list:${progressId}`);
-  await page.keyboard.press('Space');
+  await page.keyboard.press('Space', { delay: 50 });
   await expect(page.getByTestId('toast')).toContainText("Couldn't move the list");
   await expect.poll(() => order(page)).toEqual(['List In progress', 'List To do', 'List Done']);
   await page.reload();

@@ -28,6 +28,7 @@ const paths = {
   more: <path d="M5 12h.01M12 12h.01M19 12h.01" strokeWidth="3" />,
   menu: <path d="M4 6h16M4 12h16M4 18h16" />,
   chevron: <path d="m9 5 7 7-7 7" />,
+  expand: <path d="M8 3H3v5M16 3h5v5M3 16v5h5M21 16v5h-5" />,
   arrow: <path d="M7 17 17 7M7 7h10v10" />,
   list: <><path d="M9 5h12M9 12h12M9 19h12" /><path d="M3 5h.01M3 12h.01M3 19h.01" strokeWidth="3" /></>,
   board: <><rect x="3" y="4" width="18" height="16" rx="3" /><path d="M9 4v16M15 4v16" /></>,

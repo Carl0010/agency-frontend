@@ -1,9 +1,11 @@
 'use client';
 
+import { LoadingSkeleton } from '@/components/skeleton';
+
 import { useInfiniteQuery, useQuery, useQueryClient, type InfiniteData } from '@tanstack/react-query';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { Avatar, Button, Spinner } from '@/components/ui';
+import { Avatar, Button } from '@/components/ui';
 import { api, ApiError, errorMessage } from '@/lib/api';
 import { addMessage, buildRows, deleteMessage, flattenPages, replaceMessage } from '@/lib/chat';
 import { useRoom } from '@/lib/realtime';
@@ -234,7 +236,7 @@ export function ChannelPane({
     router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
   };
 
-  if (channels.isPending) return <Spinner />;
+  if (channels.isPending) return <LoadingSkeleton variant="messages" className="p-4 sm:p-6" />;
   if (channels.error || messages.error) {
     const error = channels.error ?? messages.error;
     return <div role="alert" className="space-y-3 p-8 text-center"><p>{error instanceof ApiError && error.code === 'not_found' ? "You don't have access to this project" : errorMessage(error)}</p><Button variant="secondary" onClick={() => { void channels.refetch(); void messages.refetch(); }}>Retry channel</Button></div>;
@@ -284,11 +286,11 @@ export function ChannelPane({
               className="min-h-0 flex-1 overflow-y-auto pb-2"
             >
               <div ref={sentinel} className="h-1" />
-              {messages.isFetchingNextPage ? <p className="py-2 text-center text-xs text-muted-foreground">Loading earlier messages…</p> : null}
+              {messages.isFetchingNextPage ? <LoadingSkeleton variant="messages" label="Loading earlier messages" count={2} /> : null}
               {!messages.hasNextPage && messages.data ? (
                 <p className="px-3 py-4 text-center text-xs text-muted-foreground">This is the start of {channel.name}.</p>
               ) : null}
-              {messages.isPending ? <Spinner /> : null}
+              {messages.isPending ? <LoadingSkeleton variant="messages" className="p-4 sm:p-6" /> : null}
               {rows.map((r) =>
                 r.kind === 'day' ? (
                   <div key={r.key} className="my-2 flex items-center gap-2 px-3 text-xs font-medium text-muted-foreground">
@@ -400,7 +402,7 @@ function ThreadPane({
       </header>
       <div className="min-h-0 flex-1 overflow-y-auto pb-2">
         {thread.isPending ? (
-          <Spinner />
+          <LoadingSkeleton variant="messages" className="p-4 sm:p-6" />
         ) : thread.error ? (
           <p role="alert" className="p-4 text-sm text-secondary-foreground">{thread.error instanceof ApiError && thread.error.code === 'not_found' ? "You don't have access to this project" : errorMessage(thread.error)}</p>
         ) : (

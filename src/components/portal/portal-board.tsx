@@ -1,11 +1,12 @@
 'use client';
 
+import { LoadingSkeleton } from '@/components/skeleton';
+
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 import { CardTileView } from '@/components/board/card-tile';
-import { Spinner } from '@/components/ui';
 import { api, errorMessage } from '@/lib/api';
 import { useProjectRealtime } from '@/lib/realtime';
 import type { Board, CardTile, PortalProject } from '@/lib/types';
@@ -32,7 +33,7 @@ export function PortalBoard({ project }: { project: PortalProject }) {
   useProjectRealtime(project.id);
   const now = useGroupingClock(board.data, user?.timezone ?? 'UTC');
 
-  if (board.isPending) return <Spinner />;
+  if (board.isPending) return <LoadingSkeleton variant="cards" className="p-4 sm:p-6" />;
   if (board.error) return <p className="p-8 text-center text-secondary-foreground">{errorMessage(board.error)}</p>;
   const lists = grouping === 'due' ? boardGroups(board.data, 'due', [], now, user?.timezone ?? 'UTC') : board.data.lists;
   const tile = (c: CardTile): CardTile => ({ ...c, assignees: [] });

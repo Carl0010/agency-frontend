@@ -74,7 +74,7 @@ export function SortableCard({ card, projectKey, now, href, disabled }: { card: 
     else if (dragged.current) setTimeout(() => (dragged.current = false), 0);
   }, [isDragging]);
   const open = () => {
-    if (!dragged.current) router.push(href, { scroll: false });
+    if (!dragged.current && !selected) router.push(href, { scroll: false });
   };
   const onKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
     listeners?.onKeyDown?.(e);

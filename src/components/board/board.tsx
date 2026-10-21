@@ -1,5 +1,7 @@
 'use client';
 
+import { BoardSkeleton, LoadingSkeleton } from '@/components/skeleton';
+
 import {
   closestCenter,
   closestCorners,
@@ -26,7 +28,7 @@ import { Icon } from '@/components/icon';
 import { ProjectActions } from '@/components/project-chrome';
 import { ProjectIcon } from '@/components/projects/project-icon';
 import { useToast } from '@/components/toast';
-import { Avatar, Button, Spinner } from '@/components/ui';
+import { Avatar, Button } from '@/components/ui';
 import { api, errorMessage } from '@/lib/api';
 import { findCard, moveCardLocal, moveListLocal, upsertCard, upsertList } from '@/lib/board-state';
 import { isFiltering, matchesFilters, parseFilters, writeFilters, type BoardFilters } from '@/lib/filters';
@@ -142,12 +144,12 @@ export function BoardScreen({ boardId, projectId }: { boardId: string; projectId
     }),
   );
 
-  if (board.isPending) return <Spinner />;
+  if (board.isPending) return <BoardSkeleton view={view} />;
   if (board.error) return <ProjectError error={board.error} retry={() => void board.refetch()} />;
 
   const shown = drag?.board ?? board.data;
   const qs = params.toString();
-  const cardHref = (cardId: string) => `/w/${ws.slug}/p/${projectId}/b/${boardId}/c/${cardId}${qs ? `?${qs}` : ''}`;
+  const cardHref = (cardId: string) => `/w/${ws.id}/p/${projectId}/b/${boardId}/c/${cardId}${qs ? `?${qs}` : ''}`;
   const activeMembers = (members.data?.data ?? []).filter((m) => m.status === 'active' && m.role !== 'guest');
   const selectedList = shown.lists.find((l) => l.id === mobileListId) ?? shown.lists[0];
 
@@ -321,7 +323,7 @@ function ArchivedCards({ boardId, cardHref }: { boardId: string; cardHref: (id: 
       {open ? (
         <div className="absolute right-0 z-30 mt-1 max-h-96 w-72 overflow-y-auto rounded-md border border-border bg-surface p-2 shadow-lg">
           {archived.isPending ? (
-            <Spinner />
+            <LoadingSkeleton label="Loading archived cards" />
           ) : archived.data?.data.length ? (
             <ul className="space-y-1">
               {archived.data.data.map((c) => (

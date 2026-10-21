@@ -53,9 +53,9 @@ test('empty access, team sharing, scoped assignment, personal stars and live uns
   const { page: owner, account } = await signupToBoard(browser, { viewport: { width: 1440, height: 1000 } });
   const call = await ownerApi(request, account);
   const projectId = new URL(account.boardUrl).pathname.split('/')[4]!;
-  const slug = new URL(account.boardUrl).pathname.split('/')[2]!;
+  const workspaceId = new URL(account.boardUrl).pathname.split('/')[2]!;
   const project = await call<{ workspaceId: string }>('GET', `/projects/${projectId}`);
-  await owner.goto(`/w/${slug}/settings/teams`);
+  await owner.goto(`/w/${workspaceId}/settings/teams`);
   await owner.getByLabel('Team name', { exact: true }).fill('Delivery');
   await owner.getByRole('button', { name: 'Create team', exact: true }).click();
   await owner.getByRole('link', { name: /Delivery.*Team admin/ }).click();
@@ -69,7 +69,7 @@ test('empty access, team sharing, scoped assignment, personal stars and live uns
   await share.getByRole('button', { name: 'Share team', exact: true }).click();
   await expect(share.getByRole('button', { name: 'Unshare Delivery' })).toBeVisible();
   await share.getByRole('button', { name: 'Close Share project' }).click();
-  await owner.goto(`/w/${slug}/settings/members`);
+  await owner.goto(`/w/${workspaceId}/settings/members`);
   const email = `access-member-${Date.now()}@example.test`;
   await owner.getByLabel('Email', { exact: true }).fill(email);
   await owner.getByRole('checkbox', { name: /Delivery/ }).uncheck();
@@ -88,7 +88,7 @@ test('empty access, team sharing, scoped assignment, personal stars and live uns
   const inspector = owner.getByRole('dialog', { name: 'Card details' });
   await inspector.getByRole('button', { name: 'Assign members', exact: true }).click();
   await expect(inspector.getByRole('checkbox', { name: /Delivery Member/ })).toHaveCount(0);
-  await owner.goto(`/w/${slug}/settings/teams/${teamId}`);
+  await owner.goto(`/w/${workspaceId}/settings/teams/${teamId}`);
   await owner.getByLabel('Person to add', { exact: true }).selectOption(userId);
   await owner.getByRole('button', { name: 'Add person', exact: true }).click();
   await expect(owner.getByTestId('team-member-row').filter({ hasText: 'Delivery Member' })).toBeVisible();
@@ -126,7 +126,7 @@ test('a team admin invites a guest with default comment access to exactly the sh
   const { page: owner, account } = await signupToBoard(browser);
   const call = await ownerApi(request, account);
   const projectId = new URL(account.boardUrl).pathname.split('/')[4]!;
-  const slug = new URL(account.boardUrl).pathname.split('/')[2]!;
+  const workspaceId = new URL(account.boardUrl).pathname.split('/')[2]!;
   const project = await call<{ workspaceId: string }>('GET', `/projects/${projectId}`);
   const team = await call<{ id: string }>('POST', `/workspaces/${project.workspaceId}/teams`, { name: 'Partners' });
   await call('PUT', `/projects/${projectId}/teams/${team.id}`);
@@ -136,7 +136,7 @@ test('a team admin invites a guest with default comment access to exactly the sh
   const admin = await accept(browser, adminEmail, 'Partners Admin', true);
   const roster = await call<{ data: { userId: string; email: string }[] }>('GET', `/workspaces/${project.workspaceId}/members`);
   await call('PUT', `/teams/${team.id}/members/${roster.data.find((person) => person.email === adminEmail)!.userId}`, { role: 'admin' });
-  await admin.goto(`/w/${slug}/settings/teams/${team.id}`); await skipTour(admin);
+  await admin.goto(`/w/${workspaceId}/settings/teams/${team.id}`); await skipTour(admin);
   await admin.getByRole('button', { name: 'Switch to dark mode', exact: true }).click();
   const email = `team-guest-${Date.now()}@example.test`;
   await admin.getByLabel('Guest email', { exact: true }).fill(email);
@@ -168,8 +168,8 @@ test('a team admin invites a guest with default comment access to exactly the sh
 
 test('team management preserves failed names, archives/restores, and enforces the last admin in the UI', async ({ browser }, info) => {
   const { page, account } = await signupToBoard(browser, { viewport: { width: 390, height: 844 } });
-  const slug = new URL(account.boardUrl).pathname.split('/')[2]!;
-  await page.goto(`/w/${slug}/settings/teams`);
+  const workspaceId = new URL(account.boardUrl).pathname.split('/')[2]!;
+  await page.goto(`/w/${workspaceId}/settings/teams`);
   await page.getByLabel('Team name', { exact: true }).fill('Studio');
   await page.getByRole('button', { name: 'Create team', exact: true }).click();
   await expect(page.getByRole('link', { name: /Studio.*Team admin/ })).toBeVisible();

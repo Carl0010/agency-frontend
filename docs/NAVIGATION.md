@@ -1,6 +1,6 @@
 # Sidebar and page responsibilities
 
-Member routes (`/w/[slug]/*`) use two navigation levels: a **56px icon module
+Member routes (`/w/[workspaceId]/*`; a legacy `/w/<slug>/*` link resolves and is replaced by the id) use two navigation levels: a **56px icon module
 rail on the far left**, followed by the existing **256px contextual sidebar**.
 A 56px app bar spans the full viewport above both levels.
 The guest portal keeps its separate navigation and imports none of this shell.
@@ -79,7 +79,7 @@ queries, so the persistent sidebar discovers new destinations without a reload.
 ## Card inspector
 
 Opening a member card from a board uses a non-modal right drawer in the board's
-intercepted `@modal` route slot. The URL still identifies the card.
+persistent board layout. The URL identifies the card and its presentation.
 
 - At 768px and above, the board and drawer share the available work area. The
   drawer is 448px wide, 512px from 1280px, and 576px from 1536px. The board's
@@ -97,9 +97,12 @@ intercepted `@modal` route slot. The URL still identifies the card.
   closes it unless an inline editor or popover consumes the key. Board controls
   retain their own Escape behavior.
 - Closing returns to the board with the current filters. Browser Back/Forward
-  dismiss/reopen the inspector. Reloading or opening a direct card URL renders
-  the existing full-page detail. Open card as full page explicitly bypasses
-  route interception with a normal anchor.
+  dismiss/reopen the inspector. Reloading or opening a direct card URL keeps
+  the drawer unless `full=true` is set. `full=false` also explicitly selects the drawer.
+  The top-right **Open card as full page** control sets `full=true`; the full-page
+  Back to board link removes that flag and retains filters and presentation.
+  Clicking an already-open card does nothing, including keyboard activation; modified
+  link clicks still open a separate tab normally.
 - Card switches remount card-specific editors and reset inspector scrolling.
   Description drafts retain their existing per-card local-storage keys.
 - A loading or unavailable card stays inside the drawer, with Close and the
@@ -139,7 +142,7 @@ and backdrop fade. Closing releases modal focus and scroll containment without
 waiting for the visual exit; this keeps the search shortcut responsive. Browsers
 without discrete-transition support retain immediate native dismissal.
 
-The board layout owns `CardDrawerHost`; the intercepted route registers the
+The board layout owns both the stable board and `CardDrawerHost`; the card route registers the
 current card with it. This retains the inspector through closing transitions,
 including browser Back, without retaining a stale route tree. Exiting content is
 inert and hidden from assistive technology; focus returns to the board at the
@@ -202,3 +205,18 @@ routes, including auth and portal; member navigation remains excluded from porta
 [Kanban and List](BOARD_VIEWS.md) share filters, card routes and API state.
 The presentation switch belongs with board content, never in the app bar or
 sidebar. Preserve `view=list` and filters when opening/closing card details.
+
+## Permanent workspace URLs
+
+Member links use `/w/<workspaceId>/…`, resolved with `GET /workspaces/:id`. The
+workspace name and editable slug are metadata; renaming either does not change
+its permanent address. Existing `/w/<slug>/…` links resolve with the legacy API
+lookup and replace the URL with the UUID, preserving the nested path, query and
+hash. New navigation, onboarding, invite and remembered-workspace destinations
+use IDs; old browser preferences containing a slug remain readable.
+
+The API now emits UUIDs in search, notifications and billing links. Its audience
+cookie lists each member workspace ID followed by its legacy slug. Cookies from
+before this rollout refresh automatically; UUID routes with an old member cookie
+are resolved through the API and a guest role is redirected before the workspace
+shell can render. Portal routes and project authorization remain API-controlled.

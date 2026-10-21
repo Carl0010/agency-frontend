@@ -1,0 +1,51 @@
+import { expect, test } from '@playwright/test';
+import { list, signupToBoard } from './helpers';
+
+test('board and card skeletons reserve content, support themes and stop motion when requested', async ({ browser }, info) => {
+  const { page, account } = await signupToBoard(browser, { viewport: { width: 1440, height: 900 } });
+  await list(page, 'To do').getByTestId('add-card-end').click();
+  await list(page, 'To do').getByLabel('Card title').fill('Review loading states');
+  await page.keyboard.press('Enter');
+  await page.keyboard.press('Escape');
+  await expect(page.getByTestId('card-tile')).toHaveCount(1);
+  let releaseBoard!: () => void;
+  const boardGate = new Promise<void>((resolve) => { releaseBoard = resolve; });
+  await page.route(`**/api/v1/boards/${account.boardId}`, async (route) => { await boardGate; await route.continue(); });
+  await page.reload();
+  const boardLoading = page.getByRole('status').filter({ hasText: 'Loading board' });
+  await expect(boardLoading).toBeVisible();
+  await expect(boardLoading).toHaveAttribute('aria-busy', 'true');
+  expect(await boardLoading.locator('.skeleton-shape').count()).toBeGreaterThan(30);
+  await page.screenshot({ path: info.outputPath('loading-board-light.png'), style: 'nextjs-portal { visibility: hidden; }' });
+  await page.getByRole('button', { name: 'Switch to dark mode' }).click();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+  await page.locator('body').evaluate(async () => {
+    await Promise.allSettled(document.getAnimations().filter((animation) => animation instanceof CSSTransition).map((animation) => animation.finished));
+  });
+  await page.screenshot({ path: info.outputPath('loading-board-dark.png'), style: 'nextjs-portal { visibility: hidden; }' });
+  await page.setViewportSize({ width: 390, height: 844 });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  expect(await boardLoading.locator('.skeleton-shape').first().evaluate((node) => getComputedStyle(node).animationName)).toBe('none');
+  await page.screenshot({ path: info.outputPath('loading-board-mobile.png'), style: 'nextjs-portal { visibility: hidden; }' });
+  releaseBoard();
+  await expect(boardLoading).toHaveCount(0);
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await expect(page.getByTestId('card-tile')).toBeVisible();
+
+  let releaseCard!: () => void;
+  const cardGate = new Promise<void>((resolve) => { releaseCard = resolve; });
+  const id = await page.getByTestId('card-tile').getAttribute('data-card-id');
+  await page.route(`**/api/v1/cards/${id}`, async (route) => { await cardGate; await route.continue(); });
+  await page.getByTestId('card-tile').click();
+  const drawer = page.getByRole('dialog', { name: 'Card details' });
+  const cardLoading = drawer.getByRole('status').filter({ hasText: 'Loading card details' });
+  await expect(cardLoading).toBeVisible();
+  await expect(cardLoading.getByRole('button')).toHaveCount(0);
+  await expect(page.getByTestId('card-tile')).toBeVisible();
+  await page.screenshot({ path: info.outputPath('loading-card-dark.png'), style: 'nextjs-portal { visibility: hidden; }' });
+  releaseCard();
+  await expect(cardLoading).toHaveCount(0);
+  await expect(drawer.getByTestId('card-title')).toHaveText('Review loading states');
+  await page.context().close();
+});

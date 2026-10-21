@@ -1,10 +1,12 @@
 'use client';
 
+import { LoadingSkeleton } from '@/components/skeleton';
+
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useParams, usePathname, useRouter } from 'next/navigation';
 import type { ReactNode } from 'react';
-import { Avatar, Button, GuestChip, Spinner, Select } from '@/components/ui';
+import { Avatar, Button, GuestChip, Select } from '@/components/ui';
 import { ProjectIcon } from '@/components/projects/project-icon';
 import { api, errorMessage } from '@/lib/api';
 import { PortalContext, portalProjectsKey } from '@/lib/portal';
@@ -31,7 +33,7 @@ export default function PortalProjectLayout({ children }: { children: ReactNode 
     enabled: Boolean(project),
   });
 
-  if (projects.isPending) return <Spinner />;
+  if (projects.isPending) return <LoadingSkeleton variant="cards" className="p-4 sm:p-6" />;
   if (projects.error || ws.error) return <main role="alert" className="space-y-3 p-8 text-center"><p>{errorMessage(projects.error ?? ws.error)}</p><Button variant="secondary" onClick={() => { void projects.refetch(); void ws.refetch(); }}>Try again</Button></main>;
   if (!project) {
     return (
@@ -44,7 +46,7 @@ export default function PortalProjectLayout({ children }: { children: ReactNode 
       </main>
     );
   }
-  if (ws.isPending || !ws.data) return <Spinner />;
+  if (ws.isPending || !ws.data) return <LoadingSkeleton variant="cards" className="p-4 sm:p-6" />;
 
   const base = `/portal/${project.id}`;
   const tabs = [

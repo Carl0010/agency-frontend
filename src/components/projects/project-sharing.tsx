@@ -1,5 +1,7 @@
 'use client';
 
+import { LoadingSkeleton } from '@/components/skeleton';
+
 import { formText } from '@/lib/form';
 import { useWriteAvailability } from '@/components/billing/billing-notices';
 
@@ -36,7 +38,7 @@ export function ProjectSharing({ project, onClose }: { project: Project; onClose
     <p className="text-label text-muted-foreground">Share {project.name} with teams and people. Workspace owners and admins always have access. Team admins administer projects shared with their team.</p>
     <FormError message={act.error ? errorMessage(act.error) : queryError ? errorMessage(queryError) : null} />
     {queryError ? <Button variant="secondary" onClick={() => { void access.refetch(); void teams.refetch(); void roster.refetch(); }}>Retry access</Button> : null}
-    {access.isPending ? <p role="status">Loading project access…</p> : access.data ? <>
+    {access.isPending ? <LoadingSkeleton label="Loading project access" count={3} className="px-2" /> : access.data ? <>
       <section className="space-y-3" aria-label="Shared teams"><h3 className="font-semibold">Teams</h3>
         <ul className="divide-y divide-border">{access.data.teams.map((team) => <li key={team.id} className="flex items-center gap-2 py-2"><span className="min-w-0 flex-1 truncate text-label">{team.name} <span className="text-muted-foreground">· {team.memberCount} people</span></span><Button variant="ghost" disabled={act.isPending || readOnly} aria-label={`Unshare ${team.name}`} onClick={async () => {
           if (await confirm({ title: 'Unshare team?', description: `${team.name} will lose access to this project unless its people have another grant or shared team.`, confirmLabel: 'Unshare team' })) act.mutate(() => api.del<ProjectAccess>(`/projects/${project.id}/teams/${team.id}`));

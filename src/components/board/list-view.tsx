@@ -4,7 +4,7 @@ import { closestCenter, closestCorners, DndContext, DragOverlay, KeyboardSensor,
 import { SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { useIsMutating } from '@tanstack/react-query';
-import Link from 'next/link';
+import { CardLink } from '@/components/card/card-link';
 import { usePathname } from 'next/navigation';
 import { useState, type ReactNode } from 'react';
 import { Icon } from '@/components/icon';
@@ -101,7 +101,7 @@ export function CardRowCells({ card, cardKey, now, href, selected, members, hand
     <td className="border-b border-border-subtle px-2 py-1 align-middle">
       <div className="flex min-w-0 items-center gap-1">
         {handle}
-        <Link href={href} scroll={false} data-card-id={card.id} data-tour="card" aria-label={`${cardKey}: ${card.title}`} aria-expanded={selected} aria-controls={selected ? 'card-drawer' : undefined} title="Open card details" className="tap inline-flex shrink-0 items-center rounded-md px-1 font-mono text-caption text-muted-foreground hover:bg-muted hover:text-primary">{cardKey}</Link>
+        <CardLink cardId={card.id} href={href} scroll={false} data-card-id={card.id} data-tour="card" aria-label={`${cardKey}: ${card.title}`} aria-expanded={selected} aria-controls={selected ? 'card-drawer' : undefined} title="Open card details" className="tap inline-flex shrink-0 items-center rounded-md px-1 font-mono text-caption text-muted-foreground hover:bg-muted hover:text-primary">{cardKey}</CardLink>
         <RowName card={card} cardKey={cardKey} />
       </div>
       <div className="ml-9 flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1 @3xl:hidden">

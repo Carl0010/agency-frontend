@@ -56,7 +56,7 @@ test('guest: invite from the guest panel, portal only, no Team channel, no assig
   const { page: owner, account } = await signupToBoard(browser);
   const projectId = new URL(account.boardUrl).pathname.split('/')[4] ?? '';
   const base = account.boardUrl.replace(/\/b\/[^/]+$/, '');
-  const slug = new URL(account.boardUrl).pathname.split('/')[2] ?? '';
+  const workspaceId = new URL(account.boardUrl).pathname.split('/')[2] ?? '';
 
   // Seed: an assigned card, one message per channel, and a second (unshared) project.
   const me = await login(request, account);
@@ -121,16 +121,16 @@ test('guest: invite from the guest panel, portal only, no Team channel, no assig
   await expect(guest.locator('body')).not.toContainText('Other client retainer');
 
   // AC3: the workspace tree redirects a guest back to the portal…
-  await guest.goto(`/w/${slug}/projects`);
+  await guest.goto(`/w/${workspaceId}/projects`);
   await expect(guest).toHaveURL(new RegExp(`/portal/${projectId}$`));
   await guest.goto(`${base}/team`);
   await expect(guest).toHaveURL(new RegExp(`/portal/${projectId}$`));
   await expect(guest.getByText('Margin on this one is thin')).toHaveCount(0);
   // AC12: the import wizard is workspace-only too.
-  await guest.goto(`/w/${slug}/import`);
+  await guest.goto(`/w/${workspaceId}/import`);
   await expect(guest).toHaveURL(new RegExp(`/portal/${projectId}$`));
 
   // …and the portal redirects a member back to the workspace.
   await owner.goto(`/portal/${projectId}`);
-  await expect(owner).toHaveURL(new RegExp(`/w/${slug}/projects$`));
+  await expect(owner).toHaveURL(new RegExp(`/w/${workspaceId}/projects$`));
 });

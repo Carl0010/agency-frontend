@@ -16,7 +16,9 @@ async function setup(browser: Browser, request: APIRequestContext, mobile = fals
   return { page, account, call, project, board, me, card };
 }
 async function keyboardDrop(page: Page, start: Locator, direction: 'ArrowDown' | 'ArrowRight' | 'ArrowLeft' | 'ArrowUp', target: string) {
-  await start.focus(); await start.press('Space');
+  // Hold through keyup so dnd-kit's deferred document listeners are attached
+  // before the immediately following arrow/cancel event in a fast production build.
+  await start.focus(); await start.press('Space', { delay: 50 });
   await expect(start).toHaveAttribute('aria-pressed', 'true');
   await page.keyboard.press(direction);
   await expect(page.getByRole('status')).toContainText(`group:${target}`);

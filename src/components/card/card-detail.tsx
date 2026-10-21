@@ -1,11 +1,13 @@
 'use client';
 
+import { CardSkeleton } from '@/components/skeleton';
+
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
 import { DuePill } from '@/components/due-pill';
 import { Markdown } from '@/components/markdown';
 import { useToast } from '@/components/toast';
-import { Avatar, Button, LABEL_BG, Spinner, Select } from '@/components/ui';
+import { Avatar, Button, LABEL_BG, Select } from '@/components/ui';
 import { api, errorMessage } from '@/lib/api';
 import { MentionScopeContext } from '@/lib/mention-scope';
 import { applyTile, useProjectRealtime, useRoom } from '@/lib/realtime';
@@ -21,7 +23,7 @@ import { Comments } from './comments';
 
 const LABEL_COLORS = ['grey', 'red', 'orange', 'yellow', 'green', 'teal', 'blue', 'purple', 'pink', 'brown'] as const;
 
-/** Card detail (§3.3). Rendered inside the board drawer and as a full page on hard load. */
+/** Card detail (§3.3). Rendered inside the board drawer and as a full page with full=true. */
 export function CardDetail({ cardId, boardHref, layout = 'page' }: { cardId: string; boardHref: string; layout?: 'page' | 'drawer' }) {
   const qc = useQueryClient();
   const toast = useToast();
@@ -43,7 +45,7 @@ export function CardDetail({ cardId, boardHref, layout = 'page' }: { cardId: str
     }
   };
 
-  if (card.isPending) return <Spinner />;
+  if (card.isPending) return <CardSkeleton />;
   if (card.error) {
     return <ProjectError error={card.error} retry={() => void card.refetch()} />;
   }
@@ -67,7 +69,7 @@ export function CardDetail({ cardId, boardHref, layout = 'page' }: { cardId: str
           variant="secondary"
           onClick={() => {
             void navigator.clipboard
-              .writeText(`${window.location.origin}${boardHref}/c/${c.id}`)
+              .writeText(`${window.location.origin}${boardHref}/c/${c.id}${new URLSearchParams(window.location.search).get('full') === 'true' ? '?full=true' : ''}`)
               .then(() => toast('Link copied.', 'info'))
               .catch(() => toast('Could not copy the link.'));
           }}

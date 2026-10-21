@@ -48,7 +48,11 @@ function Drawer({ cardId, boardHref, open }: DrawerProps & { open: boolean }) {
   const router = useRouter();
   const params = useSearchParams();
   const panel = useRef<HTMLDivElement>(null);
-  const qs = params.toString();
+  const boardParams = new URLSearchParams(params.toString());
+  boardParams.delete('full');
+  const qs = boardParams.toString();
+  const expandedParams = new URLSearchParams(boardParams);
+  expandedParams.set('full', 'true');
   const boardUrl = `${boardHref}${qs ? `?${qs}` : ''}`;
   // An explicit board destination is safe even when history started outside the app.
   const close = () => router.push(boardUrl, { scroll: false });
@@ -91,9 +95,9 @@ function Drawer({ cardId, boardHref, open }: DrawerProps & { open: boolean }) {
         <Button variant="ghost" size="icon" className="hidden md:inline-flex" aria-label="Focus board" title="Focus board" onClick={() => document.getElementById('board-view')?.focus()}>
           <Icon name="board" />
         </Button>
-        {/* A normal anchor intentionally bypasses interception for the full-page view. */}
-        <a href={`${boardHref}/c/${cardId}${qs ? `?${qs}` : ''}`} aria-label="Open card as full page" title="Open card as full page" className="ui-button tap size-9 px-0 text-secondary-foreground hover:bg-subtle">
-          <Icon name="arrow" />
+        {/* The URL records presentation, including after reload or sharing. */}
+        <a href={`${boardHref}/c/${cardId}?${expandedParams}`} aria-label="Open card as full page" title="Open card as full page" className="ui-button tap size-9 px-0 text-secondary-foreground hover:bg-subtle">
+          <Icon name="expand" />
         </a>
         <Button variant="ghost" size="icon" aria-label="Close card" title="Close card (Escape)" onClick={close}>
           <Icon name="close" />

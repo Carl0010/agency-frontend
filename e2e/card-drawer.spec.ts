@@ -99,6 +99,26 @@ test('card links support history, full-page reloads and a recoverable unavailabl
   const drawer = page.getByRole('dialog', { name: 'Card details' });
   await expect(drawer.getByTestId('card-title')).toBeVisible();
   const cardUrl = page.url();
+  // Clicking the card that is already open neither navigates nor stacks history.
+  const depth = await page.evaluate(() => history.length);
+  await tile.click();
+  await tile.click();
+  await expect(drawer.getByTestId('card-title')).toHaveText('Check the project brief');
+  await expect(page).toHaveURL(cardUrl);
+  expect(await page.evaluate(() => history.length)).toBe(depth);
+  await expect(page.getByTestId('board-lists')).toBeVisible();
+  // Reload and explicit full=false both retain the non-modal board presentation.
+  await page.goto(`${cardUrl}?full=false`);
+  await expect(drawer.getByTestId('card-title')).toHaveText('Check the project brief');
+  await expect(page.getByTestId('board-lists')).toBeVisible();
+  await page.reload();
+  await expect(drawer.getByTestId('card-title')).toHaveText('Check the project brief');
+  await drawer.getByRole('button', { name: 'Close card' }).click();
+  await expect(page).toHaveURL(account.boardUrl);
+  await expect(drawer).toHaveCount(0);
+  await tile.click();
+  await expect(drawer.getByTestId('card-title')).toHaveText('Check the project brief');
+  await expect(page).toHaveURL(cardUrl);
   await page.goBack();
   await expect(drawer).toHaveCount(0);
   await expect(page).toHaveURL(account.boardUrl);
@@ -108,8 +128,10 @@ test('card links support history, full-page reloads and a recoverable unavailabl
   await drawer.getByRole('link', { name: 'Open card as full page' }).click();
   await expect(page.getByRole('link', { name: /Back to board/ })).toBeVisible();
   await expect(drawer).toHaveCount(0);
+  await expect(page).toHaveURL(`${cardUrl}?full=true`);
   await page.reload();
   await expect(page.getByTestId('card-title')).toHaveText('Check the project brief');
+  await expect(drawer).toHaveCount(0);
   await page.getByRole('link', { name: /Back to board/ }).click();
 
   // Use a card whose detail has never been fetched, so a fresh cached value
@@ -125,5 +147,44 @@ test('card links support history, full-page reloads and a recoverable unavailabl
   await drawer.getByRole('button', { name: 'Close card' }).click();
   await expect(drawer).toHaveCount(0);
   await expect(tile).toBeVisible();
+  await page.context().close();
+});
+
+test('a legacy slug link opens the same page at its workspace id', async ({ browser }) => {
+  const { page, account } = await signupToBoard(browser);
+  const workspaceId = new URL(account.boardUrl).pathname.split('/')[2]!;
+  // The audience cookie lists each member workspace's id, then its slug alias.
+  const raw = (await page.context().cookies()).find((c) => c.name === 'agency_aud')?.value ?? '';
+  const audience = JSON.parse(Buffer.from(raw, 'base64url').toString()) as { m: string[] };
+  expect(audience.m[0]).toBe(workspaceId);
+  const slug = audience.m[1]!;
+  expect(slug).not.toBe(workspaceId);
+
+  await page.goto(account.boardUrl.replace(`/w/${workspaceId}/`, `/w/${slug}/`) + '?q=brief');
+  await expect(page).toHaveURL(`${account.boardUrl}?q=brief`);
+  await expect(list(page, 'To do')).toBeVisible();
+  await page.context().close();
+});
+
+
+test('selected card links are inert in List and grouped board presentations', async ({ browser }) => {
+  const { page, account } = await signupToBoard(browser, { viewport: { width: 1440, height: 900 } });
+  await addCard(page, 'Check repeated row clicks');
+  for (const query of ['view=list', 'group=due', 'view=list&group=due']) {
+    await page.goto(`${account.boardUrl}?${query}`);
+    const link = page.locator('a[data-card-id]').first();
+    await link.click();
+    const drawer = page.getByRole('dialog', { name: 'Card details' });
+    await expect(drawer.getByTestId('card-title')).toHaveText('Check repeated row clicks');
+    const url = page.url();
+    const depth = await page.evaluate(() => history.length);
+    await link.click();
+    await link.press('Enter');
+    await expect(page).toHaveURL(url);
+    expect(await page.evaluate(() => history.length)).toBe(depth);
+    await expect(drawer.getByTestId('card-title')).toHaveText('Check repeated row clicks');
+    await expect(page.locator('#board-view')).toBeVisible();
+    await expect(page.getByRole('group', { name: 'Board view' })).toBeVisible();
+  }
   await page.context().close();
 });
