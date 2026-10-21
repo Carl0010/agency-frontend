@@ -100,6 +100,8 @@ test('guest: invite from the guest panel, portal only, no Team channel, no assig
   await expect(guest).toHaveURL(new RegExp(`/portal/${projectId}$`));
   await expect(guest.getByTestId('portal-layout')).toBeVisible();
   await expect(guest.getByTestId('guest-chip')).toHaveText('Guest · Can comment');
+  // Project status is the agency's internal signal: never in the portal.
+  await expect(guest.getByTestId('project-status')).toHaveCount(0);
 
   // AC9: the card is there, its assignee is not.
   const tile = guest.getByTestId('portal-card').filter({ hasText: 'Homepage hero copy' });

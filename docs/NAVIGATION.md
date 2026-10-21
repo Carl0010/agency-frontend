@@ -185,6 +185,12 @@ the complete personal collection, separately from team groups. Projects shared
 with several teams can appear under each, with one expanded set of active project
 sections. Projects without a visible team group remain under Other projects.
 
+Team groups and Other projects list open projects only (`?status=planned,in_progress,on_hold`),
+so Completed and Cancelled work leaves navigation without being archived; Planned and On hold
+carry a small status marker. Starred keeps every status and marks any that is not In progress.
+The project header's status pill is a menu for members; see
+[the project status record](handoffs/PROJECT_STATUS.md). Guest surfaces never show status.
+
 Share opens the project access dialog only for project admins. It manages teams,
 direct member edit/admin grants and direct guest grants. Workspace → Teams owns
 team names, membership, team roles, guest levels and archive/restore. The API

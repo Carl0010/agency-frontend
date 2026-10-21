@@ -10,6 +10,7 @@ import { PushExplainer } from '@/components/notifications';
 import { OPEN_EVENT } from '@/components/search/command-palette';
 import { Button } from '@/components/ui';
 import { api, errorMessage } from '@/lib/api';
+import { OPEN_STATUSES } from '@/lib/project-status';
 import type { Page, Project } from '@/lib/types';
 import { useWorkspaceChannels } from '@/lib/unread';
 import { useWorkspace } from '@/lib/workspace';
@@ -31,7 +32,8 @@ export function WorkspaceShell({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false);
   const [sidebarVisible, setSidebarVisible] = useState(true);
   const close = useCallback(() => setOpen(false), []);
-  const projects = useQuery({ queryKey: ['projects', ws.id], queryFn: () => api.get<Page<Project>>(`/workspaces/${ws.id}/projects`) });
+  // Navigation lists open projects only: finished work leaves it without being archived.
+  const projects = useQuery({ queryKey: ['projects', ws.id, { status: 'open' }], queryFn: () => api.get<Page<Project>>(`/workspaces/${ws.id}/projects?status=${OPEN_STATUSES.join(',')}`) });
   const teams = useTeams(ws.id);
   const starred = useQuery({ queryKey: ['projects', ws.id, { starred: true }], queryFn: () => api.get<Page<Project>>(`/workspaces/${ws.id}/projects?starred=true`) });
   // One subscription owner: mounting mobile navigation must not double-count live activity.

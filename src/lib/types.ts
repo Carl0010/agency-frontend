@@ -172,6 +172,9 @@ export interface Project {
   /** Saved identifier; render unknown values with the folder fallback. */
   icon: string;
   teamIds: string[];
+  /** Agency members only; render unknown values as In progress. */
+  status: ProjectStatus;
+  statusChangedAt: string | null;
   access: 'edit' | 'admin';
   starredByMe: boolean;
   defaultBoardId: string;
@@ -179,6 +182,8 @@ export interface Project {
   createdAt: string;
 }
 
+/** Open: planned, in_progress, on_hold. Closed: completed, cancelled. Separate from archive. */
+export type ProjectStatus = 'planned' | 'in_progress' | 'on_hold' | 'completed' | 'cancelled';
 export type TeamRole = 'admin' | 'member';
 export type MemberProjectAccess = 'edit' | 'admin';
 export type ProjectIconName = 'folder' | 'board' | 'briefcase' | 'code' | 'megaphone' | 'pen' | 'globe' | 'rocket';

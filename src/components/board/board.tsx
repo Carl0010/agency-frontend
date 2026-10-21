@@ -27,6 +27,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Icon } from '@/components/icon';
 import { ProjectActions } from '@/components/project-chrome';
 import { ProjectIcon } from '@/components/projects/project-icon';
+import { ProjectStatusMenu } from '@/components/projects/project-status';
 import { useToast } from '@/components/toast';
 import { Avatar, Button } from '@/components/ui';
 import { api, errorMessage } from '@/lib/api';
@@ -232,6 +233,7 @@ export function BoardScreen({ boardId, projectId }: { boardId: string; projectId
             <h1 className="min-w-0 max-w-full truncate text-lg font-semibold leading-6" data-testid="board-title">
               {shown.project.name}
             </h1>
+            {project.data ? <ProjectStatusMenu project={project.data} /> : null}
           </div>
           <div className="flex max-w-full flex-wrap items-center gap-2">
             <ProjectActions projectId={projectId} />

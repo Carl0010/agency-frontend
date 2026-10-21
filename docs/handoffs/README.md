@@ -18,6 +18,9 @@ Never represent a proposal as a completed feature.
 - [Project icons and personal stars](PROJECT_PERSONALIZATION.md): implemented
   picker, saved icons, personal star controls and the authoritative Starred section.
 
+- [Project status](PROJECT_STATUS.md): implemented 2026-10-21. Header status menu,
+  editor field, Projects filter (Open default), open-only sidebar groups; guests see none.
+
 - [One card in several projects](CARD_PLACEMENTS.md): blocked at contract audit,
   2026-10-21. [Verified people-read gap](CARD_PLACEMENTS_CONTRACT_BLOCKER.md): a
   card's assignable/mentionable people can belong only to a hidden placement;

@@ -7,6 +7,8 @@ import { useState } from 'react';
 import { ProjectEditor } from '@/components/projects/project-editor';
 import { ProjectMenu } from '@/components/projects/project-menu';
 import { ProjectIcon } from '@/components/projects/project-icon';
+import { ProjectStatusPill } from '@/components/projects/project-status';
+import { OPEN_STATUSES, projectStatus } from '@/lib/project-status';
 import { usePathname, useRouter } from 'next/navigation';
 import { Icon, type IconName } from '@/components/icon';
 import { SetupChip } from '@/components/onboarding/setup-chip';
@@ -87,7 +89,7 @@ export function WorkspaceSidebar({ data, projectId, activeModule, onNavigate, on
             {data.pending ? <LoadingSkeleton label="Loading projects" count={3} className="px-2" /> : null}
             {data.error ? <div role="alert" className="space-y-2 rounded-md border border-danger-border bg-danger-subtle p-2.5 text-caption text-danger-text"><p>{data.error}</p><Button variant="secondary" size="sm" onClick={data.retry}>Try again</Button></div> : null}
             {!data.pending && !data.error && data.projects.length === 0 ? <p className="px-2.5 py-2 text-caption text-muted-foreground">Projects shared with you will appear here.</p> : null}
-            {data.starred.length ? <section aria-label="Starred" className="mb-5"><h3 className="mb-2 px-2.5 text-caption font-medium text-muted-foreground">Starred</h3><ul className="space-y-1">{data.starred.map((project) => <SidebarProject key={project.id} project={project} data={data} currentId={projectId} expanded={false} onNavigate={onNavigate} />)}</ul></section> : null}
+            {data.starred.length ? <section aria-label="Starred" className="mb-5"><h3 className="mb-2 px-2.5 text-caption font-medium text-muted-foreground">Starred</h3><ul className="space-y-1">{data.starred.map((project) => <SidebarProject key={project.id} project={project} data={data} currentId={projectId} expanded={false} showClosed onNavigate={onNavigate} />)}</ul></section> : null}
             {data.teams.map((team) => {
               const projects = data.projects.filter((project) => project.teamIds?.includes(team.id));
               if (!projects.length) return null;
@@ -128,7 +130,10 @@ export function WorkspaceSidebar({ data, projectId, activeModule, onNavigate, on
 }
 
 
-function SidebarProject({ project, data, currentId, expanded, onNavigate }: { project: Project; data: SidebarData; currentId?: string; expanded: boolean; onNavigate?: () => void }) {
+function SidebarProject({ project, data, currentId, expanded, showClosed = false, onNavigate }: { project: Project; data: SidebarData; currentId?: string; expanded: boolean; showClosed?: boolean; onNavigate?: () => void }) {
+  const status = projectStatus(project.status).value;
+  // In progress is the norm; mark the other open statuses, and closed ones where they can appear (Starred).
+  const marked = status !== 'in_progress' && (showClosed || OPEN_STATUSES.includes(status));
   const ws = useWorkspace(); const pathname = usePathname();
   const current = project.id === currentId;
   const projectBase = `/w/${ws.id}/p/${project.id}`;
@@ -138,7 +143,7 @@ function SidebarProject({ project, data, currentId, expanded, onNavigate }: { pr
     { label: 'Team', path: '/team', icon: 'lock', kind: 'internal' },
   ];
   return <li>
-    <div className="flex items-center gap-1"><Link href={`${projectBase}/b/${project.defaultBoardId}`} onClick={onNavigate} aria-current={current ? 'location' : undefined} data-testid="rail-project" className={`ui-nav-link tap min-w-0 flex-1 ${current ? 'bg-subtle font-medium text-foreground' : ''}`}><ProjectIcon project={project} /><span className="min-w-0 flex-1 truncate">{project.name}</span>{data.channels.some((channel) => channel.projectId === project.id && channel.unreadCount > 0) ? <UnreadDot label={`Unread messages in ${project.name}`} /> : null}</Link><ProjectMenu project={project} onNavigate={onNavigate} /></div>
+    <div className="flex items-center gap-1"><Link href={`${projectBase}/b/${project.defaultBoardId}`} onClick={onNavigate} aria-current={current ? 'location' : undefined} data-testid="rail-project" className={`ui-nav-link tap min-w-0 flex-1 ${current ? 'bg-subtle font-medium text-foreground' : ''}`}><ProjectIcon project={project} /><span className="min-w-0 flex-1 truncate">{project.name}</span>{marked ? <ProjectStatusPill project={project} className="px-1.5" /> : null}{data.channels.some((channel) => channel.projectId === project.id && channel.unreadCount > 0) ? <UnreadDot label={`Unread messages in ${project.name}`} /> : null}</Link><ProjectMenu project={project} onNavigate={onNavigate} /></div>
     {current && expanded ? <ul aria-label="Project sections" className="my-1 ml-3 border-l border-border pl-3">{sections.map((section) => {
       const selected = section.kind ? pathname.startsWith(projectBase + section.path) : pathname.startsWith(`${projectBase}/b/`);
       const unread = section.kind && !selected && data.channels.some((channel) => channel.projectId === project.id && channel.kind === section.kind && channel.unreadCount > 0);
