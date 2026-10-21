@@ -31,6 +31,7 @@ cd promo-launch
 npx hyperframes@0.8.185 preview
 npx hyperframes@0.8.185 check
 npx hyperframes@0.8.185 render --quality delivery --output renders/agency-launch.mp4
+scripts/finish_audio.sh renders/agency-launch.mp4   # once per fresh render: brings the mix to about -15 LUFS
 ```
 
 - `scripts/gen_board.py` and `scripts/gen_search.py` generate the board and search scenes from data (cards,
