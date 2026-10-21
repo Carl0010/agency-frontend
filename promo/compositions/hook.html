@@ -1,0 +1,107 @@
+<template>
+  <style>
+    @font-face { font-family: 'Geist'; src: url('assets/fonts/Geist-Variable.woff2') format('woff2'); font-weight: 100 900; }
+    @font-face { font-family: 'Geist Mono'; src: url('assets/fonts/GeistMono-Regular.woff2') format('woff2'); font-weight: 400; }
+    #root { position: absolute; inset: 0; overflow: hidden; font-family: 'Geist', sans-serif; color: var(--c-fg); }
+    #h-ground { position: absolute; inset: 0; background: var(--c-background); }
+    .frag { position: absolute; display: flex; align-items: center; gap: 20px; background: var(--c-surface); border: 2px solid var(--c-border); border-radius: 16px; box-shadow: var(--shadow-md); padding: 22px 28px; }
+    .frag svg { flex: none; width: 36px; height: 36px; color: var(--c-fg3); }
+    .frag .t { font-size: 32px; line-height: 40px; font-weight: 600; white-space: nowrap; }
+    .frag .s { font-size: 28px; line-height: 32px; color: var(--c-fg3); white-space: nowrap; }
+    .avatar { flex: none; display: inline-flex; align-items: center; justify-content: center; border-radius: 999px; color: #fff; font-weight: 600; }
+    #h-hero { position: absolute; left: 380px; top: 330px; display: flex; gap: 24px; align-items: flex-start; }
+    #h-hero .avatar { width: 96px; height: 96px; font-size: 34px; background: var(--c-avatar-5); margin-top: 58px; }
+    #h-hero .who { font-size: 30px; line-height: 32px; color: var(--c-fg3); margin: 0 0 10px 6px; }
+    #h-hero .bubble { background: var(--c-surface); border: 2px solid var(--c-border); border-radius: 24px; box-shadow: var(--shadow-lg); padding: 32px 48px; font-size: 76px; line-height: 92px; font-weight: 500; letter-spacing: -0.02em; white-space: nowrap; }
+    #h-f3 .avatar { width: 56px; height: 56px; font-size: 22px; background: var(--c-avatar-4); }
+    #h-title { position: absolute; left: 192px; top: 862px; font-size: 72px; line-height: 88px; font-weight: 600; letter-spacing: -0.02em; white-space: nowrap; }
+    #h-title .w { display: inline-block; margin-right: 0.24em; }
+    /* The one card everything collapses into: ACME-1, built like the board's card tile, at 2x. */
+    #h-card { position: absolute; left: 664px; top: 395px; width: 592px; }
+    .card-zoom { zoom: 2; }
+    .card { width: 296px; background: var(--c-surface); border: 1px solid var(--c-border); border-radius: 8px; box-shadow: var(--shadow-md); }
+    .card-body { padding: 16px 16px 12px; }
+    .chip { display: inline-flex; align-items: center; gap: 6px; height: 20px; padding: 0 6px; border: 1px solid var(--c-border); border-radius: 4px; font-size: 12px; color: var(--c-fg2); background: var(--c-surface); }
+    .dot { width: 8px; height: 8px; border-radius: 99px; }
+    .card-title { margin-top: 8px; font-size: 15px; line-height: 24px; font-weight: 500; }
+    .facts { display: flex; gap: 12px; margin-top: 8px; font-size: 12px; line-height: 16px; color: var(--c-fg3); }
+    .facts span { display: inline-flex; align-items: center; gap: 4px; }
+    .facts svg { width: 14px; height: 14px; }
+    .card-foot { display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--c-border-subtle); padding: 8px 16px; }
+    .key { font-family: 'Geist Mono', monospace; font-size: 12px; color: var(--c-fg3); }
+    .av24 { width: 24px; height: 24px; font-size: 10px; }
+  </style>
+  <div id="root" data-composition-id="hook" data-width="1920" data-height="1080" data-layout-allow-overlap>
+    <div id="h-ground"></div>
+
+    <div id="h-f1" class="frag" style="left:150px;top:130px">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m3 13 3-9h12l3 9v7H3v-7Z"/><path d="M3 13h5l2 3h4l2-3h5"/></svg>
+      <div><div class="t">Re: Re: Brief v3 FINAL</div><div class="s">3 replies · email</div></div>
+    </div>
+    <div id="h-f2" class="frag" style="left:1400px;top:215px">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m8 12 6.5-6.5a3 3 0 0 1 4.2 4.2L10 18.4a4.5 4.5 0 0 1-6.4-6.4L13 2.6"/></svg>
+      <div class="t">brief-final-v4.pdf</div>
+    </div>
+    <div id="h-f3" class="frag" style="left:190px;top:668px">
+      <span class="avatar">DK</span>
+      <div><div class="s">Dev · team chat</div><div class="t">Which one did they approve?</div></div>
+    </div>
+    <div id="h-f4" class="frag" style="left:1180px;top:680px">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="m7 12 3 3 7-7"/></svg>
+      <div class="t">Feedback is in the email thread</div>
+    </div>
+    <div id="h-f5" class="frag" style="left:800px;top:120px">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m8 12 6.5-6.5a3 3 0 0 1 4.2 4.2L10 18.4a4.5 4.5 0 0 1-6.4-6.4L13 2.6"/></svg>
+      <div class="t">brief_FINAL_really.docx</div>
+    </div>
+
+    <div id="h-hero">
+      <span class="avatar">SA</span>
+      <div><div class="who">Sarah · Acme, the client</div><div class="bubble">Where’s the latest brief?</div></div>
+    </div>
+
+    <div id="h-card">
+      <div class="card-zoom">
+        <div class="card">
+          <div class="card-body">
+            <span class="chip"><span class="dot" style="background:var(--c-label-teal)"></span>Client brief</span>
+            <div class="card-title">Review the new client brief</div>
+            <div class="facts"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="m7 12 3 3 7-7"/></svg>0/3</span></div>
+          </div>
+          <div class="card-foot"><span class="key">ACME-1</span><span class="avatar av24" style="background:var(--c-avatar-3)">PR</span></div>
+        </div>
+      </div>
+    </div>
+
+    <h1 id="h-title"><span class="w">Client</span><span class="w">work</span><span class="w">lives</span><span class="w">everywhere</span></h1>
+  </div>
+  <script>
+    (function () {
+      const tl = gsap.timeline({ paused: true });
+      const frags = ["#h-f1", "#h-f2", "#h-f3", "#h-f4", "#h-f5"];
+      const rot = [-2.5, 2, 1.5, -1.5, -1];
+      const at = [0.5, 1.0, 1.5, 2.0, 2.5];
+
+      // Frame 0 already shows the question; it settles from slightly large.
+      tl.fromTo("#h-hero", { scale: 1.04, rotation: 0 }, { scale: 1, duration: 0.6, ease: "expo.out" }, 0);
+
+      // Fragments land on the beat, each with a pop.
+      frags.forEach((f, i) => {
+        tl.fromTo(f, { opacity: 0, scale: 0.6, rotation: rot[i] * 3 }, { opacity: 1, scale: 1, rotation: rot[i], duration: 0.45, ease: "back.out(1.6)" }, at[i]);
+      });
+
+      // The line that names the problem, word by word.
+      tl.fromTo("#h-title .w", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.13, stagger: 0.067, ease: "power2.out" }, 2.6);
+
+      // Everything collapses into one card at the centre.
+      const centres = { "#h-f1": [400, 200], "#h-f2": [1590, 260], "#h-f3": [560, 735], "#h-f4": [1530, 725], "#h-f5": [1060, 165], "#h-hero": [960, 470] };
+      Object.entries(centres).forEach(([sel, [cx, cy]], i) => {
+        tl.to(sel, { x: 960 - cx, y: 540 - cy, scale: 0.25, opacity: 0, filter: "blur(10px)", duration: 0.45, ease: "power3.in" }, 3.65 + i * 0.03);
+      });
+      tl.to("#h-title .w", { opacity: 0, filter: "blur(8px)", duration: 0.18, stagger: 0.03, ease: "power2.in" }, 4.05);
+      tl.fromTo("#h-card", { opacity: 0, scale: 0.5 }, { opacity: 1, scale: 1, duration: 0.4, ease: "expo.out" }, 4.05);
+
+      window.__timelines["hook"] = tl;
+    })();
+  </script>
+</template>

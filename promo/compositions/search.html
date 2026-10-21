@@ -1,0 +1,92 @@
+<template>
+  <style>
+    @font-face { font-family: 'Geist'; src: url('assets/fonts/Geist-Variable.woff2') format('woff2'); font-weight: 100 900; }
+    @font-face { font-family: 'Geist Mono'; src: url('assets/fonts/GeistMono-Regular.woff2') format('woff2'); font-weight: 400; }
+    #root { position: absolute; inset: 0; overflow: hidden; font-family: 'Geist', sans-serif; color: var(--c-fg); }
+    #s-ground { position: absolute; inset: 0; background: var(--c-background); }
+    .title { position: absolute; left: 326px; top: 150px; font-size: 64px; line-height: 76px; font-weight: 600; letter-spacing: -0.02em; white-space: nowrap; }
+    .w { display: inline-block; margin-right: 0.24em; }
+    #s-keys { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; }
+    .key { position: absolute; top: 470px; width: 140px; height: 140px; display: flex; align-items: center; justify-content: center; background: var(--c-surface); border: 2px solid var(--c-border); border-bottom-width: 8px; border-radius: 24px; font-size: 64px; font-weight: 500; color: var(--c-fg); }
+    /* The ⌘K search palette at 2.2x. */
+    #s-pal { position: absolute; left: 326px; top: 320px; width: 1268px; height: 630px; }
+    #s-ui { position: absolute; left: 0; top: 0; width: 576px; height: 286px; zoom: 2.2; background: var(--c-surface); border-radius: 8px; box-shadow: 0 25px 50px -12px rgb(32 40 34 / 0.25); overflow: hidden; }
+    .in { position: relative; height: 48px; display: flex; align-items: center; gap: 10px; padding: 0 16px; border-bottom: 1px solid var(--c-border); font-size: 16px; }
+    .in svg { width: 18px; height: 18px; color: var(--c-fg3); flex: none; }
+    #s-ph { position: absolute; left: 44px; color: var(--c-fg3); }
+    #s-q { position: absolute; left: 44px; white-space: nowrap; }
+    .q { display: inline-block; }
+    #s-caret { position: absolute; left: 44px; top: 14px; width: 1.5px; height: 20px; background: var(--c-fg); }
+    .counts { padding: 8px 16px 4px; font-size: 12px; line-height: 16px; color: var(--c-fg3); }
+    .row { position: relative; padding: 8px 16px; border-bottom: 1px solid var(--c-border-subtle); }
+    .rowbg { position: absolute; inset: 0; background: var(--c-primary-subtle); opacity: 0; }
+    .meta { position: relative; display: flex; align-items: baseline; gap: 8px; font-size: 12px; line-height: 16px; color: var(--c-fg3); }
+    .meta b { font-weight: 500; text-transform: uppercase; }
+    .meta .ago { margin-left: auto; }
+    .rt { position: relative; font-size: 14px; line-height: 24px; font-weight: 500; white-space: nowrap; }
+    mark { background: var(--c-highlight); color: var(--c-highlight-fg); border-radius: 2px; padding: 0 1px; }
+    .all { padding: 8px 16px; font-size: 14px; line-height: 20px; color: var(--c-primary); }
+  </style>
+  <div id="root" data-composition-id="search" data-width="1920" data-height="1080" data-layout-allow-overlap data-layout-allow-overflow>
+    <div id="s-ground"></div>
+    <h2 id="s-t" class="title"><span class="w">Find</span><span class="w">anything</span></h2>
+
+    <div id="s-keys">
+      <div id="s-cmd" class="key" style="left:800px">⌘</div>
+      <div id="s-k" class="key" style="left:980px">K</div>
+    </div>
+
+    <div id="s-pal">
+      <div id="s-ui">
+        <div class="in"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4.5 4.5"/></svg>
+          <span id="s-ph">Search… try “exact phrase” or -exclude</span>
+          <span id="s-q"><span class="q">b</span><span class="q">r</span><span class="q">i</span><span class="q">e</span><span class="q">f</span></span>
+        </div>
+        <div id="s-counts" class="counts">Cards (1) · Comments (1) · Messages (1)</div>
+        <div id="s-r1" class="row"><span id="s-sel" class="rowbg"></span><div class="meta"><b>card</b><span>Acme site rebuild</span><span class="ago">just now</span></div><div class="rt">Review the new client <mark>brief</mark></div></div>
+        <div id="s-r2" class="row"><div class="meta"><b>comment</b><span>Acme site rebuild</span><span class="ago">just now</span></div><div class="rt">@Priya the <mark>brief</mark> is final, starting layouts</div></div>
+        <div id="s-r3" class="row"><div class="meta"><b>message</b><span>Acme site rebuild</span><span class="ago">10:42</span></div><div class="rt">Is this the final <mark>brief</mark>?</div></div>
+        <div id="s-all" class="all">See all results for “brief”</div>
+      </div>
+    </div>
+  </div>
+  <script>
+    (function () {
+      const tl = gsap.timeline({ paused: true });
+
+      // Ground floods from the warm canvas to the brand's quiet green.
+      tl.fromTo("#s-ground", { backgroundColor: "#f7f8f5" }, { backgroundColor: "#edf5ee", duration: 0.35, ease: "power2.inOut" }, 0);
+      tl.fromTo(["#s-cmd", "#s-k"], { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.13, stagger: 0.05, ease: "power2.out" }, 0);
+
+      // ⌘ then K.
+      tl.to("#s-cmd", { y: 6, borderBottomWidth: 2, duration: 0.05 }, 0.15);
+      tl.to("#s-k", { y: 6, borderBottomWidth: 2, duration: 0.05 }, 0.3);
+      tl.to(["#s-cmd", "#s-k"], { opacity: 0, scale: 0.8, duration: 0.12, ease: "power2.in" }, 0.45);
+
+      // The keys morph into the palette.
+      tl.fromTo("#s-pal", { opacity: 0, scaleX: 0.22, scaleY: 0.3, filter: "blur(12px)" }, { opacity: 1, scaleX: 1, scaleY: 1, filter: "blur(0px)", duration: 0.32, ease: "power3.out" }, 0.47);
+      tl.fromTo("#s-counts, #s-r1, #s-r2, #s-r3, #s-all", { opacity: 0 }, { opacity: 0, duration: 0.01 }, 0);
+      tl.fromTo(".q", { opacity: 0 }, { opacity: 0, duration: 0.01 }, 0);
+      tl.fromTo("#s-t .w", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.13, stagger: 0.067, ease: "power2.out" }, 0.6);
+
+      // Type "brief".
+      tl.to("#s-ph", { opacity: 0, duration: 0.03 }, 0.8);
+      tl.to(".q", { opacity: 1, duration: 0.01, stagger: 0.11 }, 0.82);
+
+      // Card, comment and message land together in one list.
+      tl.to("#s-counts", { opacity: 1, duration: 0.15 }, 1.45);
+      ["#s-r1", "#s-r2", "#s-r3"].forEach((r, i) => {
+        tl.fromTo(r, { opacity: 0, filter: "blur(6px)", y: 8 }, { opacity: 1, filter: "blur(0px)", y: 0, duration: 0.3, ease: "expo.out" }, 1.6 + i * 0.15);
+      });
+      tl.to("#s-all", { opacity: 1, duration: 0.2 }, 2.05);
+      tl.to("#s-sel", { opacity: 1, duration: 0.15 }, 2.2);
+
+      // Carry out to the claim.
+      tl.to("#s-t .w", { opacity: 0, filter: "blur(8px)", duration: 0.15, stagger: 0.03, ease: "power2.in" }, 3.75);
+      tl.to("#s-pal", { scale: 0.6, opacity: 0, filter: "blur(10px)", duration: 0.5, ease: "power3.in" }, 3.9);
+      tl.to("#s-ground", { backgroundColor: "#f7f8f5", duration: 0.4, ease: "power2.inOut" }, 4.05);
+
+      window.__timelines["search"] = tl;
+    })();
+  </script>
+</template>

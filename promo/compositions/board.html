@@ -1,0 +1,164 @@
+<template>
+  <style>
+    @font-face { font-family: 'Geist'; src: url('assets/fonts/Geist-Variable.woff2') format('woff2'); font-weight: 100 900; }
+    @font-face { font-family: 'Geist Mono'; src: url('assets/fonts/GeistMono-Regular.woff2') format('woff2'); font-weight: 400; }
+    #root { position: absolute; inset: 0; overflow: hidden; font-family: 'Geist', sans-serif; color: var(--c-fg); }
+    #b-ground { position: absolute; inset: 0; background: var(--c-background); }
+    #b-cam { position: absolute; inset: 0; }
+    /* The board at 1.5x its real size: authored in the app's own CSS pixels. */
+    #b-ui { position: absolute; left: 0; top: 0; width: 1280px; height: 720px; zoom: 1.5; }
+    .abs { position: absolute; }
+    #b-topbar { left: 0; top: 0; width: 1280px; height: 48px; background: var(--c-surface); border-bottom: 1px solid var(--c-border); }
+    .mark { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 8px; background: var(--c-primary); color: #fff; }
+    .mark svg { width: 16px; height: 16px; }
+    .brand { left: 64px; top: 10px; display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 600; }
+    .search { left: 440px; top: 8px; width: 400px; height: 32px; border: 1px solid var(--c-border); border-radius: 6px; display: flex; align-items: center; gap: 8px; padding: 0 8px 0 10px; font-size: 13px; color: var(--c-fg3); }
+    .search svg, .ico { width: 16px; height: 16px; flex: none; }
+    .kbd { margin-left: auto; font-family: 'Geist Mono', monospace; font-size: 11px; border: 1px solid var(--c-border); border-radius: 4px; padding: 0 5px; color: var(--c-fg3); }
+    .theme { right: 64px; top: 8px; height: 32px; display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 500; color: var(--c-fg2); }
+    #b-header { left: 0; top: 48px; width: 1280px; height: 76px; background: var(--c-surface); border-bottom: 1px solid var(--c-border); }
+    .ptitle { left: 64px; top: 14px; font-size: 20px; line-height: 28px; font-weight: 600; }
+    .psub { left: 64px; top: 44px; font-size: 13px; line-height: 20px; color: var(--c-fg3); }
+    .pact { right: 64px; top: 22px; display: flex; align-items: center; gap: 16px; font-size: 13px; font-weight: 500; color: var(--c-fg2); }
+    .avatar { flex: none; display: inline-flex; align-items: center; justify-content: center; border-radius: 999px; color: #fff; font-weight: 600; }
+    .av24 { width: 24px; height: 24px; font-size: 10px; }
+    .av28 { width: 28px; height: 28px; font-size: 11px; }
+    .list { top: 148px; width: 320px; height: 370px; background: var(--c-subtle); border: 1px solid var(--c-border); border-radius: 12px; }
+    .lhead { position: absolute; left: 16px; right: 12px; top: 0; height: 56px; display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; }
+    .count { position: relative; margin-left: auto; min-width: 24px; height: 24px; border: 1px solid var(--c-border); border-radius: 6px; background: var(--c-surface); font-size: 12px; font-weight: 500; font-variant-numeric: tabular-nums; }
+    .count span { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
+    .more { width: 24px; text-align: center; color: var(--c-fg3); font-weight: 700; letter-spacing: 1px; }
+    .addcard { top: 530px; width: 320px; height: 44px; background: var(--c-surface); border: 1px solid var(--c-border); border-radius: 12px; display: flex; align-items: center; gap: 8px; padding: 0 16px; font-size: 13px; font-weight: 500; color: var(--c-fg2); }
+    .addlist { left: 1072px; top: 148px; width: 320px; height: 60px; border: 1px dashed var(--c-border-hover, #65776a); border-radius: 12px; display: flex; align-items: center; gap: 8px; padding: 0 16px; font-size: 13px; font-weight: 500; color: var(--c-fg2); }
+    .card { width: 296px; background: var(--c-surface); border: 1px solid var(--c-border); border-radius: 8px; box-shadow: var(--shadow-sm); }
+    .card-body { padding: 16px 16px 12px; }
+    .chip { display: inline-flex; align-items: center; gap: 6px; height: 20px; padding: 0 6px; border: 1px solid var(--c-border); border-radius: 4px; font-size: 12px; color: var(--c-fg2); background: var(--c-surface); }
+    .dot { width: 8px; height: 8px; border-radius: 99px; }
+    .card-title { font-size: 15px; line-height: 24px; font-weight: 500; }
+    .chip + .card-title { margin-top: 8px; }
+    .facts { display: flex; gap: 12px; margin-top: 8px; font-size: 12px; line-height: 16px; color: var(--c-fg3); }
+    .facts span { display: inline-flex; align-items: center; gap: 4px; }
+    .facts svg { width: 14px; height: 14px; }
+    .due { padding: 0 6px; border-radius: 4px; background: #fff6e6; color: #805012; border: 1px solid #e4c88f; }
+    .card-foot { display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--c-border-subtle); padding: 8px 16px; min-height: 41px; }
+    .key { font-family: 'Geist Mono', monospace; font-size: 12px; color: var(--c-fg3); }
+    #b-acme1 { left: 76px; top: 204px; z-index: 5; }
+    #b-acme2 { left: 76px; top: 361px; }
+    #b-acme3 { left: 412px; top: 204px; }
+    #b-acme4 { left: 748px; top: 204px; }
+    #b-title { position: absolute; left: 192px; top: 896px; font-size: 72px; line-height: 88px; font-weight: 600; letter-spacing: -0.02em; white-space: nowrap; }
+    #b-title2 { position: absolute; left: 192px; top: 896px; font-size: 72px; line-height: 88px; font-weight: 600; letter-spacing: -0.02em; white-space: nowrap; }
+    .w { display: inline-block; margin-right: 0.24em; }
+    #b-cursor { position: absolute; left: 0; top: 0; width: 44px; height: 64px; z-index: 20; }
+    #b-flash { position: absolute; inset: 0; background: var(--c-surface); opacity: 0; z-index: 30; }
+  </style>
+  <div id="root" data-composition-id="board" data-width="1920" data-height="1080" data-layout-allow-overlap data-layout-allow-overflow>
+    <div id="b-ground"></div>
+    <div id="b-cam">
+      <div id="b-ui">
+        <div id="b-topbar" class="abs">
+          <div class="brand abs"><span class="mark"><svg viewBox="0 0 24 24" fill="none"><path d="M4 17V7h4v10H4Zm6 0V4h4v13h-4Zm6 0V9h4v8h-4Z" fill="currentColor"/></svg></span>Agency</div>
+          <div class="search abs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4.5 4.5"/></svg>Search cards, comments and messages<span class="kbd">⌘ K</span></div>
+          <div class="theme abs"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 13A9 9 0 0 1 11 3.5 9 9 0 1 0 20.5 13Z"/></svg>Dark mode</div>
+        </div>
+        <div id="b-header" class="abs">
+          <div class="ptitle abs">Acme site rebuild</div>
+          <div class="psub abs">Acme · 4 cards in 3 lists</div>
+          <div class="pact abs">Share with client <span class="avatar av28" style="background:var(--c-avatar-1)">EO</span><span style="display:flex;align-items:center;gap:6px"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m3 13 3-9h12l3 9v7H3v-7Z"/><path d="M3 13h5l2 3h4l2-3h5"/></svg>Archived</span></div>
+        </div>
+
+        <div id="b-l1" class="list abs" style="left:64px"><div class="lhead">To do<span class="count"><span id="b-c1a">2</span><span id="b-c1b" style="opacity:0">1</span></span><span class="more">···</span></div></div>
+        <div id="b-l2" class="list abs" style="left:400px"><div class="lhead">In progress<span class="count"><span id="b-c2a">1</span><span id="b-c2b" style="opacity:0">2</span></span><span class="more">···</span></div></div>
+        <div id="b-l3" class="list abs" style="left:736px"><div class="lhead">Done<span class="count"><span>1</span></span><span class="more">···</span></div></div>
+        <div id="b-l4" class="addlist abs"><span style="font-size:18px">+</span>Add list</div>
+        <div id="b-a1" class="addcard abs" style="left:64px"><span style="font-size:18px">+</span>Add card</div>
+        <div id="b-a2" class="addcard abs" style="left:400px"><span style="font-size:18px">+</span>Add card</div>
+        <div id="b-a3" class="addcard abs" style="left:736px"><span style="font-size:18px">+</span>Add card</div>
+
+        <div id="b-acme2" class="card abs">
+          <div class="card-body"><div class="card-title">Collect brand assets</div></div>
+          <div class="card-foot"><span class="key">ACME-2</span></div>
+        </div>
+        <div id="b-acme3" class="card abs">
+          <div class="card-body">
+            <span class="chip"><span class="dot" style="background:var(--c-label-purple)"></span>Design</span>
+            <div class="card-title">Homepage wireframe</div>
+            <div class="facts"><span class="due">Oct 24</span></div>
+          </div>
+          <div class="card-foot"><span class="key">ACME-3</span><span class="avatar av24" style="background:var(--c-avatar-1)">EO</span></div>
+        </div>
+        <div id="b-acme4" class="card abs">
+          <div class="card-body">
+            <div class="card-title">Kickoff call notes</div>
+            <div class="facts"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="m7 12 3 3 7-7"/></svg>3/3</span></div>
+          </div>
+          <div class="card-foot"><span class="key">ACME-4</span><span class="avatar av24" style="background:var(--c-avatar-4)">DK</span></div>
+        </div>
+        <div id="b-acme1" class="card abs">
+          <div class="card-body">
+            <span class="chip"><span class="dot" style="background:var(--c-label-teal)"></span>Client brief</span>
+            <div class="card-title">Review the new client brief</div>
+            <div class="facts"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="m7 12 3 3 7-7"/></svg>0/3</span></div>
+          </div>
+          <div class="card-foot"><span class="key">ACME-1</span><span class="avatar av24" style="background:var(--c-avatar-3)">PR</span></div>
+        </div>
+      </div>
+    </div>
+
+    <h2 id="b-title"><span class="w">One</span><span class="w">board</span><span class="w">per</span><span class="w">client</span></h2>
+    <h2 id="b-title2"><span class="w">Move</span><span class="w">it</span></h2>
+
+    <svg id="b-cursor" viewBox="0 0 22 32"><path d="M1.5 1.5v24.5l6.2-6 4.3 9.4 4.2-1.9-4.2-9.2h8.6z" fill="#202822" stroke="#ffffff" stroke-width="1.6" stroke-linejoin="round"/></svg>
+    <div id="b-flash"></div>
+  </div>
+  <script>
+    (function () {
+      const tl = gsap.timeline({ paused: true });
+
+      // The ground floods from the hook's warm canvas to the cool board canvas while the card stays put.
+      tl.fromTo("#b-ground", { backgroundColor: "#f7f8f5" }, { backgroundColor: "#eef2f6", duration: 0.45, ease: "power2.inOut" }, 0);
+
+      // The card arrives exactly where the hook left it, then lands in To do as the board builds around it.
+      tl.fromTo("#b-acme1", { x: 416, y: 83.5, scale: 1.3333, boxShadow: "0 3px 10px -3px rgb(32 40 34 / 0.12)" }, { x: 0, y: 0, scale: 1, boxShadow: "0 1px 2px rgb(32 40 34 / 0.04)", duration: 0.7, ease: "power3.inOut" }, 0.25);
+      tl.fromTo(["#b-topbar", "#b-header"], { opacity: 0, y: -24 }, { opacity: 1, y: 0, duration: 0.5, stagger: 0.06, ease: "expo.out" }, 0.3);
+      tl.fromTo(["#b-l1", "#b-l2", "#b-l3", "#b-l4"], { clipPath: "inset(0% 0% 100% 0%)" }, { clipPath: "inset(0% 0% 0% 0%)", duration: 0.45, stagger: 0.06, ease: "power2.out" }, 0.38);
+      tl.fromTo(["#b-a1", "#b-a2", "#b-a3"], { opacity: 0 }, { opacity: 1, duration: 0.3, stagger: 0.06, ease: "power2.out" }, 0.7);
+      tl.fromTo(["#b-acme2", "#b-acme3", "#b-acme4"], { opacity: 0, scale: 0.96 }, { opacity: 1, scale: 1, duration: 0.35, stagger: 0.06, ease: "expo.out" }, 0.6);
+
+      // Reveal line.
+      tl.fromTo("#b-title .w", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.13, stagger: 0.067, ease: "power2.out" }, 1.0);
+      tl.to("#b-title .w", { opacity: 0, filter: "blur(8px)", duration: 0.15, stagger: 0.03, ease: "power2.in" }, 2.3);
+
+      // The cursor enters from off-screen and grabs the card.
+      tl.fromTo("#b-cursor", { x: 1500, y: 1180, scale: 1 }, { x: 360, y: 400, duration: 0.55, ease: "power2.out" }, 1.95);
+      tl.to("#b-cursor", { scale: 0.88, duration: 0.05, ease: "power2.out" }, 2.55);
+      tl.to("#b-acme1", { scale: 1.03, rotation: 2, boxShadow: "0 24px 60px -16px rgb(32 40 34 / 0.25)", duration: 0.15, ease: "power2.out" }, 2.6);
+      tl.fromTo("#b-title2 .w", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.13, stagger: 0.067, ease: "power2.out" }, 2.55);
+
+      // Drag To do → In progress; the neighbours make room.
+      tl.to("#b-acme1", { x: 336, duration: 0.7, ease: "power2.inOut" }, 2.75);
+      tl.to("#b-cursor", { x: 864, duration: 0.7, ease: "power2.inOut" }, 2.75);
+      tl.to("#b-acme2", { y: -157, duration: 0.35, ease: "power2.inOut" }, 2.85);
+      tl.to("#b-acme3", { y: 157, duration: 0.35, ease: "power2.inOut" }, 3.0);
+
+      // Drop.
+      tl.to("#b-acme1", { scale: 1, rotation: 0, boxShadow: "0 1px 2px rgb(32 40 34 / 0.04)", duration: 0.18, ease: "power2.out" }, 3.45);
+      tl.to("#b-cursor", { scale: 1, duration: 0.08, ease: "power2.out" }, 3.45);
+      tl.to(["#b-c1a", "#b-c2a"], { opacity: 0, duration: 0.1 }, 3.5);
+      tl.fromTo(["#b-c1b", "#b-c2b"], { opacity: 0, scale: 1.6 }, { opacity: 1, scale: 1, duration: 0.3, ease: "back.out(2)" }, 3.5);
+
+      // The cursor steps back, then opens the card.
+      tl.to("#b-cursor", { x: 1120, y: 660, duration: 0.5, ease: "power2.inOut" }, 3.7);
+      tl.to("#b-cursor", { x: 870, y: 400, duration: 0.45, ease: "power2.inOut" }, 4.75);
+      tl.to("#b-cursor", { scale: 0.88, duration: 0.05 }, 5.3);
+      tl.to("#b-cursor", { scale: 1, opacity: 0, duration: 0.15 }, 5.4);
+      tl.to("#b-title2 .w", { opacity: 0, filter: "blur(8px)", duration: 0.15, stagger: 0.03, ease: "power2.in" }, 5.35);
+
+      // Zoom through the card into its details.
+      tl.fromTo("#b-cam", { scale: 1, transformOrigin: "840px 415px" }, { scale: 5, transformOrigin: "840px 415px", duration: 0.9, ease: "power3.in" }, 5.45);
+      tl.fromTo("#b-flash", { opacity: 0 }, { opacity: 1, duration: 0.3, ease: "power2.in" }, 6.05);
+
+      window.__timelines["board"] = tl;
+    })();
+  </script>
+</template>
