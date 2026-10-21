@@ -1,0 +1,84 @@
+<template>
+  <style>
+    @font-face { font-family: 'Geist'; src: url('assets/fonts/Geist-Variable.woff2') format('woff2'); font-weight: 100 900; }
+    @font-face { font-family: 'Geist Mono'; src: url('assets/fonts/GeistMono-Regular.woff2') format('woff2'); font-weight: 400; }
+    #root { position: absolute; inset: 0; overflow: hidden; font-family: 'Geist', sans-serif; }
+    .field { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; opacity: 0; }
+    .big { font-weight: 700; letter-spacing: -0.055em; line-height: 1; white-space: nowrap; }
+    #h-pile { background: var(--canvas); }
+    .pc { position: absolute; font-weight: 700; letter-spacing: -0.04em; white-space: nowrap; line-height: 1; }
+    #h-tmp { position: absolute; left: 0; width: 1920px; top: 470px; text-align: center; font-size: 180px; line-height: 180px; font-weight: 700; letter-spacing: -0.05em; color: var(--ink); white-space: nowrap; }
+    #h-tmp .w { display: inline-block; margin: 0 0.1em; }
+    #h-iris { position: absolute; inset: 0; background: var(--green); clip-path: circle(0% at 50% 50%); }
+    #h-lock { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; }
+    #h-tile { position: absolute; left: 418px; top: 430px; width: 220px; height: 220px; border-radius: 60px; background: #fff; display: flex; align-items: center; justify-content: center; }
+    #h-tile svg { width: 132px; height: 132px; overflow: visible; }
+    #h-tile rect { transform-box: fill-box; transform-origin: 50% 100%; }
+    #h-word { position: absolute; left: 690px; top: 410px; font-size: 250px; line-height: 260px; font-weight: 700; letter-spacing: -0.05em; color: #fff; white-space: nowrap; }
+  </style>
+  <div id="root" data-composition-id="hook" data-width="1920" data-height="1080" data-layout-allow-overlap data-layout-allow-overflow>
+    <div id="h-f0" class="field" style="background:var(--canvas)"><div class="big" style="font-size:440px;color:var(--ink)">Tasks</div></div>
+    <div id="h-f1" class="field" style="background:var(--green)"><div class="big" style="font-size:400px;color:#fff">Threads</div></div>
+    <div id="h-f2" class="field" style="background:var(--d-bg)"><div class="big" style="font-size:440px;color:var(--d-green)">Files</div></div>
+    <div id="h-f3" class="field" style="background:var(--hl)"><div class="big" style="font-size:350px;color:var(--hl-ink)">Feedback</div></div>
+    <div id="h-f4" class="field" style="background:var(--surface)"><div class="big" style="font-size:230px;color:var(--ink);font-family:'Geist Mono',monospace;font-weight:400;letter-spacing:-0.04em">final_v4.pdf</div></div>
+    <div id="h-f5" class="field" style="background:var(--ink)"><div class="big" style="font-size:290px;color:#fff">Who has it?</div></div>
+
+    <div id="h-f6" class="field" style="background:var(--canvas)">
+      <div id="h-pile">
+        <span class="pc" style="left:120px;top:110px;font-size:150px;color:var(--ink)">Tasks</span>
+        <span class="pc" style="left:760px;top:150px;font-size:120px;color:var(--green)">Threads</span>
+        <span class="pc" style="left:1420px;top:90px;font-size:150px;color:var(--a4)">Files</span>
+        <span class="pc" style="left:140px;top:760px;font-size:140px;color:var(--warn-text)">Feedback</span>
+        <span class="pc" style="left:700px;top:830px;font-size:84px;color:var(--ink3);font-family:'Geist Mono',monospace;font-weight:400">final_v4.pdf</span>
+        <span class="pc" style="left:1240px;top:690px;font-size:108px;color:var(--a1)">Who has it?</span>
+        <span class="pc" style="left:1240px;top:300px;font-size:72px;color:var(--ink3);font-family:'Geist Mono',monospace;font-weight:400">final_v5.pdf</span>
+        <span class="pc" style="left:200px;top:310px;font-size:80px;color:var(--a5)">Re: Re: brief</span>
+        <span class="pc" style="left:1420px;top:880px;font-size:64px;color:var(--ink2)">@anyone?</span>
+      </div>
+      <div id="h-tmp"><span class="w">Too</span><span class="w">many</span><span class="w">places.</span></div>
+    </div>
+
+    <div id="h-iris"></div>
+    <div id="h-lock">
+      <div id="h-tile"><svg viewBox="0 0 24 24" fill="none"><rect id="h-b1" x="4" y="7" width="4" height="10" fill="#196747"/><rect id="h-b2" x="10" y="4" width="4" height="13" fill="#196747"/><rect id="h-b3" x="16" y="9" width="4" height="8" fill="#196747"/></svg></div>
+      <div id="h-word">Agency</div>
+    </div>
+  </div>
+  <script>
+    (function () {
+      const B = 0.46875;
+      const tl = gsap.timeline({ paused: true });
+      const fields = ["#h-f0", "#h-f1", "#h-f2", "#h-f3", "#h-f4", "#h-f5", "#h-f6"];
+
+      // One word per beat, each on its own field; a hard cut every beat.
+      tl.set(fields.slice(1), { opacity: 0 }, 0);
+      fields.forEach((f, i) => {
+        const t = i * B;
+        tl.set(f, { opacity: 1 }, t);
+        if (i > 0) tl.set(fields[i - 1], { opacity: 0 }, t);
+        if (i < 6) {
+          tl.fromTo(`${f} .big`, { scale: 1.28, filter: "blur(10px)" }, { scale: 1, filter: "blur(0px)", duration: 0.3, ease: "expo.out" }, t);
+        }
+      });
+
+      // The pile: every word comes back at once, on 16ths, around "Too many places."
+      tl.fromTo("#h-pile .pc", { opacity: 0, scale: 1.6, rotation: (i) => [-8, 6, -4, 5, -6, 7, 9, -7, 4][i] * 2 },
+        { opacity: 1, scale: 1, rotation: (i) => [-8, 6, -4, 5, -6, 7, 9, -7, 4][i], duration: 0.3, stagger: 0.06, ease: "expo.out" }, 6 * B);
+      tl.fromTo("#h-tmp .w", { opacity: 0, scale: 1.4, filter: "blur(10px)" }, { opacity: 1, scale: 1, filter: "blur(0px)", duration: 0.22, stagger: 0.117, ease: "expo.out" }, 6 * B);
+      tl.to("#h-pile .pc", { x: (i) => [380, 160, -320, 360, 60, -320, -200, 380, -400][i], y: (i) => [300, 260, 340, -220, -260, -200, 160, 140, -360][i], scale: 0.4, opacity: 0, filter: "blur(8px)", duration: 0.32, stagger: 0.01, ease: "power3.in" }, 7.5 * B);
+
+      // Beat 8: the green iris swallows it all; the mark is built; the name wipes in.
+      tl.fromTo("#h-iris", { clipPath: "circle(0% at 50% 50%)" }, { clipPath: "circle(75% at 50% 50%)", duration: 0.35, ease: "power3.out" }, 8 * B);
+      tl.fromTo("#h-tile", { x: 432, scale: 0, rotation: -30 }, { scale: 1, rotation: 0, duration: 0.45, ease: "back.out(1.7)" }, 8 * B + 0.06);
+      tl.fromTo(["#h-b1", "#h-b2", "#h-b3"], { scaleY: 0 }, { scaleY: 1, duration: 0.25, stagger: B / 4, ease: "expo.out" }, 8.5 * B);
+      tl.to("#h-tile", { x: 0, duration: 0.45, ease: "expo.out" }, 9.5 * B);
+      tl.fromTo("#h-word", { x: 432, clipPath: "inset(0% 100% 0% 0%)" }, { x: 0, clipPath: "inset(0% 0% 0% 0%)", duration: 0.45, ease: "expo.out" }, 9.5 * B);
+
+      // Zoom through the tile into the next world.
+      tl.fromTo("#h-lock", { scale: 1, opacity: 1, transformOrigin: "528px 540px" }, { scale: 7, opacity: 0, duration: 0.4, ease: "power3.in", transformOrigin: "528px 540px" }, 12 * B - 0.4);
+
+      window.__timelines["hook"] = tl;
+    })();
+  </script>
+</template>

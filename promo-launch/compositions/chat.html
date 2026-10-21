@@ -1,0 +1,96 @@
+<template>
+  <style>
+    @font-face { font-family: 'Geist'; src: url('assets/fonts/Geist-Variable.woff2') format('woff2'); font-weight: 100 900; }
+    #root { position: absolute; inset: 0; overflow: hidden; font-family: 'Geist', sans-serif; background: var(--d-bg); }
+    #t-stage { position: absolute; inset: 0; }
+    #t-title { position: absolute; left: 186px; top: 330px; font-size: 180px; line-height: 190px; font-weight: 700; letter-spacing: -0.055em; color: var(--d-green); white-space: nowrap; }
+    #t-title .w { display: block; }
+    #t-colw { position: absolute; left: 940px; top: 0; width: 840px; height: 1080px; }
+    #t-col { position: absolute; left: 0; top: 0; width: 420px; height: 540px; zoom: 2; }
+    .abs { position: absolute; }
+    #t-panel { left: 0; top: 40px; width: 420px; height: 470px; background: var(--d-surface); border: 1px solid var(--d-border); border-radius: 12px; }
+    .head { left: 0; top: 0; width: 420px; height: 48px; display: flex; align-items: center; gap: 8px; padding: 0 16px; border-bottom: 1px solid var(--d-border); font-size: 15px; font-weight: 600; color: var(--d-ink); }
+    .head svg { width: 16px; height: 16px; color: var(--d-ink3); }
+    .badge { font-size: 12px; font-weight: 500; padding: 2px 6px; border-radius: 4px; background: var(--d-muted); color: var(--d-ink2); }
+    .msg { left: 16px; width: 390px; display: flex; gap: 10px; }
+    .av { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 99px; color: #fff; font-size: 11px; font-weight: 600; }
+    .who { font-size: 13px; font-weight: 600; color: var(--d-ink); }
+    .who span { font-weight: 400; color: var(--d-ink3); font-size: 12px; margin-left: 6px; }
+    .body { font-size: 14px; line-height: 20px; color: var(--d-ink2); white-space: nowrap; }
+    .men { color: var(--d-green-text); background: var(--d-green-subtle); border-radius: 4px; padding: 0 3px; }
+    #t-typing { left: 16px; top: 448px; font-size: 12px; color: var(--d-ink3); }
+    #t-right { position: absolute; inset: 0; background: var(--canvas); clip-path: inset(0% 0% 0% 100%); }
+    #t-rw { position: absolute; left: 1104px; top: 192px; width: 680px; height: 520px; }
+    #t-rui { position: absolute; left: 0; top: 0; width: 400px; height: 300px; zoom: 1.7; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 24px 60px -16px rgb(32 40 34 / 0.25); }
+    .rhead { left: 0; top: 0; width: 400px; height: 48px; display: flex; align-items: center; gap: 8px; padding: 0 16px; border-bottom: 1px solid var(--border); font-size: 15px; font-weight: 600; color: var(--ink); }
+    .kind { font-size: 12px; font-weight: 500; padding: 2px 6px; border-radius: 4px; background: var(--green-subtle); color: var(--green-text); }
+    .rmsg { left: 16px; width: 370px; display: flex; gap: 10px; }
+    .rwho { font-size: 13px; font-weight: 600; color: var(--ink); display: flex; align-items: center; gap: 6px; }
+    .rwho .tm { font-weight: 400; color: var(--ink3); font-size: 12px; }
+    .guest { font-size: 11px; font-weight: 500; padding: 0 5px; line-height: 16px; border: 1px solid var(--border); border-radius: 4px; color: var(--ink2); }
+    .rbody { font-size: 14px; line-height: 20px; color: var(--ink); }
+    .cap { position: absolute; top: 850px; font-size: 64px; line-height: 72px; font-weight: 700; letter-spacing: -0.04em; white-space: nowrap; }
+    .cap .w { display: inline-block; margin-right: 0.22em; }
+  </style>
+  <div id="root" data-composition-id="chat" data-width="1920" data-height="1080" data-layout-allow-overlap data-layout-allow-overflow>
+    <div id="t-stage">
+      <h2 id="t-title"><span class="w">Team</span><span class="w">chat.</span></h2>
+      <div id="t-colw">
+        <div id="t-col">
+          <div id="t-panel" class="abs">
+            <div class="head abs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3"/></svg>Team<span class="badge">Internal</span></div>
+            <div id="t-m0" class="msg abs" style="top:64px"><span class="av" style="background:var(--a3)">PR</span><div><div class="who">Priya<span>10:02</span></div><div class="body">Logo v2 is up on ACME-4</div></div></div>
+            <div id="t-m1" class="msg abs" style="top:126px"><span class="av" style="background:var(--a4)">DK</span><div><div class="who">Dev<span>10:03</span></div><div class="body">Client wants the green a bit darker</div></div></div>
+            <div id="t-m2" class="msg abs" style="top:188px"><span class="av" style="background:var(--a1)">EO</span><div><div class="who">Eli<span>10:03</span></div><div class="body">On it. Moving it to In progress</div></div></div>
+            <div id="t-m3" class="msg abs" style="top:250px"><span class="av" style="background:var(--a3)">PR</span><div><div class="who">Priya<span>10:04</span></div><div class="body"><span class="men">@Eli</span> can you check the brief?</div></div></div>
+            <div id="t-m4" class="msg abs" style="top:312px"><span class="av" style="background:var(--a4)">DK</span><div><div class="who">Dev<span>10:05</span></div><div class="body">Layouts ship today</div></div></div>
+            <div id="t-m5" class="msg abs" style="top:374px"><span class="av" style="background:var(--a1)">EO</span><div><div class="who">Eli<span>10:05</span></div><div class="body">Checked. Brief is final</div></div></div>
+            <div id="t-typing" class="abs">Several people are typing…</div>
+          </div>
+        </div>
+      </div>
+      <h3 id="t-cap1" class="cap" style="left:192px;color:var(--d-green)"><span class="w">Team</span><span class="w">stays</span><span class="w">internal.</span></h3>
+
+      <div id="t-right">
+        <div id="t-rw">
+          <div id="t-rui">
+            <div class="rhead abs">Acme site rebuild<span class="kind">Client</span></div>
+            <div id="t-r0" class="rmsg abs" style="top:66px"><span class="av" style="background:var(--a5)">SA</span><div><div class="rwho">Sarah<span class="guest">Guest</span><span class="tm">10:12</span></div><div class="rbody">Love the new logo</div></div></div>
+            <div id="t-r1" class="rmsg abs" style="top:130px"><span class="av" style="background:var(--a1)">EO</span><div><div class="rwho">Eli<span class="tm">10:13</span></div><div class="rbody">Thanks! Final files on Friday.</div></div></div>
+          </div>
+        </div>
+        <h3 id="t-cap2" class="cap" style="left:1060px;color:var(--ink);font-size:58px"><span class="w">Guests</span><span class="w">don’t</span><span class="w">use</span><span class="w">a</span><span class="w" style="color:var(--green)">seat.</span></h3>
+      </div>
+    </div>
+  </div>
+  <script>
+    (function () {
+      const B = 0.46875;
+      const tl = gsap.timeline({ paused: true });
+      const msgs = ["#t-m0", "#t-m1", "#t-m2", "#t-m3", "#t-m4", "#t-m5"];
+
+      // Drop in from the card's whip.
+      tl.fromTo("#t-stage", { y: 900, filter: "blur(18px)" }, { y: 0, filter: "blur(0px)", duration: 0.25, ease: "power3.out" }, 0);
+      tl.fromTo("#t-title .w", { opacity: 0, scale: 1.3, filter: "blur(10px)", transformOrigin: "0% 50%" }, { opacity: 1, scale: 1, filter: "blur(0px)", duration: 0.25, stagger: 0.1, ease: "expo.out" }, 0.08);
+
+      // Six messages on 8ths, then the typing line.
+      msgs.forEach((m, i) => {
+        tl.fromTo(m, { opacity: 0, x: 40, filter: "blur(6px)" }, { opacity: 1, x: 0, filter: "blur(0px)", duration: 0.2, ease: "expo.out" }, 0.1 + i * (B / 2));
+      });
+      tl.fromTo("#t-typing", { opacity: 0 }, { opacity: 1, duration: 0.12 }, 0.1 + 6 * (B / 2));
+
+      // Beat 4: the frame splits; the client's light view takes the right half.
+      tl.to("#t-title .w", { opacity: 0, filter: "blur(8px)", duration: 0.12 }, 4 * B - 0.1);
+      tl.to("#t-colw", { x: -733, y: 140, scale: 0.65, transformOrigin: "0% 0%", duration: 0.34, ease: "power3.inOut" }, 4 * B);
+      tl.fromTo("#t-right", { clipPath: "inset(0% 0% 0% 100%)" }, { clipPath: "inset(0% 0% 0% 50%)", duration: 0.34, ease: "power3.inOut" }, 4 * B);
+      tl.fromTo("#t-rw", { x: 300, filter: "blur(10px)" }, { x: 0, filter: "blur(0px)", duration: 0.34, ease: "power3.out" }, 4 * B + 0.05);
+      tl.fromTo(["#t-r0", "#t-r1"], { opacity: 0 }, { opacity: 1, duration: 0.15, stagger: B / 2 }, 4 * B + 0.25);
+      tl.fromTo("#t-cap1 .w", { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.13, stagger: 0.067 }, 4 * B + 0.15);
+      tl.fromTo("#t-cap2 .w", { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.13, stagger: 0.067 }, 4 * B + 0.28);
+
+      // Whip up into search.
+      tl.to("#t-stage", { y: -1200, filter: "blur(20px)", duration: 0.22, ease: "power3.in" }, 8 * B - 0.22);
+      window.__timelines["chat"] = tl;
+    })();
+  </script>
+</template>

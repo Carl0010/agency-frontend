@@ -1,0 +1,113 @@
+<template>
+  <style>
+    @font-face { font-family: 'Geist'; src: url('assets/fonts/Geist-Variable.woff2') format('woff2'); font-weight: 100 900; }
+    @font-face { font-family: 'Geist Mono'; src: url('assets/fonts/GeistMono-Regular.woff2') format('woff2'); font-weight: 400; }
+    #root { position: absolute; inset: 0; overflow: hidden; font-family: 'Geist', sans-serif; color: var(--ink); background: var(--green); }
+    #d-stage { position: absolute; inset: 0; }
+    .t { position: absolute; left: 186px; top: 470px; font-size: 124px; line-height: 140px; font-weight: 700; letter-spacing: -0.05em; color: #fff; white-space: nowrap; }
+    #d-pw { position: absolute; left: 860px; top: 90px; width: 940px; height: 880px; }
+    #d-panel { position: absolute; left: 0; top: 0; width: 470px; height: 440px; zoom: 2; }
+    #d-bgcard { position: absolute; left: -24px; top: -20px; width: 518px; height: 470px; background: var(--surface); border-radius: 12px; box-shadow: 0 24px 60px -16px rgb(0 0 0 / 0.35); }
+    .abs { position: absolute; }
+    .ico { width: 16px; height: 16px; flex: none; }
+    .crumbs { left: 0; top: 0; font-size: 12px; line-height: 16px; color: var(--ink3); }
+    .ttl { left: 0; top: 20px; font-size: 20px; line-height: 28px; font-weight: 600; white-space: nowrap; }
+    .lab { font-size: 12px; color: var(--ink3); }
+    .due { left: 0; top: 62px; display: flex; align-items: center; gap: 10px; }
+    .pill { position: relative; width: 96px; height: 22px; }
+    .pill span { position: absolute; left: 0; top: 0; height: 22px; padding: 0 8px; border-radius: 4px; font-size: 12px; line-height: 20px; white-space: nowrap; }
+    #d-due0 { border: 1px solid var(--border); color: var(--ink2); background: var(--surface); }
+    #d-due1 { border: 1px solid var(--warn-border); color: var(--warn-text); background: var(--warn-subtle); font-weight: 600; }
+    .h { font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 8px; width: 470px; }
+    .cnt { position: relative; margin-left: auto; width: 30px; height: 16px; font-size: 12px; color: var(--ink3); font-weight: 500; }
+    .cnt span { position: absolute; right: 0; top: 0; }
+    .bar { left: 0; top: 126px; width: 470px; height: 6px; border-radius: 3px; background: var(--muted); overflow: hidden; }
+    #d-fill { width: 470px; height: 6px; background: var(--green); transform-origin: 0 50%; }
+    .item { left: 0; width: 470px; height: 30px; display: flex; align-items: center; gap: 10px; font-size: 14px; }
+    .box { position: relative; width: 18px; height: 18px; border: 1.5px solid var(--input); border-radius: 4px; flex: none; }
+    .on { position: absolute; inset: -1.5px; border-radius: 4px; background: var(--green); display: flex; align-items: center; justify-content: center; }
+    .on svg { width: 14px; height: 14px; color: #fff; }
+    .drop { left: 0; top: 272px; width: 470px; height: 60px; border: 1.5px dashed var(--border); border-radius: 8px; }
+    #d-droptext { position: absolute; left: 14px; top: 19px; font-size: 13px; color: var(--ink3); white-space: nowrap; }
+    #d-file { position: absolute; left: 10px; top: 10px; height: 38px; display: flex; align-items: center; gap: 8px; padding: 0 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); box-shadow: 0 3px 10px -3px rgb(32 40 34 / 0.18); font-size: 13px; font-weight: 500; white-space: nowrap; }
+    #d-file .sz { color: var(--ink3); font-weight: 400; }
+    #d-input { left: 0; top: 372px; width: 470px; height: 60px; border: 2px solid var(--green); border-radius: 6px; padding: 10px 12px; font-size: 14px; line-height: 22px; white-space: nowrap; }
+    .ch { display: inline-block; }
+    .men { display: inline-block; border-radius: 4px; }
+  </style>
+  <div id="root" data-composition-id="card" data-width="1920" data-height="1080" data-layout-allow-overlap data-layout-allow-overflow>
+    <div id="d-stage">
+      <h2 id="d-t0" class="t">Checklists.</h2>
+      <h2 id="d-t1" class="t">Files.</h2>
+      <h2 id="d-t2" class="t">@mentions.</h2>
+      <h2 id="d-t3" class="t">Due dates.</h2>
+
+      <div id="d-pw">
+        <div id="d-panel">
+          <div id="d-bgcard"></div>
+          <div class="crumbs abs">In progress · ACME-1</div>
+          <div class="ttl abs">Review the new client brief</div>
+          <div class="due abs"><span class="lab">Due</span><span class="pill"><span id="d-due0">Fri, Oct 24</span><span id="d-due1">Due soon</span></span></div>
+
+          <div class="h abs" style="top:100px"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="m7 12 3 3 7-7"/></svg>Brief sign-off
+            <span class="cnt"><span id="d-n0">0/3</span><span id="d-n1">1/3</span><span id="d-n2">2/3</span><span id="d-n3">3/3</span></span></div>
+          <div class="bar abs"><div id="d-fill"></div></div>
+          <div class="item abs" style="top:140px"><span class="box"><span id="d-on1" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></svg></span></span>Read the brief</div>
+          <div class="item abs" style="top:172px"><span class="box"><span id="d-on2" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></svg></span></span>Confirm scope with Acme</div>
+          <div class="item abs" style="top:204px"><span class="box"><span id="d-on3" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></svg></span></span>Share the first concept</div>
+
+          <div class="h abs" style="top:248px">Attachments</div>
+          <div class="drop abs"><span id="d-droptext">Drop files here or choose files · Up to 25 MB each.</span>
+            <span id="d-file"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m8 12 6.5-6.5a3 3 0 0 1 4.2 4.2L10 18.4a4.5 4.5 0 0 1-6.4-6.4L13 2.6"/></svg>brief-final.pdf<span class="sz">2.4 MB</span></span></div>
+
+          <div class="h abs" style="top:348px">Comments</div>
+          <div id="d-input" class="abs"><span id="d-men" class="men"><span class="ch">@</span><span class="ch">P</span><span class="ch">r</span><span class="ch">i</span><span class="ch">y</span><span class="ch">a</span></span><span class="ch">&nbsp;</span><span class="ch">r</span><span class="ch">e</span><span class="ch">a</span><span class="ch">d</span><span class="ch">y</span><span class="ch">&nbsp;</span><span class="ch">f</span><span class="ch">o</span><span class="ch">r</span><span class="ch">&nbsp;</span><span class="ch">y</span><span class="ch">o</span><span class="ch">u</span><span class="ch">r</span><span class="ch">&nbsp;</span><span class="ch">r</span><span class="ch">e</span><span class="ch">v</span><span class="ch">i</span><span class="ch">e</span><span class="ch">w</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    (function () {
+      const B = 0.46875;
+      const tl = gsap.timeline({ paused: true });
+      const slam = (sel, t) => tl.fromTo(sel, { opacity: 0, scale: 1.3, filter: "blur(10px)", transformOrigin: "0% 50%" }, { opacity: 1, scale: 1, filter: "blur(0px)", duration: 0.25, ease: "expo.out" }, t);
+      const out = (sel, t) => tl.to(sel, { opacity: 0, filter: "blur(8px)", duration: 0.1, ease: "power2.in" }, t);
+
+      // Initial states.
+      tl.fromTo(["#d-n1", "#d-n2", "#d-n3", "#d-due1", "#d-on1", "#d-on2", "#d-on3", ".ch"], { opacity: 0 }, { opacity: 0, duration: 0.01 }, 0);
+      tl.fromTo("#d-fill", { scaleX: 0 }, { scaleX: 0, duration: 0.01 }, 0);
+      tl.fromTo("#d-file", { y: -720, rotation: -18, opacity: 0 }, { y: -720, opacity: 0, duration: 0.01 }, 0);
+
+      // Whip in from the right.
+      tl.fromTo("#d-pw", { x: 1300, filter: "blur(20px)" }, { x: 0, filter: "blur(0px)", duration: 0.26, ease: "power3.out" }, 0);
+
+      // Beat 0: checklists, three ticks on 8ths.
+      slam("#d-t0", 0.02);
+      [0.35, 0.58, 0.82].forEach((t, k) => {
+        tl.fromTo(`#d-on${k + 1}`, { opacity: 0, scale: 0.3 }, { opacity: 1, scale: 1, duration: 0.2, ease: "back.out(2.4)" }, t);
+        tl.to(`#d-n${k}`, { opacity: 0, duration: 0.05 }, t);
+        tl.to(`#d-n${k + 1}`, { opacity: 1, duration: 0.05 }, t);
+        tl.to("#d-fill", { scaleX: (k + 1) / 3, duration: 0.25, ease: "expo.out" }, t);
+      });
+
+      // Beat 2: a file drops into Attachments.
+      out("#d-t0", 2 * B - 0.06); slam("#d-t1", 2 * B);
+      tl.to("#d-file", { y: 0, rotation: 0, opacity: 1, duration: 0.3, ease: "back.out(1.8)" }, 2 * B + 0.0);
+      tl.to("#d-droptext", { opacity: 0, duration: 0.08 }, 2 * B + 0.2);
+
+      // Beat 4: an @mention typed into the comment box.
+      out("#d-t1", 4 * B - 0.06); slam("#d-t2", 4 * B);
+      tl.to(".ch", { opacity: 1, duration: 0.01, stagger: 0.55 / 28 }, 4 * B + 0.05);
+      tl.fromTo("#d-men", { backgroundColor: "rgba(237,245,238,0)", color: "#202822" }, { backgroundColor: "rgba(220,236,223,1)", color: "#174e36", duration: 0.1 }, 4 * B + 0.17);
+
+      // Beat 6: the due date turns into Due soon.
+      out("#d-t2", 6 * B - 0.06); slam("#d-t3", 6 * B);
+      tl.to("#d-due0", { opacity: 0, duration: 0.05 }, 6 * B + 0.05);
+      tl.fromTo("#d-due1", { opacity: 0, scale: 1.8 }, { opacity: 1, scale: 1, duration: 0.3, ease: "back.out(2.2)" }, 6 * B + 0.05);
+
+      // Whip up into the chat.
+      tl.to("#d-stage", { y: -1200, filter: "blur(20px)", duration: 0.22, ease: "power3.in" }, 8 * B - 0.22);
+      window.__timelines["card"] = tl;
+    })();
+  </script>
+</template>

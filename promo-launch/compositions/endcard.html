@@ -1,0 +1,60 @@
+<template>
+  <style>
+    @font-face { font-family: 'Geist'; src: url('assets/fonts/Geist-Variable.woff2') format('woff2'); font-weight: 100 900; }
+    #root { position: absolute; inset: 0; overflow: hidden; font-family: 'Geist', sans-serif; background: var(--canvas); }
+    #e-cam { position: absolute; inset: 0; }
+    .row { position: absolute; left: 186px; font-size: 250px; line-height: 250px; font-weight: 700; letter-spacing: -0.06em; white-space: nowrap; }
+    .row .w { display: inline-block; margin-right: 0.18em; transform-origin: 0% 70%; }
+    #e-green { position: absolute; inset: 0; background: var(--green); clip-path: circle(0px at 760px 650px); }
+    #e-tile { position: absolute; left: 585px; top: 330px; width: 150px; height: 150px; border-radius: 40px; background: #fff; display: flex; align-items: center; justify-content: center; }
+    #e-tile svg { width: 90px; height: 90px; overflow: visible; }
+    #e-tile rect { transform-box: fill-box; transform-origin: 50% 100%; }
+    #e-word { position: absolute; left: 775px; top: 312px; font-size: 176px; line-height: 186px; font-weight: 700; letter-spacing: -0.05em; color: #fff; white-space: nowrap; }
+    #e-sub { position: absolute; left: 0; top: 560px; width: 1920px; text-align: center; font-size: 44px; line-height: 56px; color: var(--green-muted); white-space: nowrap; }
+    #e-ctaw { position: absolute; left: 0; top: 664px; width: 1920px; display: flex; justify-content: center; }
+    #e-cta { display: inline-flex; align-items: center; height: 104px; padding: 0 56px; border-radius: 16px; background: #fff; color: var(--green); font-size: 42px; font-weight: 600; letter-spacing: -0.01em; }
+    #e-marquee { position: absolute; left: 0; top: 880px; font-size: 64px; line-height: 72px; font-weight: 700; letter-spacing: -0.03em; color: #2c7a57; white-space: nowrap; }
+  </style>
+  <div id="root" data-composition-id="endcard" data-width="1920" data-height="1080" data-layout-allow-overlap data-layout-allow-overflow>
+    <div id="e-cam">
+      <h2 id="e-r1" class="row" style="top:250px;color:var(--ink)"><span class="w">Client</span><span class="w">work,</span></h2>
+      <h2 id="e-r2" class="row" style="top:520px;color:var(--green)"><span class="w">one</span><span class="w">place.</span></h2>
+      <div id="e-green">
+        <div id="e-marquee" data-layout-ignore>Boards · Cards · Checklists · Files · @mentions · Team chat · Client chat · Guests · Search · Dark mode · Boards · Cards · Checklists · Files</div>
+        <div id="e-tile"><svg viewBox="0 0 24 24" fill="none"><rect id="e-b1" x="4" y="7" width="4" height="10" fill="#196747"/><rect id="e-b2" x="10" y="4" width="4" height="13" fill="#196747"/><rect id="e-b3" x="16" y="9" width="4" height="8" fill="#196747"/></svg></div>
+        <div id="e-word">Agency</div>
+        <p id="e-sub">Boards, cards and comments for agencies of five.</p>
+        <div id="e-ctaw"><span id="e-cta" data-var-text="cta">Start free trial</span></div>
+      </div>
+    </div>
+  </div>
+  <script>
+    (function () {
+      const B = 0.46875;
+      const tl = gsap.timeline({ paused: true });
+      const words = ["#e-r1 .w:nth-child(1)", "#e-r1 .w:nth-child(2)", "#e-r2 .w:nth-child(1)", "#e-r2 .w:nth-child(2)"];
+      const kicks = [[16, -10], [-14, 8], [10, -6], [-6, 3], [0, 0]];
+
+      // The claim slams in, one word a beat, and the frame kicks on each.
+      words.forEach((w, i) => {
+        tl.fromTo(w, { opacity: 0, scale: 1.6, filter: "blur(14px)" }, { opacity: 1, scale: 1, filter: "blur(0px)", duration: 0.22, ease: "expo.out" }, i * B);
+        kicks.forEach(([x, y], k) => tl.to("#e-cam", { x: x * (1 + i * 0.25), y: y * (1 + i * 0.25), duration: 0.033, ease: "none" }, i * B + 0.03 + k * 0.033));
+      });
+
+      // Beat 6, the drop: green floods out of "one place." and the mark is built.
+      tl.fromTo("#e-green", { clipPath: "circle(0px at 760px 650px)" }, { clipPath: "circle(2400px at 760px 650px)", duration: 0.38, ease: "power3.out" }, 6 * B);
+      tl.to(["#e-r1", "#e-r2"], { opacity: 0, duration: 0.01 }, 6 * B + 0.36);
+      tl.fromTo("#e-tile", { x: 300, scale: 0, rotation: -40 }, { scale: 1, rotation: 0, duration: 0.42, ease: "back.out(1.7)" }, 6 * B + 0.06);
+      tl.fromTo(["#e-b1", "#e-b2", "#e-b3"], { scaleY: 0 }, { scaleY: 1, duration: 0.22, stagger: B / 4, ease: "expo.out" }, 6.5 * B);
+      tl.to("#e-tile", { x: 0, duration: 0.42, ease: "expo.out" }, 7.5 * B);
+      tl.fromTo("#e-word", { x: 300, clipPath: "inset(0% 100% 0% 0%)" }, { x: 0, clipPath: "inset(0% 0% 0% 0%)", duration: 0.42, ease: "expo.out" }, 7.5 * B);
+      tl.fromTo("#e-sub", { opacity: 0, filter: "blur(10px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.2, ease: "power2.out" }, 8 * B);
+      tl.fromTo("#e-cta", { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 0.35, ease: "back.out(2)" }, 9 * B);
+
+      // A slow, constant crawl of everything it does, under the lockup.
+      tl.fromTo("#e-marquee", { x: 0 }, { x: -1400, duration: 7.5 - 6 * B, ease: "none" }, 6 * B);
+      tl.fromTo("#e-marquee", { opacity: 0 }, { opacity: 1, duration: 0.3 }, 6 * B + 0.2);
+      window.__timelines["endcard"] = tl;
+    })();
+  </script>
+</template>
