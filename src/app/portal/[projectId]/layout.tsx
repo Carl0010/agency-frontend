@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useParams, usePathname, useRouter } from 'next/navigation';
 import type { ReactNode } from 'react';
-import { Avatar, Button, GuestChip, Spinner } from '@/components/ui';
+import { Avatar, Button, GuestChip, Spinner, Select } from '@/components/ui';
 import { ProjectIcon } from '@/components/projects/project-icon';
 import { api, errorMessage } from '@/lib/api';
 import { PortalContext, portalProjectsKey } from '@/lib/portal';
@@ -73,9 +73,9 @@ export default function PortalProjectLayout({ children }: { children: ReactNode 
             {others.length > 1 ? (
               <label className="flex items-center gap-1 text-sm text-secondary-foreground">
                 <span className="sr-only">Switch project</span>
-                <select
+                <Select
                   data-testid="portal-switcher"
-                  className="tap rounded-md border border-input bg-surface px-2 text-sm"
+                  className="w-auto"
                   value={project.id}
                   onChange={(e) => router.push(`/portal/${e.target.value}`)}
                 >
@@ -84,7 +84,7 @@ export default function PortalProjectLayout({ children }: { children: ReactNode 
                       {others.some((o) => o.workspaceId !== p.workspaceId) ? `${p.workspaceName} — ${p.name}` : p.name}
                     </option>
                   ))}
-                </select>
+                </Select>
               </label>
             ) : null}
             <nav className="flex gap-1 text-sm" aria-label="Project sections">

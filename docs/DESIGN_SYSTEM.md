@@ -262,6 +262,32 @@ Board presentation rules live in [Board views](BOARD_VIEWS.md). List view reuses
 the Kanban data, header actions and card composer; compact rows respond to the
 content pane width, including when a card drawer is open.
 
+## Select fields
+
+Use `Select` from `components/ui.tsx` for every select, including toolbar filters,
+settings, onboarding, imports, the card drawer and the guest portal. Call sites
+own width and layout only; `.ui-select` in `app/globals.css` owns the field and
+menu appearance. Keep ordinary option text and native select props (`name`,
+`required`, `disabled`, `value`, `defaultValue`, `onChange`) so forms, validation,
+type-ahead and keyboard selection remain native.
+
+Fields use compact medium-weight labels, a bordered surface, a quiet chevron and
+the shared focus ring. Supporting browsers use `appearance: base-select` for a
+rounded floating picker with a border/shadow, padded option rows, warm neutral
+hover states and green selected rows with a trailing checkmark. Menus have a
+176px minimum width, grow to fit the trigger/content, stay viewport-bounded and
+scroll for long collections. Options are at least 36px tall, or 44px on mobile.
+Use existing semantic tokens for both themes; no independent dropdown palette.
+
+This is progressive enhancement: browsers without customizable select support
+retain the styled field and their native menu. Do not add button/selectedcontent
+markup or replace the select with a scripted listbox just for styling. See
+[MDN's customizable select guide](https://developer.mozilla.org/en-US/docs/Learn_web_development/Extensions/Forms/Customizable_select)
+and [Chrome's native select styling documentation](https://developer.chrome.com/blog/a-customizable-select).
+`e2e/select-fields.spec.ts` covers the themed menu, native keyboard selection,
+Escape/focus return, form values, nested filter popovers/share dialogs and mobile
+option size/bounds. Previews are indexed in `docs/previews/README.md`.
+
 ## Confirmation dialogs
 
 Use `useConfirm` from `src/components/confirmation.tsx`; `ConfirmationProvider`

@@ -6,7 +6,7 @@ import { useTeams } from '@/lib/teams';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
 import { AuthCard, FormError } from '@/components/auth-card';
-import { Button, Field, Input, Spinner } from '@/components/ui';
+import { Button, Field, Input, Spinner, Select } from '@/components/ui';
 import { api, ApiError, errorMessage } from '@/lib/api';
 import { formText } from '@/lib/form';
 import { rememberWorkspace } from '@/lib/landing';
@@ -320,16 +320,16 @@ function InviteStep({ ws, header, footer, onDone, onSkip }: StepProps & { onDone
                 disabled={row.sent}
                 onChange={(e) => update(row.key, { email: e.target.value, error: null })}
               />
-              <select
+              <Select
                 aria-label={`Teammate ${i + 1} role`}
                 value={row.role}
                 disabled={row.sent}
                 onChange={(e) => update(row.key, { role: e.target.value as InviteRow['role'] })}
-                className="tap rounded-md border border-input bg-surface px-2 text-sm"
+                className="w-auto"
               >
                 <option value="member">Member</option>
                 <option value="admin">Admin</option>
-              </select>
+              </Select>
             </div>
             {row.sent ? <p className="text-xs text-success-text">Invite sent.</p> : null}
             {row.error ? (

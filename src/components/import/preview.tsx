@@ -3,7 +3,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useState, type FormEvent } from 'react';
 import { FormError } from '@/components/auth-card';
-import { Button, Input } from '@/components/ui';
+import { Button, Input, Select } from '@/components/ui';
 import { api } from '@/lib/api';
 import { initialChoices, type MemberChoices } from '@/lib/import';
 import type { ImportPreview, Member, Page, Project } from '@/lib/types';
@@ -98,11 +98,11 @@ export function ImportPreviewScreen({
                       {chosen && chosen === m.userId ? howLabel[m.how ?? 'null'] : chosen ? 'chosen' : 'not matched'}
                     </span>
                   </span>
-                  <select
+                  <Select
                     aria-label={`Match ${m.name}`}
                     value={chosen}
                     onChange={(e) => setChoices({ ...choices, [m.externalId]: e.target.value })}
-                    className="tap rounded-md border border-input bg-surface px-2 text-sm"
+                    className="w-auto"
                   >
                     <option value="">Leave unassigned</option>
                     {assignable.map((a) => (
@@ -110,7 +110,7 @@ export function ImportPreviewScreen({
                         {a.name}
                       </option>
                     ))}
-                  </select>
+                  </Select>
                 </li>
               );
             })}
@@ -138,12 +138,12 @@ export function ImportPreviewScreen({
             An existing project
           </label>
           {mode === 'existing' ? (
-            <select
+            <Select
               aria-label="Existing project"
               required
               value={projectId}
               onChange={(e) => setProjectId(e.target.value)}
-              className="tap w-full rounded-md border border-input bg-surface px-2 text-sm"
+              className="w-full"
             >
               <option value="">Choose a project…</option>
               {openProjects.map((p) => (
@@ -151,7 +151,7 @@ export function ImportPreviewScreen({
                   {p.name}
                 </option>
               ))}
-            </select>
+            </Select>
           ) : null}
           <p className="text-xs text-muted-foreground">Importing the same board again updates what it brought in; it never duplicates cards or moves ones you have moved.</p>
         </div>

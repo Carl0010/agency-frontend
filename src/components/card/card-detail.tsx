@@ -5,7 +5,7 @@ import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
 import { DuePill } from '@/components/due-pill';
 import { Markdown } from '@/components/markdown';
 import { useToast } from '@/components/toast';
-import { Avatar, Button, LABEL_BG, Spinner } from '@/components/ui';
+import { Avatar, Button, LABEL_BG, Spinner, Select } from '@/components/ui';
 import { api, errorMessage } from '@/lib/api';
 import { MentionScopeContext } from '@/lib/mention-scope';
 import { applyTile, useProjectRealtime, useRoom } from '@/lib/realtime';
@@ -257,13 +257,13 @@ function Labels({ card, onToggle }: { card: Detail; onToggle: (labelId: string, 
             </ul>
             <form onSubmit={(e) => void create(e)} className="flex gap-1 border-t border-border-subtle pt-2">
               <input name="name" required maxLength={60} placeholder="New label" aria-label="New label name" className="min-w-0 flex-1 rounded border border-input px-1 text-sm" />
-              <select name="color" aria-label="Label colour" defaultValue="blue" className="rounded border border-input text-sm">
+              <Select name="color" aria-label="Label colour" defaultValue="blue" className="w-auto">
                 {LABEL_COLORS.map((col) => (
                   <option key={col} value={col}>
                     {col}
                   </option>
                 ))}
-              </select>
+              </Select>
               <button type="submit" className="rounded bg-primary px-2 text-sm text-primary-foreground">
                 Add
               </button>
@@ -382,18 +382,18 @@ function MoveToList({ card, onMove }: { card: Detail; onMove: (listId: string) =
   return (
     <label className="block">
       <span className="mb-1 block text-xs font-medium text-muted-foreground">List</span>
-      <select
+      <Select
         value={card.listId}
         aria-label="Move to list"
         onChange={(e) => void onMove(e.target.value)}
-        className="tap w-full rounded-md border border-input bg-surface px-2 py-1 text-sm"
+        className="w-full"
       >
         {(board.data?.lists ?? [{ id: card.listId, name: card.listName }]).map((l) => (
           <option key={l.id} value={l.id}>
             {l.name}
           </option>
         ))}
-      </select>
+      </Select>
     </label>
   );
 }

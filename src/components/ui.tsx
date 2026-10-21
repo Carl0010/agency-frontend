@@ -33,7 +33,7 @@ export function Textarea({ className = '', ...props }: TextareaHTMLAttributes<HT
 }
 
 export function Select({ className = '', ...props }: SelectHTMLAttributes<HTMLSelectElement>) {
-  return <select className={`ui-input tap ${className}`} {...props} />;
+  return <select className={`ui-select tap ${className}`} {...props} />;
 }
 
 export function Panel({ className = '', ...props }: HTMLAttributes<HTMLDivElement>) {
