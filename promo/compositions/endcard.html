@@ -1,0 +1,49 @@
+<template>
+  <style>
+    @font-face { font-family: 'Geist'; src: url('assets/fonts/Geist-Variable.woff2') format('woff2'); font-weight: 100 900; }
+    #root { position: absolute; inset: 0; overflow: hidden; font-family: 'Geist', sans-serif; color: var(--c-fg); background: var(--c-background); }
+    #e-claim { position: absolute; left: 0; top: 462px; width: 1920px; text-align: center; font-size: 128px; line-height: 152px; font-weight: 600; letter-spacing: -0.03em; white-space: nowrap; }
+    #e-claim .w { display: inline-block; margin: 0 0.12em; }
+    #e-mark { position: absolute; left: 694px; top: 400px; width: 140px; height: 140px; border-radius: 40px; background: var(--c-primary); display: flex; align-items: center; justify-content: center; }
+    #e-mark svg { width: 84px; height: 84px; overflow: visible; }
+    #e-mark rect { transform-box: fill-box; transform-origin: 50% 100%; }
+    #e-word { position: absolute; left: 866px; top: 396px; font-size: 128px; line-height: 148px; font-weight: 600; letter-spacing: -0.035em; white-space: nowrap; }
+    #e-sub { position: absolute; left: 0; top: 600px; width: 1920px; text-align: center; font-size: 38px; line-height: 48px; color: var(--c-fg2); white-space: nowrap; }
+    #e-cta { position: absolute; left: 0; top: 696px; width: 1920px; display: flex; justify-content: center; }
+    #e-btn { display: inline-flex; align-items: center; height: 84px; padding: 0 44px; border-radius: 12px; background: var(--c-primary); color: #fff; font-size: 34px; font-weight: 500; }
+  </style>
+  <div id="root" data-composition-id="endcard" data-width="1920" data-height="1080" data-layout-allow-overlap>
+    <h2 id="e-claim"><span class="w">Client</span><span class="w">work,</span><span class="w e-acc">one</span><span class="w e-acc">place.</span></h2>
+
+    <div id="e-mark">
+      <svg viewBox="0 0 24 24" fill="none"><rect id="e-b1" x="4" y="7" width="4" height="10" fill="#fff"/><rect id="e-b2" x="10" y="4" width="4" height="13" fill="#fff"/><rect id="e-b3" x="16" y="9" width="4" height="8" fill="#fff"/></svg>
+    </div>
+    <div id="e-word">Agency</div>
+    <p id="e-sub">Boards, cards and comments for agencies of five.</p>
+    <div id="e-cta"><span id="e-btn" data-var-text="cta">Start free trial</span></div>
+  </div>
+  <script>
+    (function () {
+      const tl = gsap.timeline({ paused: true });
+
+      // The claim: each word goes from light grey to ink; "one place." lands in green.
+      tl.fromTo("#e-claim .w", { opacity: 0, color: "#c9d1c7" }, { opacity: 1, duration: 0.08, stagger: 0.09 }, 0.02);
+      tl.to("#e-claim .w:not(.e-acc)", { color: "#202822", duration: 0.2, stagger: 0.09, ease: "power2.out" }, 0.06);
+      tl.to("#e-claim .e-acc", { color: "#196747", duration: 0.2, stagger: 0.09, ease: "power2.out" }, 0.24);
+      tl.to("#e-claim .w", { opacity: 0, filter: "blur(8px)", duration: 0.16, stagger: 0.04, ease: "power2.in" }, 1.95);
+
+      // The mark is built: the tile lands, then the bars rise through it.
+      tl.fromTo("#e-mark", { x: 196, scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.45, ease: "back.out(1.4)" }, 2.1);
+      tl.fromTo(["#e-b1", "#e-b2", "#e-b3"], { scaleY: 0 }, { scaleY: 1, duration: 0.3, stagger: 0.08, ease: "expo.out" }, 2.36);
+
+      // The wordmark wipes in beside it and the lockup settles centred.
+      tl.to("#e-mark", { x: 0, duration: 0.5, ease: "expo.out" }, 2.82);
+      tl.fromTo("#e-word", { x: 196, clipPath: "inset(0% 100% 0% 0%)" }, { x: 0, clipPath: "inset(0% 0% 0% 0%)", duration: 0.5, ease: "expo.out" }, 2.82);
+
+      tl.fromTo("#e-sub", { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.2, ease: "power2.out" }, 3.22);
+      tl.fromTo("#e-btn", { opacity: 0, scale: 0.9 }, { opacity: 1, scale: 1, duration: 0.35, ease: "back.out(1.6)" }, 3.45);
+
+      window.__timelines["endcard"] = tl;
+    })();
+  </script>
+</template>

@@ -1,0 +1,5 @@
+# HyperFrames working state: snapshots, caches and local history.
+.hyperframes/
+node_modules/
+renders/work-*/
+renders/.*
