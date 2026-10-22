@@ -1,5 +1,7 @@
 # Agency marketing kit
 
+![The kit at a glance](preview.png)
+
 Everything here is built from this repository's own design system (`src/styles/tokens.css`, light and dark),
 Geist, the product's components and its real copy. Claims trace to the codebase; see the fact sheet at the end
 of [`COPY.md`](COPY.md). People, messages and card titles in visuals are illustrative.
@@ -66,5 +68,6 @@ SIL Open Font License (`assets/fonts/OFL-geist.txt`).
 ## Not checked
 
 The soundtracks are synthesised in code and were measured (loudness, peaks, beat alignment), not listened to.
-A licensed 128 BPM track is the biggest upgrade. Banner safe areas follow current platform guidance; check
+A licensed 128 BPM track is the biggest upgrade. The feature crawl under each end card is deliberately faint
+texture in the bottom zone the platforms cover, so `check` flags its contrast; it carries no information. Banner safe areas follow current platform guidance; check
 crops in each platform's upload preview.
