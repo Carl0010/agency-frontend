@@ -1,0 +1,5 @@
+# HyperFrames working state and raw renders; finished videos live in videos/.
+shorts/*/.hyperframes/
+shorts/*/renders/
+scripts/node_modules
+node_modules/

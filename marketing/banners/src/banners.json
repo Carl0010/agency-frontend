@@ -1,0 +1,92 @@
+[
+  {
+    "name": "og-image",
+    "width": 1200,
+    "height": 630,
+    "scale": 1
+  },
+  {
+    "name": "x-card",
+    "width": 1200,
+    "height": 675,
+    "scale": 1
+  },
+  {
+    "name": "linkedin-cover",
+    "width": 1584,
+    "height": 396,
+    "scale": 1
+  },
+  {
+    "name": "linkedin-company-cover",
+    "width": 1128,
+    "height": 191,
+    "scale": 2
+  },
+  {
+    "name": "x-header",
+    "width": 1500,
+    "height": 500,
+    "scale": 1
+  },
+  {
+    "name": "youtube-banner",
+    "width": 2560,
+    "height": 1440,
+    "scale": 1
+  },
+  {
+    "name": "facebook-cover",
+    "width": 851,
+    "height": 315,
+    "scale": 2
+  },
+  {
+    "name": "instagram-1-too-many-places",
+    "width": 1080,
+    "height": 1080,
+    "scale": 1
+  },
+  {
+    "name": "instagram-2-one-place",
+    "width": 1080,
+    "height": 1080,
+    "scale": 1
+  },
+  {
+    "name": "instagram-3-guests",
+    "width": 1080,
+    "height": 1080,
+    "scale": 1
+  },
+  {
+    "name": "instagram-portrait-find-anything",
+    "width": 1080,
+    "height": 1350,
+    "scale": 1
+  },
+  {
+    "name": "instagram-portrait-team-stays-internal",
+    "width": 1080,
+    "height": 1350,
+    "scale": 1
+  },
+  {
+    "name": "story-client-work",
+    "width": 1080,
+    "height": 1920,
+    "scale": 1
+  },
+  {
+    "name": "story-start-free-trial",
+    "width": 1080,
+    "height": 1920,
+    "scale": 1
+  },
+  {
+    "name": "email-header",
+    "width": 1200,
+    "height": 400,
+    "scale": 1
+  }
+]

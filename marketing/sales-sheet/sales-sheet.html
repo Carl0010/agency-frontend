@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Agency — one-page overview</title>
+<link rel="stylesheet" href="../banners/src/brand.css">
+<style>
+  @font-face { font-family: 'Geist'; src: url('../assets/fonts/Geist-Variable.woff2') format('woff2'); font-weight: 100 900; }
+  @font-face { font-family: 'Geist Mono'; src: url('../assets/fonts/GeistMono-Regular.woff2') format('woff2'); font-weight: 400; }
+  @page { size: A4; margin: 0; }
+  html, body { width: 794px; height: 1123px; background: var(--canvas); overflow: hidden; }
+  .top { position: absolute; left: 0; top: 0; width: 794px; height: 352px; background: var(--green); }
+  .sec { position: absolute; left: 56px; width: 682px; }
+  .eyebrow { font-size: 12px; font-weight: 600; letter-spacing: 0.02em; color: var(--green); margin-bottom: 8px; }
+  h2 { font-size: 26px; line-height: 30px; font-weight: 700; letter-spacing: -0.03em; }
+  p { font-size: 14px; line-height: 22px; color: var(--ink2); }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px 28px; margin-top: 16px; }
+  .f { display: flex; gap: 12px; }
+  .fi { flex: none; width: 34px; height: 34px; border-radius: 8px; background: var(--green-subtle); color: var(--green); display: flex; align-items: center; justify-content: center; }
+  .ft { font-size: 15px; font-weight: 600; line-height: 20px; }
+  .fd { font-size: 13px; line-height: 19px; color: var(--ink2); margin-top: 2px; }
+  .ticks { list-style: none; width: 370px; margin-top: 12px; display: flex; flex-direction: column; gap: 9px; }
+  .ticks li { display: flex; gap: 10px; font-size: 14px; line-height: 20px; }
+  .ticks svg { flex: none; color: var(--green); margin-top: 2px; }
+  .cta { position: absolute; left: 0; bottom: 0; width: 794px; height: 128px; background: var(--ink); color: #fff; }
+  .words span { position: absolute; font-weight: 700; letter-spacing: -0.04em; white-space: nowrap; }
+</style>
+</head>
+<body>
+  <div class="top">
+    <div class="abs" style="left:56px;top:46px"><span class="lockup" style="font-size:28px;color:#fff;gap:9px"><span class="mark inv" style="width:28px;height:28px"><svg viewBox="0 0 24 24" fill="none"><path d="M4 17V7h4v10H4Zm6 0V4h4v13h-4Zm6 0V9h4v8h-4Z" fill="#196747"/></svg></span>Agency</span></div>
+    <h1 class="abs display" style="left:54px;top:118px;font-size:66px;color:#fff">Client work,<br><span style="color:var(--hl)">one place.</span></h1>
+    <p class="abs" style="left:56px;top:270px;width:330px;font-size:16px;line-height:24px;color:var(--green-muted)">Boards, cards, team chat and a client chat, for agencies of five.</p>
+    <div class="abs" style="left:430px;top:96px"><div style="zoom:1.08"><div class="card"><div class="cb"><span class="chip"><span class="dot" style="background:var(--l-teal)"></span>Client brief</span><div class="ct">Review the new client brief</div><div class="facts"><span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="m7 12 3 3 7-7"/></svg>3/3</span><span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m8 12 6.5-6.5a3 3 0 0 1 4.2 4.2L10 18.4a4.5 4.5 0 0 1-6.4-6.4L13 2.6"/></svg>1</span><span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5H4l-1 1v-8.5A8.5 8.5 0 0 1 11.5 4H13a8 8 0 0 1 8 7.5Z"/></svg>2</span><span class="due-soon">Due soon</span></div></div><div class="cf"><span class="key">ACME-1</span><span class="av" style="background:var(--a3)">PR</span></div></div></div></div>
+    <div class="abs" style="left:470px;top:262px"><div style="zoom:0.86"><div class="card"><div class="cb"><span class="chip"><span class="dot" style="background:var(--l-purple)"></span>Design</span><div class="ct">Logo concepts v2</div></div><div class="cf"><span class="key">ACME-4</span><span class="av" style="background:var(--a1)">EO</span></div></div></div></div>
+  </div>
+
+  <div class="sec" style="top:388px">
+    <div class="eyebrow">The problem</div>
+    <h2>Client work lives in too many places.</h2>
+    <p style="margin-top:8px">The task is on a board, the feedback is in a chat, the brief is in an email thread and the file is called <span style="font-family:'Geist Mono',monospace;font-size:13px">final_v4.pdf</span>. Agency gives every client project one home.</p>
+  </div>
+
+  <div class="sec" style="top:514px">
+    <div class="eyebrow">What every project gets</div>
+    <div class="grid">
+      <div class="f"><span class="fi"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M9 4v16M15 4v16"/></svg></span><div><div class="ft">A board, Kanban or List</div><div class="fd">One board per client. Switch views without losing your order.</div></div></div>
+      <div class="f"><span class="fi"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="m7 12 3 3 7-7"/></svg></span><div><div class="ft">Cards that hold the work</div><div class="fd">Checklists, files up to 25 MB each, comments, @mentions and due dates.</div></div></div>
+      <div class="f"><span class="fi"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3"/></svg></span><div><div class="ft">A Team channel</div><div class="fd">Internal chat for the project. Clients never see it.</div></div></div>
+      <div class="f"><span class="fi"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5H4l-1 1v-8.5A8.5 8.5 0 0 1 11.5 4H13a8 8 0 0 1 8 7.5Z"/></svg></span><div><div class="ft">A Client chat</div><div class="fd">Talk to the client where the work is, and link the card.</div></div></div>
+      <div class="f"><span class="fi"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4.5 4.5"/></svg></span><div><div class="ft">Search everything with ⌘K</div><div class="fd">Cards, comments and messages in one search.</div></div></div>
+      <div class="f"><span class="fi"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m3 13 3-9h12l3 9v7H3v-7Z"/><path d="M3 13h5l2 3h4l2-3h5"/></svg></span><div><div class="ft">Inbox, Import and dark mode</div><div class="fd">Mentions land in your Inbox; bring boards in with Import.</div></div></div>
+    </div>
+  </div>
+
+  <div class="sec" style="top:782px">
+    <div class="eyebrow">Built for your clients</div>
+    <h2>Invite the client, not the chaos.</h2>
+    <ul class="ticks">
+      <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></svg>Clients join as guests and see their project's board and its Client chat.</li>
+      <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></svg>Never the Team channel, other projects or who is assigned.</li>
+      <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></svg>Guests don't use a seat.</li>
+    </ul>
+    <div class="abs" style="left:406px;top:56px"><div style="zoom:0.66"><div class="chan"><div class="h">Acme site rebuild<span class="kind">Client</span></div><div class="msgs">
+      <div class="m"><span class="av lg" style="background:var(--a5)">SA</span><div><div class="who">Sarah<span class="guest">Guest</span><span class="tm">10:42</span></div><div class="body">Is this the final brief?</div></div></div>
+      <div class="m"><span class="av lg" style="background:var(--a1)">EO</span><div><div class="who">Eli<span class="tm">10:43</span></div><div class="body">Yes, it’s on ACME-1. First layouts Friday.</div><div class="ref"><span class="key">ACME-1</span>Review the new client brief</div></div></div>
+    </div></div></div></div>
+  </div>
+
+  <div class="cta">
+    <h2 class="abs" style="left:56px;top:34px;color:#fff;font-size:28px">Move one client in this week.</h2>
+    <p class="abs" style="left:56px;top:72px;color:var(--d-ink2)">Boards, cards and comments for agencies of five.</p>
+    <span class="abs btn green" style="right:56px;top:36px;height:56px;padding:0 28px;font-size:18px;background:#fff;color:var(--green)">Start free trial</span>
+  </div>
+</body>
+</html>
