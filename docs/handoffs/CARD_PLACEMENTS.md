@@ -1,11 +1,9 @@
 # One card in several projects
 
-Status: blocked after contract audit, 2026-10-21. See
-[CARD_PLACEMENTS_CONTRACT_BLOCKER.md](CARD_PLACEMENTS_CONTRACT_BLOCKER.md): card
-assignment/mention writes support all placements, but people reads only support
-one project. The real-API reproduction is recorded there. Per the stop instruction
-below, placement UI implementation has not started. Written by the backend session
-for the frontend session.
+Status: implemented in the working tree; verification in progress 2026-10-30, with the card-scoped people reads from
+[CARD_PLACEMENTS_PEOPLE_READS.md](CARD_PLACEMENTS_PEOPLE_READS.md), which resolved
+[the contract blocker](CARD_PLACEMENTS_CONTRACT_BLOCKER.md). Written by the backend
+session for the frontend session.
 The backend is built and tested in `/home/chandan/Desktop/agency-mvp-clone` on `refactor/api-domains`
 (all 262 unit and 374 integration tests pass). It is not committed yet: see "Working tree" below.
 Do not change the backend. If the contract looks wrong or incomplete, stop and report it in a
@@ -94,3 +92,15 @@ The backend working tree also holds the workspace URL migration (slugs to worksp
 made from the frontend side in the same files (notification and search URLs, the audience cookie,
 billing links). The two are tested together but not committed yet; the user decides how they are
 committed. Please do not edit backend files for this work.
+
+## Frontend verification checkpoint (2026-10-30)
+
+- The placement UI, contextual card routes and card-scoped people pickers are in
+  the frontend working tree. Lint, typecheck and 174 unit tests pass.
+- All six placement browser journeys pass against the current backend source,
+  including the hidden-project assignee and mention case. A full browser run
+  passed 69 of 72 checks; the three failures passed in a focused rerun after
+  correcting two test assumptions and a transient API connection failure.
+- The webpack production build passes. The default Turbopack build failed because
+  a child process could not bind a port in this environment. Verify the default
+  build and commit the scoped changes before marking this handoff complete.

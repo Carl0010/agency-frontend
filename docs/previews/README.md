@@ -19,6 +19,8 @@ state, the intended presentation and deliberate failure toasts to settle.
 - [Editable List table](list-table-desktop.png) / [dark](list-table-dark.png) / [mobile](list-table-mobile.png): inline name, assignee and due-date editing, section rows and reorder handles.
 - [Populated List table](list-view-desktop.png) / [dark](list-view-dark.png) / [mobile](list-view-mobile.png): responsive labels, activity and shared board controls.
 - [Project editor](project-editor.png): saved icon picker, predefined colors and live preview.
+- Card placements: [light drawer](placements-drawer-light.png), [mobile dark drawer](placements-drawer-mobile-dark.png), [add to project](placements-add-dark.png), and [guest exposure confirmation](placements-guests-dark.png).
+- [Arrival time on mobile](arrival-mobile-dark.png): project and card estimates with the anonymous confidence acknowledgment.
 - [Team projects and stars](project-teams-light.png) / [Project sharing](project-sharing-light.png): personal Starred, team navigation and project-admin access controls. Implicit workspace administrators are absent from the direct-grant list.
 - [Mobile Teams](team-settings-mobile-light.png) / [Guest invitation in dark mode](team-guests-mobile-dark.png): stacked people and access controls, full-width add-person picker and last-admin protection.
 - [Assignee grouping](group-assignee-light.png) / [Due grouping in dark mode](group-due-dark.png): empty groups remain available, and drags change assignments or due dates without changing list order.

@@ -1,7 +1,9 @@
 # Card placement contract blocker: card-scoped people reads
 
-Status: blocked, verified against the local API on 2026-10-21. No backend files
-were changed by this handoff attempt. The placement UI has not been implemented.
+Status: resolved 2026-10-21. The API added `GET /cards/:id/assignable` and
+`GET /cards/:id/mentionable` ([the answer](CARD_PLACEMENTS_PEOPLE_READS.md)); the
+Ann/Bob case below is now a browser journey in `e2e/card-placements.spec.ts` that
+passes against the local API. This record preserves the original finding.
 
 ## Why this stops the handoff
 

@@ -21,8 +21,10 @@ Never represent a proposal as a completed feature.
 - [Project status](PROJECT_STATUS.md): implemented 2026-10-21. Header status menu,
   editor field, Projects filter (Open default), open-only sidebar groups; guests see none.
 
-- [One card in several projects](CARD_PLACEMENTS.md): blocked at contract audit,
-  2026-10-21. [Verified people-read gap](CARD_PLACEMENTS_CONTRACT_BLOCKER.md): a
-  card's assignable/mentionable people can belong only to a hidden placement;
-  the existing project roster cannot supply them. Backend contract decision needed
-  before frontend implementation, as the handoff explicitly requires.
+- [Arrival time](ARRIVAL_TIME.md) and [re-plans](ARRIVAL_TIME_REPLANS.md): frontend
+  implemented. The [calendar contract blocker](ARRIVAL_TIME_CONTRACT_BLOCKER.md)
+  is resolved by the backend.
+
+- [One card in several projects](CARD_PLACEMENTS.md): implementation in the working
+  tree, verification in progress. The [people-read gap](CARD_PLACEMENTS_CONTRACT_BLOCKER.md)
+  was resolved by the [card-scoped reads](CARD_PLACEMENTS_PEOPLE_READS.md).
