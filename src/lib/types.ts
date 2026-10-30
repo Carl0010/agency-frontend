@@ -242,11 +242,18 @@ export interface PersonRef {
   guest?: boolean;
 }
 
+/**
+ * A card as drawn in one placement (docs/CARD_PLACEMENTS.md in the API repository):
+ * `projectId`, `boardId`, `listId` and `position` are that placement's; `homeProjectId`,
+ * `key` (the home project's key) and `number` are the card's, the same on every board.
+ */
 export interface CardTile {
   id: string;
   listId: string;
   boardId: string;
   projectId: string;
+  homeProjectId: string;
+  key: string;
   number: number;
   title: string;
   position: number;
@@ -260,6 +267,27 @@ export interface CardTile {
   attachmentCount: number;
   checklistDone: number;
   checklistTotal: number;
+  /** How many projects the card is in. Never sent to guests. */
+  placementCount?: number;
+}
+
+/** One project a card is in, as the viewer can see it. */
+export interface CardPlacement {
+  projectId: string;
+  projectName: string;
+  projectIcon: string;
+  projectColor: string;
+  boardId: string;
+  listId: string;
+  listName: string;
+  isHome: boolean;
+}
+
+/** Someone a card's assignee or mention picker offers. */
+export interface CardPerson {
+  userId: string;
+  name: string;
+  avatarUrl: string | null;
 }
 
 export interface BoardList {
@@ -315,9 +343,10 @@ export interface Attachment {
 }
 
 export interface CardDetail extends CardTile {
-  key: string;
   description: string | null;
   listName: string;
+  /** The projects the viewer can see the card in, home first. Never sent to guests. */
+  placements?: CardPlacement[];
   createdAt: string;
   createdBy: PersonRef;
   checklists: Checklist[];
@@ -386,7 +415,7 @@ export interface Message {
   deletedAt: string | null;
 }
 
-export type NotificationType = 'mention' | 'assignment' | 'due_soon' | 'due_now' | 'new_message' | 'thread_reply';
+export type NotificationType = 'mention' | 'assignment' | 'due_soon' | 'due_now' | 'new_message' | 'thread_reply' | 'card_late';
 
 export interface AppNotification {
   id: string;

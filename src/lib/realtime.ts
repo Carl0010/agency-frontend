@@ -4,7 +4,8 @@ import { useQueryClient, type QueryClient } from '@tanstack/react-query';
 import { useEffect, useRef } from 'react';
 import { io, type Socket } from 'socket.io-client';
 import { getAccessToken, onAccessToken, refreshSession } from './api';
-import { removeList, upsertCard, upsertList } from './board-state';
+import { mergeDetail, removeFromList, removeList, shareTile, upsertList } from './board-state';
+import { cardPeopleKey } from './cards';
 import type { Board, CardDetail, CardTile, Comment } from './types';
 
 /**
@@ -53,10 +54,14 @@ export function getSocket(): Socket {
 
 const boardQueries = (qc: QueryClient) => qc.getQueryCache().findAll({ queryKey: ['board'] });
 
-/** Writes a fresh tile into the board and card caches. Used by realtime and by local mutations. */
+/**
+ * Writes a fresh tile into the board and card caches. Used by realtime and by local mutations. The
+ * tile is drawn in one placement: its own board takes it whole, other boards showing the card and
+ * details shown in other projects take only the card's shared fields.
+ */
 export function applyTile(qc: QueryClient, tile: CardTile): void {
-  qc.setQueryData<Board>(['board', tile.boardId], (b) => (b ? upsertCard(b, tile) : b));
-  qc.setQueryData<CardDetail>(['card', tile.id], (c) => (c ? { ...c, ...tile } : c));
+  for (const q of boardQueries(qc)) qc.setQueryData<Board>(q.queryKey, (b) => (b ? shareTile(b, tile) : b));
+  for (const q of qc.getQueryCache().findAll({ queryKey: ['card', tile.id] })) qc.setQueryData<CardDetail>(q.queryKey, (c) => (c ? mergeDetail(c, tile) : c));
 }
 
 export function applyComment(qc: QueryClient, comment: Comment): void {
@@ -91,8 +96,17 @@ export function useProjectRealtime(projectId: string | undefined): void {
           void qc.invalidateQueries({ queryKey: ['projects'] });
         }
         // A failed rejoin must also remove the old board snapshot.
-        if (!ack.ok) void qc.resetQueries({ queryKey: ['board'] });
-        else void qc.invalidateQueries({ queryKey: ['board'] });
+        if (!ack.ok) {
+          void qc.resetQueries({ queryKey: ['board'] });
+          void qc.resetQueries({ queryKey: ['board-arrivals'] });
+          for (const key of ['project-arrival', 'arrival-settings', 'project-confidence']) void qc.resetQueries({ queryKey: [key, projectId] });
+          void qc.resetQueries({ queryKey: ['replan'] });
+        }
+        else {
+          void qc.invalidateQueries({ queryKey: ['board'] });
+          void qc.invalidateQueries({ queryKey: ['board-arrivals'] });
+          void qc.invalidateQueries({ queryKey: ['project-arrival', projectId] });
+        }
       });
     };
     const onTile = ({ card }: { card: CardTile }) => {
@@ -117,6 +131,12 @@ export function useProjectRealtime(projectId: string | undefined): void {
       applyTile(qc, card);
       void qc.invalidateQueries({ queryKey: ['card', card.id] });
     };
+    // The card left this project's board; it is still in another project.
+    const onCardRemoved = ({ cardId, listId }: { cardId: string; listId: string }) => {
+      for (const q of boardQueries(qc)) qc.setQueryData<Board>(q.queryKey, (b) => (b ? removeFromList(b, cardId, listId) : b));
+      void qc.invalidateQueries({ queryKey: ['card', cardId] });
+      void qc.invalidateQueries({ queryKey: cardPeopleKey(cardId) });
+    };
 
     // Socket payloads are untyped at the wire; the server builds them from the same view types.
     const typed =
@@ -124,11 +144,18 @@ export function useProjectRealtime(projectId: string | undefined): void {
       (payload: unknown) =>
         fn(payload as T);
     const handlers: [string, (payload: unknown) => void][] = [
+      ['arrival.changed', typed(({ projectId: changed }: { projectId: string }) => {
+        if (changed !== projectId) return;
+        void qc.invalidateQueries({ queryKey: ['board-arrivals'] });
+        void qc.invalidateQueries({ queryKey: ['project-arrival', projectId] });
+        void qc.invalidateQueries({ queryKey: ['project-confidence', projectId] });
+      })],
       ['card.created', typed(onTile)],
       ['card.updated', typed(onTile)],
       ['card.archived', typed(onTile)],
       ['card.restored', typed(onTile)],
       ['card.moved', typed(onMoved)],
+      ['card.removed', typed(onCardRemoved)],
       ['list.created', typed(onList)],
       ['list.updated', typed(onList)],
       ['list.moved', typed(onList)],

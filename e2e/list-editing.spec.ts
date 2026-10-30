@@ -93,9 +93,9 @@ test('one compact table supports inline name, assignment and due-date editing wi
   await expect(input).toBeFocused(); await input.fill('Discard this draft'); await input.press('Escape');
   await expect(title).toHaveText('Review the client brief'); await expect(title).toBeFocused();
   await title.click(); await input.fill('Revised client brief');
-  await page.route('**/api/v1/cards/*', async (route) => { if (route.request().method() === 'PATCH') await route.fulfill({ status: 500, json: { error: { code: 'internal', message: 'Could not save this card.' } } }); else await route.continue(); });
+  await page.route(/\/api\/v1\/cards\/[^/?]+(\?|$)/, async (route) => { if (route.request().method() === 'PATCH') await route.fulfill({ status: 500, json: { error: { code: 'internal', message: 'Could not save this card.' } } }); else await route.continue(); });
   await input.press('Enter'); await expect(task.getByRole('alert')).toHaveText('Could not save this card.'); await expect(input).toHaveValue('Revised client brief');
-  await page.unroute('**/api/v1/cards/*'); await input.press('Enter'); await expect(title).toHaveText('Revised client brief');
+  await page.unroute(/\/api\/v1\/cards\/[^/?]+(\?|$)/); await input.press('Enter'); await expect(title).toHaveText('Revised client brief');
   await expect(page.getByTestId('card-drawer')).toHaveCount(0);
   await task.getByRole('button', { name: `Assign members for ${first.key}` }).click();
   const people = page.getByRole('dialog', { name: `Assignees for ${first.key}` });

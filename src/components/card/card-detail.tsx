@@ -3,8 +3,11 @@
 import { CardSkeleton } from '@/components/skeleton';
 
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
 import { DuePill } from '@/components/due-pill';
+import { ArrivalChip } from '@/components/arrival';
+import { ReplanAction } from '@/components/arrival-actions';
 import { Markdown } from '@/components/markdown';
 import { useToast } from '@/components/toast';
 import { Avatar, Button, LABEL_BG, Select } from '@/components/ui';
@@ -15,20 +18,33 @@ import { timeAgo, toLocalInput } from '@/lib/time';
 import type { Board, CardDetail as Detail, CardTile, Label, Page } from '@/lib/types';
 import { useNow } from '@/lib/use-now';
 import { useWorkspace } from '@/lib/workspace';
-import { useProjectPeople } from '@/lib/project-people';
+import { cardDetailKey, cardPath, cardRef, useCardPeople } from '@/lib/cards';
+import { cardUrl } from '@/lib/card-url';
 import { ProjectError } from '@/components/projects/project-error';
 import { Attachments } from './attachments';
+import { CardPlacements, PlacementActions } from './card-placements';
 import { Checklists } from './checklists';
 import { Comments } from './comments';
 
 const LABEL_COLORS = ['grey', 'red', 'orange', 'yellow', 'green', 'teal', 'blue', 'purple', 'pink', 'brown'] as const;
 
-/** Card detail (§3.3). Rendered inside the board drawer and as a full page with full=true. */
-export function CardDetail({ cardId, boardHref, layout = 'page' }: { cardId: string; boardHref: string; layout?: 'page' | 'drawer' }) {
+/**
+ * Card detail (§3.3). Rendered inside the board drawer and as a full page with full=true. Opened in
+ * the URL's project: a card can be in several (docs/CARD_PLACEMENTS.md in the API repository). When
+ * the person cannot see it there, the API shows it in a project they can, and the URL follows.
+ */
+export function CardDetail({ cardId, projectId, boardHref, layout = 'page' }: { cardId: string; projectId: string; boardHref: string; layout?: 'page' | 'drawer' }) {
   const qc = useQueryClient();
   const toast = useToast();
   const now = useNow();
-  const card = useQuery({ queryKey: ['card', cardId], queryFn: () => api.get<Detail>(`/cards/${cardId}`) });
+  const ws = useWorkspace();
+  const router = useRouter();
+  const card = useQuery({ queryKey: cardDetailKey(cardId, projectId), queryFn: () => api.get<Detail>(cardPath(cardId, projectId)) });
+  const shownProject = card.data?.projectId;
+  const shownBoard = card.data?.boardId;
+  useEffect(() => {
+    if (shownProject && shownBoard && shownProject !== projectId) router.replace(cardUrl(ws.id, { projectId: shownProject, boardId: shownBoard }, cardId, window.location.search), { scroll: false });
+  }, [shownProject, shownBoard, projectId, cardId, ws.id, router]);
   useProjectRealtime(card.data?.projectId);
   // Being in card:{id} marks this card as "being viewed": comments on it arrive in-app, not as a push (§4.1).
   useRoom(card.data ? `card:${cardId}` : null, {});
@@ -60,8 +76,9 @@ export function CardDetail({ cardId, boardHref, layout = 'page' }: { cardId: str
     <>
       <MoveToList card={c} onMove={(listId) => mutate(() => api.patch<CardTile>(`/cards/${c.id}/move`, { listId, beforeCardId: null }))} />
       <div className="flex flex-wrap gap-2">
+        <PlacementActions card={c} />
         {c.archivedAt ? null : (
-          <Button variant="secondary" onClick={() => void mutate(() => api.post<CardTile>(`/cards/${c.id}/archive`))}>
+          <Button variant="secondary" onClick={() => void mutate(() => api.post<CardTile>(cardPath(c.id, c.projectId, '/archive')))}>
             Archive
           </Button>
         )}
@@ -86,37 +103,46 @@ export function CardDetail({ cardId, boardHref, layout = 'page' }: { cardId: str
         {c.archivedAt ? (
           <div role="status" className="flex items-center justify-between rounded-md bg-warning-subtle px-3 py-2 text-sm text-warning-text">
             This card is archived.
-            <Button variant="secondary" onClick={() => void mutate(() => api.post<CardTile>(`/cards/${c.id}/restore`))}>
+            <Button variant="secondary" onClick={() => void mutate(() => api.post<CardTile>(cardPath(c.id, c.projectId, '/restore')))}>
               Restore
             </Button>
           </div>
         ) : null}
         <header>
           <p className="text-xs text-muted-foreground">
-            <span>{c.listName}</span> · <span data-testid="card-key">{c.key}-{c.number}</span>
+            <span>{c.listName}</span> · <span data-testid="card-key">{cardRef(c)}</span>
           </p>
-          <Title card={c} onSave={(title) => mutate(() => api.patch<CardTile>(`/cards/${c.id}`, { title }))} />
+          <Title card={c} onSave={(title) => mutate(() => api.patch<CardTile>(cardPath(c.id, c.projectId), { title }))} />
+          <ArrivalChip boardId={c.boardId} cardId={c.id} />
+          <ReplanAction boardId={c.boardId} projectId={c.projectId} cardId={c.id} title={c.title} />
         </header>
 
         {layout === 'drawer' ? <div className="space-y-3 rounded-lg border border-border bg-background p-3 text-sm">{actions}</div> : null}
 
         <div className={`flex gap-y-4 ${layout === 'drawer' ? 'flex-col border-b border-border pb-6' : 'flex-wrap gap-x-8'}`}>
           <Field label="Assignees">
-            <Assignees card={c} onToggle={(userId, on) => mutate(() => (on ? api.post<CardTile>(`/cards/${c.id}/assignees/${userId}`) : api.del<CardTile>(`/cards/${c.id}/assignees/${userId}`)))} />
+            <Assignees card={c} onToggle={(userId, on) => mutate(() => (on ? api.post<CardTile>(cardPath(c.id, c.projectId, `/assignees/${userId}`)) : api.del<CardTile>(cardPath(c.id, c.projectId, `/assignees/${userId}`))))} />
           </Field>
           <Field label="Labels">
-            <Labels card={c} onToggle={(labelId, on) => mutate(() => (on ? api.post<CardTile>(`/cards/${c.id}/labels/${labelId}`) : api.del<CardTile>(`/cards/${c.id}/labels/${labelId}`)))} />
+            <Labels card={c} onToggle={(labelId, on) => mutate(() => (on ? api.post<CardTile>(cardPath(c.id, c.projectId, `/labels/${labelId}`)) : api.del<CardTile>(cardPath(c.id, c.projectId, `/labels/${labelId}`))))} />
           </Field>
           <Field label="Due">
-            <Due card={c} now={now} onSave={(patch) => mutate(() => api.patch<CardTile>(`/cards/${c.id}`, patch))} />
+            <Due card={c} now={now} onSave={(patch) => mutate(() => api.patch<CardTile>(cardPath(c.id, c.projectId), patch))} />
           </Field>
+          {c.placements?.length ? (
+            <div className="w-full">
+              <Field label="Projects">
+                <CardPlacements card={c} />
+              </Field>
+            </div>
+          ) : null}
         </div>
 
-        <MentionScopeContext.Provider value={{ projectId: c.projectId, surface: 'card' }}>
-          <Description card={c} onSave={(description) => mutate(() => api.patch<CardTile>(`/cards/${c.id}`, { description }))} />
-          <Checklists cardId={c.id} checklists={c.checklists} />
-          <Attachments cardId={c.id} attachments={c.attachments} />
-          <Comments cardId={c.id} />
+        <MentionScopeContext.Provider value={{ projectId: c.projectId, surface: 'card', cardId: c.id }}>
+          <Description card={c} onSave={(description) => mutate(() => api.patch<CardTile>(cardPath(c.id, c.projectId), { description }))} />
+          <Checklists cardId={c.id} projectId={c.projectId} checklists={c.checklists} />
+          <Attachments cardId={c.id} projectId={c.projectId} attachments={c.attachments} />
+          <Comments cardId={c.id} projectId={c.projectId} />
         </MentionScopeContext.Provider>
         {layout === 'drawer' ? <div className="border-t border-border pt-4 text-caption">{createdBy}</div> : null}
       </div>
@@ -185,10 +211,10 @@ function Popover({ label, children }: { label: string; children: (close: () => v
   );
 }
 
+/** The card's own people: anyone who can see one of its projects, including ones the viewer cannot see. */
 function Assignees({ card, onToggle }: { card: Detail; onToggle: (userId: string, on: boolean) => Promise<void> }) {
-  const ws = useWorkspace();
-  const members = useProjectPeople(ws.id, card.projectId);
-  const assignable = (members.data?.data ?? []).filter((m) => m.status === 'active' && m.role !== 'guest');
+  const members = useCardPeople(card.id, 'assignable', card.projectId);
+  const assignable = members.data?.data ?? [];
   const assigned = new Set(card.assignees.map((a) => a.id));
   return (
     <div className="flex items-center gap-1">

@@ -6,6 +6,7 @@ import { useConfirm } from '@/components/confirmation';
 import { useToast } from '@/components/toast';
 import { Button } from '@/components/ui';
 import { api, ApiError, errorMessage } from '@/lib/api';
+import { cardPath } from '@/lib/cards';
 import { useSession } from '@/lib/session';
 import { formatBytes } from '@/lib/time';
 import type { Attachment } from '@/lib/types';
@@ -39,7 +40,7 @@ export function putWithProgress(url: string, file: File, headers: Record<string,
  * Size and quota are checked by the API before any upload URL is issued, so a
  * file over 25 MB fails with 413 before a byte moves.
  */
-export function Attachments({ cardId, attachments }: { cardId: string; attachments: Attachment[] }) {
+export function Attachments({ cardId, projectId, attachments }: { cardId: string; projectId: string; attachments: Attachment[] }) {
   const qc = useQueryClient();
   const toast = useToast();
   const { user } = useSession();
@@ -56,7 +57,7 @@ export function Attachments({ cardId, attachments }: { cardId: string; attachmen
     setUploads((u) => [...u, { key, name: file.name, progress: 0 }]);
     const setProgress = (progress: number) => setUploads((u) => u.map((x) => (x.key === key ? { ...x, progress } : x)));
     try {
-      const ticket = await api.post<UploadTicket>(`/cards/${cardId}/attachments`, {
+      const ticket = await api.post<UploadTicket>(cardPath(cardId, projectId, '/attachments'), {
         filename: file.name,
         mimeType: file.type || 'application/octet-stream',
         sizeBytes: file.size,

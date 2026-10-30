@@ -6,7 +6,7 @@ import { Icon } from '@/components/icon';
 import { Button } from '@/components/ui';
 import { CardDetail } from './card-detail';
 
-type DrawerProps = { cardId: string; boardHref: string };
+type DrawerProps = { cardId: string; projectId: string; boardHref: string };
 const DrawerContext = createContext<((card: DrawerProps) => () => void) | null>(null);
 
 /** Keep the inspector present through route-driven exits, including browser Back. */
@@ -15,7 +15,7 @@ export function CardDrawerHost({ children }: { children: ReactNode }) {
   const frame = useRef<HTMLDivElement>(null);
   const register = useCallback((card: DrawerProps) => {
     setInspector({ ...card, open: true });
-    return () => setInspector((current) => current?.cardId === card.cardId ? { ...current, open: false } : current);
+    return () => setInspector((current) => current?.cardId === card.cardId && current.projectId === card.projectId ? { ...current, open: false } : current);
   }, []);
 
   useEffect(() => {
@@ -44,7 +44,7 @@ export function CardDrawerHost({ children }: { children: ReactNode }) {
 }
 
 /** Non-modal card inspector: board and drawer remain independently usable. */
-function Drawer({ cardId, boardHref, open }: DrawerProps & { open: boolean }) {
+function Drawer({ cardId, projectId, boardHref, open }: DrawerProps & { open: boolean }) {
   const router = useRouter();
   const params = useSearchParams();
   const panel = useRef<HTMLDivElement>(null);
@@ -104,15 +104,15 @@ function Drawer({ cardId, boardHref, open }: DrawerProps & { open: boolean }) {
         </Button>
       </header>
       <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-4 sm:p-6" data-testid="card-drawer-content">
-        <CardDetail key={cardId} cardId={cardId} boardHref={boardHref} layout="drawer" />
+        <CardDetail key={`${projectId}:${cardId}`} cardId={cardId} projectId={projectId} boardHref={boardHref} layout="drawer" />
       </div>
     </div>
   );
 }
 
-export function CardDrawer({ cardId, boardHref }: DrawerProps) {
+export function CardDrawer({ cardId, projectId, boardHref }: DrawerProps) {
   const register = useContext(DrawerContext);
   if (!register) throw new Error('CardDrawer requires CardDrawerHost');
-  useLayoutEffect(() => register({ cardId, boardHref }), [register, cardId, boardHref]);
+  useLayoutEffect(() => register({ cardId, projectId, boardHref }), [register, cardId, projectId, boardHref]);
   return null;
 }

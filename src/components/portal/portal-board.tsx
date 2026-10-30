@@ -7,6 +7,8 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 import { CardTileView } from '@/components/board/card-tile';
+import { ProjectArrivalLine } from '@/components/arrival';
+import { useBoardArrivals } from '@/lib/arrival';
 import { api, errorMessage } from '@/lib/api';
 import { useProjectRealtime } from '@/lib/realtime';
 import type { Board, CardTile, PortalProject } from '@/lib/types';
@@ -30,6 +32,7 @@ export function PortalBoard({ project }: { project: PortalProject }) {
     queryKey: ['board', project.defaultBoardId],
     queryFn: () => api.get<Board>(`/boards/${project.defaultBoardId}`),
   });
+  const arrivals = useBoardArrivals(project.defaultBoardId);
   useProjectRealtime(project.id);
   const now = useGroupingClock(board.data, user?.timezone ?? 'UTC');
 
@@ -40,7 +43,7 @@ export function PortalBoard({ project }: { project: PortalProject }) {
 
   return (
     <div className="flex h-full flex-col" data-testid="portal-board">
-      <div className="border-b border-border bg-surface px-3 py-2"><GroupingSelect guest /></div>
+      <div className="flex flex-wrap items-center gap-3 border-b border-border bg-surface px-3 py-2"><GroupingSelect guest /><ProjectArrivalLine projectId={project.id} guest />{arrivals.error ? <span role="alert" className="text-caption text-danger-text">{errorMessage(arrivals.error)}</span> : null}</div>
       {/* < 640px: one list at a time with a horizontal selector (§3.7). */}
       <div className="flex gap-1 overflow-x-auto border-b border-border-subtle bg-surface px-2 py-1 sm:hidden" role="tablist" aria-label="Lists">
         {lists.map((l, i) => (
@@ -72,7 +75,7 @@ export function PortalBoard({ project }: { project: PortalProject }) {
               {l.cards.map((c) => (
                 <li key={c.id}>
                   <Link href={`/portal/${project.id}/c/${c.id}${grouping === 'due' ? '?group=due' : ''}`} data-testid="portal-card" className="block rounded-md focus-visible:outline-2 focus-visible:outline-ring">
-                    <CardTileView card={tile(c)} projectKey={project.key} now={now} />
+                    <CardTileView card={tile(c)} now={now} guest />
                   </Link>
                 </li>
               ))}

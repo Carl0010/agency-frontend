@@ -139,7 +139,7 @@ test('card links support history, full-page reloads and a recoverable unavailabl
   await addCard(page, 'Unavailable card');
   const unavailable = list(page, 'To do').getByRole('button', { name: /Unavailable card/ });
   const cardId = await unavailable.getAttribute('data-card-id');
-  await page.route(`**/api/v1/cards/${cardId}`, (route) => route.fulfill({ status: 404, json: { error: { code: 'not_found', message: 'Card not found.' } } }));
+  await page.route(new RegExp(`/api/v1/cards/${cardId}(\\?|$)`), (route) => route.fulfill({ status: 404, json: { error: { code: 'not_found', message: 'Card not found.' } } }));
   await unavailable.click();
   await expect(drawer).toContainText("You don't have access to this project");
   await page.getByRole('searchbox', { name: 'Search by card name' }).fill('brief');

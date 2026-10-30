@@ -66,7 +66,7 @@ test('assignee drags atomically swap a person in both presentations and recover 
   await call('PATCH', `/cards/${c.id}/assignees`, { add: [me.id] });
   await page.goto(`${account.boardUrl}?group=assignee`);
   await expect(group(page, 'Design Partner')).toBeVisible();
-  const response = page.waitForRequest((req) => req.url().endsWith(`/cards/${c.id}/assignees`) && req.method() === 'PATCH');
+  const response = page.waitForRequest((req) => new URL(req.url()).pathname.endsWith(`/cards/${c.id}/assignees`) && req.method() === 'PATCH');
   await keyboardDrop(page, handle(group(page, 'E2E Owner'), c.id), 'ArrowLeft', other.userId);
   expect((await response).postDataJSON()).toEqual({ remove: [me.id], add: [other.userId] });
   await expect(handle(group(page, 'Design Partner'), c.id)).toBeFocused();
@@ -78,12 +78,12 @@ test('assignee drags atomically swap a person in both presentations and recover 
   await group(page, 'E2E Owner').getByRole('button', { expanded: true }).click();
   const start = handle(group(page, 'Design Partner'), c.id);
   for (const status of [422, 402, 403]) {
-    await page.route('**/api/v1/cards/*/assignees', (route) => route.fulfill({ status, json: { error: { code: status === 422 ? 'validation_failed' : status === 402 ? 'workspace_read_only' : 'forbidden', message: `Denied ${status}` } } }));
+    await page.route(/\/api\/v1\/cards\/[^/]+\/assignees(\?|$)/, (route) => route.fulfill({ status, json: { error: { code: status === 422 ? 'validation_failed' : status === 402 ? 'workspace_read_only' : 'forbidden', message: `Denied ${status}` } } }));
     await keyboardDrop(page, start, 'ArrowDown', me.id);
     await expect(page.getByTestId('toast').filter({ hasText: `Denied ${status}` })).toBeVisible();
     await expect(start).toBeFocused();
     await expect(group(page, 'E2E Owner').getByTestId('card-row')).toHaveCount(0);
-    await page.unroute('**/api/v1/cards/*/assignees');
+    await page.unroute(/\/api\/v1\/cards\/[^/]+\/assignees(\?|$)/);
   }
   await keyboardDrop(page, start, 'ArrowDown', me.id);
   await expect(handle(group(page, 'E2E Owner'), c.id)).toBeFocused();
@@ -130,11 +130,11 @@ test('due drags set Today, ask for Later, cancel and retry without changing list
   await dialog.getByRole('button', { name: 'Reschedule card' }).click();
   await expect(dialog.getByRole('alert')).toContainText('after the next 7 days');
   await dialog.getByLabel('Later due date', { exact: true }).fill(picked);
-  await page.route('**/api/v1/cards/*/reschedule', (route) => route.fulfill({ status: 422, json: { error: { code: 'validation_failed', message: 'Retry date save' } } }));
+  await page.route(/\/api\/v1\/cards\/[^/]+\/reschedule(\?|$)/, (route) => route.fulfill({ status: 422, json: { error: { code: 'validation_failed', message: 'Retry date save' } } }));
   await dialog.getByRole('button', { name: 'Reschedule card' }).click();
   await expect(page.getByTestId('toast').filter({ hasText: 'Retry date save' })).toBeVisible();
   await expect(dialog.getByLabel('Later due date', { exact: true })).toHaveValue(picked);
-  await page.unroute('**/api/v1/cards/*/reschedule'); await dialog.getByRole('button', { name: 'Reschedule card' }).click();
+  await page.unroute(/\/api\/v1\/cards\/[^/]+\/reschedule(\?|$)/); await dialog.getByRole('button', { name: 'Reschedule card' }).click();
   await expect(dialog).toHaveCount(0); await expect(handle(group(page, 'Later'), c.id)).toBeFocused();
   await expect(page.getByTestId('toast')).toHaveCount(0);
   await page.getByRole('button', { name: 'Kanban', exact: true }).click();

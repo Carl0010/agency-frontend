@@ -29,7 +29,12 @@ For navigation changes also read [sidebar responsibilities](docs/NAVIGATION.md).
   saved icons and personal stars server-backed. Workspace settings own Teams.
 - Only `project.access === 'admin'` exposes sharing and guest mutations. Team
   management follows `myRole` plus workspace owner/admin access. People pickers
-  use project-scoped roster queries; never assign from the whole workspace list.
+  use scoped roster queries: a card's assignee and mention pickers read
+  `/cards/:id/assignable` and `/cards/:id/mentionable`, board groups and filters
+  the project's reads. Never assign from the whole workspace list.
+- A card can be in several projects. Draw its reference from the tile's own `key`,
+  never the board's project, and send `?project=` on card requests from a project
+  screen (`src/lib/cards.ts`). See "Cards in several projects" in BOARD_VIEWS.md.
 - Use Shared (`kind: 'shared'`, `surface=shared`), `fromGuest`, and guest. Never
   send the removed `clientName` field. `/chat` and `/team` URLs remain stable.
 - Handle project `404 not_found` as no access. Access-change events clear stale

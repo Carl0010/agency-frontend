@@ -8,8 +8,9 @@ import { Icon } from '@/components/icon';
 import { Input } from '@/components/ui';
 import { useToast } from '@/components/toast';
 import { api, errorMessage } from '@/lib/api';
+import { useArrivalSettings, type ArrivalSettings } from '@/lib/arrival';
 import { upsertList } from '@/lib/board-state';
-import type { Board, BoardList } from '@/lib/types';
+import type { Board, BoardList, Project } from '@/lib/types';
 
 type HeaderDrag = Pick<ReturnType<typeof useSortable>, 'attributes' | 'listeners' | 'setActivatorNodeRef' | 'isDragging'> & { disabled: boolean };
 
@@ -18,6 +19,10 @@ export function ListHeader({ list, count, boardId, leading, drag, startEditing =
   list: BoardList; count: number; boardId: string; leading?: ReactNode; drag?: HeaderDrag; startEditing?: boolean; onEditingFinished?: () => void; compact?: boolean;
 }) {
   const qc = useQueryClient();
+  const projectId = qc.getQueryData<Board>(['board', boardId])?.projectId;
+  const project = qc.getQueryData<Project>(['project', projectId]);
+  const arrivalSettings = useArrivalSettings(projectId);
+  const done = arrivalSettings.data?.doneListIds.includes(list.id) ?? false;
   const toast = useToast();
   const confirmAction = useConfirm();
   const [editing, setEditing] = useState(startEditing);
@@ -70,6 +75,14 @@ export function ListHeader({ list, count, boardId, leading, drag, startEditing =
     try { await api.del(`/lists/${list.id}`); await qc.invalidateQueries({ queryKey: ['board', boardId] }); }
     catch (error) { toast(errorMessage(error)); }
   }
+  async function toggleDone() {
+    menu.current?.hidePopover();
+    try {
+      const settings = await api.put<ArrivalSettings>(`/lists/${list.id}/done`, { isDone: !done });
+      qc.setQueryData(['arrival-settings', projectId], settings);
+      await qc.invalidateQueries({ queryKey: ['arrival-settings', projectId] });
+    } catch (error) { toast(errorMessage(error)); }
+  }
   return <header data-testid="list-header" onMouseDown={startDrag} onTouchStart={startDrag}
     className={`flex shrink-0 items-center gap-2 ${compact ? 'h-12 px-2' : 'h-15 px-3 py-3'} ${drag && !drag.disabled && !editing ? 'cursor-grab select-none active:cursor-grabbing' : ''}`}>
     {leading}
@@ -83,6 +96,7 @@ export function ListHeader({ list, count, boardId, leading, drag, startEditing =
         title={drag && !drag.disabled ? `${list.name} · Drag to reorder, click to rename` : list.name}
         className={`tap min-h-9 w-full truncate rounded-md text-left text-sm font-semibold tracking-normal hover:bg-muted ${drag && !drag.disabled ? 'cursor-grab active:cursor-grabbing' : ''}`}>{list.name}</button></h2>}
     {nameError ? <span id={`${menuId}-name-error`} className="sr-only">{nameError}</span> : null}
+    {done ? <span className="text-caption font-medium text-success-text">Done list</span> : null}
     <span className="inline-flex h-6 min-w-6 shrink-0 items-center justify-center rounded-md border border-border bg-surface px-1.5 text-caption font-medium text-secondary-foreground" aria-label={`${count} of ${list.cards.length} cards`}>
       {count === list.cards.length ? count : `${count}/${list.cards.length}`}
     </span>
@@ -92,6 +106,7 @@ export function ListHeader({ list, count, boardId, leading, drag, startEditing =
     }} className="tap inline-flex min-h-9 w-8 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-muted active:bg-surface"><Icon name="more" /></button>
     <div data-no-list-drag ref={menu} id={menuId} popover="auto" role="group" aria-label={`Actions for ${list.name}`} style={position} className="fixed m-0 w-40 rounded-lg border border-border bg-surface p-1 text-sm text-foreground shadow-lg">
       <button type="button" className="ui-nav-link tap w-full" onClick={() => { menu.current?.hidePopover(); setEditing(true); }}>Rename</button>
+      {project?.access === 'admin' && arrivalSettings.data ? <button type="button" className="ui-nav-link tap w-full" onClick={() => void toggleDone()}>{done ? 'Unmark done list' : 'Mark as done list'}</button> : null}
       <button type="button" className="ui-nav-link tap w-full text-danger-text" onClick={() => void archive()}>Archive list</button>
     </div>
   </header>;

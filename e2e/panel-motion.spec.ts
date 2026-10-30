@@ -14,6 +14,10 @@ async function workspace(page: Page) {
     else if (path === '/workspaces/11111111-1111-4111-8111-111111111111/projects') json = { data: [project], nextCursor: null };
     else if (path === '/projects/project') json = project;
     else if (path === '/boards/board') json = { id: 'board', name: 'Board', projectId: 'project', project, boards: null, lists: [{ id: 'list', name: 'To do', position: 1, cards: [card] }] };
+    else if (path === '/boards/board/arrivals') json = { projectId: 'project', history: 'pending', cards: [] };
+    else if (path === '/projects/project/arrival') json = { projectId: 'project', arrivesOn: null, confidence: null };
+    else if (path === '/projects/project/arrival-settings') json = { projectId: 'project', doneListIds: [], targetDate: null, guestCardArrivals: false };
+    else if (path === '/projects/project/confidence') json = { projectId: 'project', weekStart: '2026-10-26', answeredThisWeek: false, askNow: false, aggregate: null };
     else if (path === '/cards/card') json = { ...card, key: 'MP', description: null, listName: 'To do', createdAt: '2026-10-16T00:00:00Z', createdBy: person, checklists: [], attachments: [] };
     else if (path === '/notifications') json = { data: [], nextCursor: null, unreadCount: 0 };
     await route.fulfill({ json });

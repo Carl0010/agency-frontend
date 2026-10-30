@@ -44,7 +44,7 @@ export function ListColumn({ list, cards, board, now, cardHref, dndDisabled, sta
           {cards.length === 0 ? <p data-testid="list-empty-state" className="flex min-h-[200px] shrink-0 items-center justify-center rounded-lg border border-dashed border-border px-3 py-6 text-center text-caption text-muted-foreground">{list.cards.length ? 'No matching cards' : 'No cards yet'}</p> : null}
           <SortableContext items={cards.map((c) => c.id)} strategy={verticalListSortingStrategy}>
             {cards.map((c) => (
-              <SortableCard key={c.id} card={c} projectKey={board.project.key} now={now} href={cardHref(c.id)} disabled={dndDisabled} />
+              <SortableCard key={c.id} card={c} now={now} href={cardHref(c.id)} disabled={dndDisabled} />
             ))}
           </SortableContext>
         </div>

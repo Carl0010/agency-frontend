@@ -36,7 +36,7 @@ test('board and card skeletons reserve content, support themes and stop motion w
   let releaseCard!: () => void;
   const cardGate = new Promise<void>((resolve) => { releaseCard = resolve; });
   const id = await page.getByTestId('card-tile').getAttribute('data-card-id');
-  await page.route(`**/api/v1/cards/${id}`, async (route) => { await cardGate; await route.continue(); });
+  await page.route((url) => url.pathname === `/api/v1/cards/${id}`, async (route) => { await cardGate; await route.continue(); });
   await page.getByTestId('card-tile').click();
   const drawer = page.getByRole('dialog', { name: 'Card details' });
   const cardLoading = drawer.getByRole('status').filter({ hasText: 'Loading card details' });

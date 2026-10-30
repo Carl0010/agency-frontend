@@ -8,11 +8,15 @@ import { CardLink } from '@/components/card/card-link';
 import { usePathname } from 'next/navigation';
 import { useState, type ReactNode } from 'react';
 import { Icon } from '@/components/icon';
+import { ArrivalChip } from '@/components/arrival';
+import { ReplanAction } from '@/components/arrival-actions';
 import { LABEL_BG } from '@/components/ui';
 import { isFiltering, matchesFilters, type BoardFilters } from '@/lib/filters';
-import type { Board, BoardList, CardTile, Member } from '@/lib/types';
+import { cardRef } from '@/lib/cards';
+import type { Board, BoardList, CardTile } from '@/lib/types';
 import { AddCard } from './add-card';
 import { AddList } from './add-list';
+import { AlsoInProjects } from './card-tile';
 import { ListHeader } from './list-header';
 import { RowAssignees, RowDue, RowName } from './list-row-editors';
 
@@ -32,14 +36,14 @@ const listKeyboardCoordinates: KeyboardCoordinateGetter = (event, args) => {
 };
 
 interface Props {
-  board: Board; filters: BoardFilters; now: Date; cardHref: (id: string) => string; members: Member[];
+  board: Board; filters: BoardFilters; now: Date; cardHref: (id: string) => string;
   editingListId: string | null; onListCreated: (id: string) => void; onListEditFinished: (id: string) => void;
   activeDrag: { type: 'card' | 'list'; activeId: string } | null;
   onDragStart: (event: DragStartEvent) => void; onDragOver: (event: DragOverEvent) => void; onDragEnd: (event: DragEndEvent) => void; onDragCancel: () => void;
 }
 
 /** A single table: list rowgroups, section rows and editable card subrows. */
-export function BoardListView({ board, filters, now, cardHref, editingListId, onListCreated, onListEditFinished, members, activeDrag, onDragStart, onDragOver, onDragEnd, onDragCancel }: Props) {
+export function BoardListView({ board, filters, now, cardHref, editingListId, onListCreated, onListEditFinished, activeDrag, onDragStart, onDragOver, onDragEnd, onDragCancel }: Props) {
   const pathname = usePathname();
   const pending = useIsMutating({ mutationKey: ['row-card'] }) > 0;
   const disabled = isFiltering(filters) || pending;
@@ -56,7 +60,7 @@ export function BoardListView({ board, filters, now, cardHref, editingListId, on
           <th scope="col" className="hidden w-28 border-b border-border px-2 py-2 font-medium @3xl:table-cell">Activity</th>
         </tr></thead>
         <SortableContext items={board.lists.map((list) => `list:${list.id}`)} strategy={verticalListSortingStrategy}>
-          {board.lists.map((list) => <ListGroup key={list.id} list={list} cards={list.cards.filter((card) => matchesFilters(card, filters, now))} board={board} now={now} cardHref={cardHref} pathname={pathname} members={members} disabled={disabled} draggingListId={activeDrag?.type === 'list' ? activeDrag.activeId : null} startEditing={editingListId === list.id} onEditingFinished={() => onListEditFinished(list.id)} />)}
+          {board.lists.map((list) => <ListGroup key={list.id} list={list} cards={list.cards.filter((card) => matchesFilters(card, filters, now))} board={board} now={now} cardHref={cardHref} pathname={pathname} disabled={disabled} draggingListId={activeDrag?.type === 'list' ? activeDrag.activeId : null} startEditing={editingListId === list.id} onEditingFinished={() => onListEditFinished(list.id)} />)}
         </SortableContext>
       </table>
       <div className="mt-3"><AddList boardId={board.id} onCreated={onListCreated} layout="list" /></div>
@@ -65,8 +69,8 @@ export function BoardListView({ board, filters, now, cardHref, editingListId, on
   </DndContext>;
 }
 
-function ListGroup({ list, cards, board, now, cardHref, pathname, members, disabled, draggingListId, startEditing, onEditingFinished }: {
-  list: BoardList; cards: CardTile[]; board: Board; now: Date; cardHref: (id: string) => string; pathname: string; members: Member[];
+function ListGroup({ list, cards, board, now, cardHref, pathname, disabled, draggingListId, startEditing, onEditingFinished }: {
+  list: BoardList; cards: CardTile[]; board: Board; now: Date; cardHref: (id: string) => string; pathname: string;
   disabled: boolean; draggingListId: string | null; startEditing: boolean; onEditingFinished: () => void;
 }) {
   const [expanded, setExpanded] = useState(true);
@@ -81,35 +85,37 @@ function ListGroup({ list, cards, board, now, cardHref, pathname, members, disab
       </>} />
     </th></tr>
     <SortableContext items={cards.map((card) => card.id)} strategy={verticalListSortingStrategy}>
-      {cards.map((card) => <CardRow key={card.id} card={card} projectKey={board.project.key} now={now} href={cardHref(card.id)} selected={pathname.endsWith(`/c/${card.id}`)} members={members} disabled={disabled || !open} hidden={!open} />)}
+      {cards.map((card) => <CardRow key={card.id} card={card} now={now} href={cardHref(card.id)} selected={pathname.endsWith(`/c/${card.id}`)} disabled={disabled || !open} hidden={!open} />)}
     </SortableContext>
     {!cards.length ? <tr hidden={!open}><td colSpan={5} className="px-12 py-3 text-label text-muted-foreground">{list.cards.length ? 'No matching cards' : 'No cards yet'}</td></tr> : null}
     <tr ref={open ? end.setNodeRef : undefined} data-testid="list-drop-end" hidden={!open}><td colSpan={5} className={`border-b border-border px-10 py-1 ${end.isOver ? 'bg-primary-subtle' : ''}`}><AddCard compact listId={list.id} boardId={board.id} /></td></tr>
   </tbody>;
 }
 
-function CardRow({ card, projectKey, now, href, selected, members, disabled, hidden }: { card: CardTile; projectKey: string; now: Date; href: string; selected: boolean; members: Member[]; disabled: boolean; hidden: boolean }) {
+function CardRow({ card, now, href, selected, disabled, hidden }: { card: CardTile; now: Date; href: string; selected: boolean; disabled: boolean; hidden: boolean }) {
   const sortable = useSortable({ id: card.id, data: { type: 'card', listId: card.listId }, disabled });
-  const cardKey = `${projectKey}-${card.number}`;
+  const cardKey = cardRef(card);
   return <tr ref={sortable.setNodeRef} hidden={hidden} data-testid="card-row" data-card-row-id={card.id} style={{ transform: CSS.Translate.toString(sortable.transform), transition: sortable.transition }} className={`group/list-row ${selected ? 'bg-primary-subtle' : 'hover:bg-background'} ${sortable.isDragging ? 'opacity-30' : ''}`}>
-    <CardRowCells card={card} cardKey={cardKey} now={now} href={href} selected={selected} members={members} handle={<DragHandle sortable={sortable} disabled={disabled} label={`Move card ${cardKey}`} />} />
+    <CardRowCells card={card} cardKey={cardKey} now={now} href={href} selected={selected} handle={<DragHandle sortable={sortable} disabled={disabled} label={`Move card ${cardKey}`} />} />
   </tr>;
 }
 
-export function CardRowCells({ card, cardKey, now, href, selected, members, handle }: { card: CardTile; cardKey: string; now: Date; href: string; selected: boolean; members: Member[]; handle: ReactNode }) {
+export function CardRowCells({ card, cardKey, now, href, selected, handle }: { card: CardTile; cardKey: string; now: Date; href: string; selected: boolean; handle: ReactNode }) {
   return <>
     <td className="border-b border-border-subtle px-2 py-1 align-middle">
       <div className="flex min-w-0 items-center gap-1">
         {handle}
         <CardLink cardId={card.id} href={href} scroll={false} data-card-id={card.id} data-tour="card" aria-label={`${cardKey}: ${card.title}`} aria-expanded={selected} aria-controls={selected ? 'card-drawer' : undefined} title="Open card details" className="tap inline-flex shrink-0 items-center rounded-md px-1 font-mono text-caption text-muted-foreground hover:bg-muted hover:text-primary">{cardKey}</CardLink>
+        <AlsoInProjects card={card} />
         <RowName card={card} cardKey={cardKey} />
       </div>
+      <div className="ml-9"><ArrivalChip boardId={card.boardId} cardId={card.id} /><ReplanAction boardId={card.boardId} projectId={card.projectId} cardId={card.id} title={card.title} /></div>
       <div className="ml-9 flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1 @3xl:hidden">
-        <RowAssignees card={card} cardKey={cardKey} members={members} /><RowDue card={card} cardKey={cardKey} now={now} />
+        <RowAssignees card={card} cardKey={cardKey} /><RowDue card={card} cardKey={cardKey} now={now} />
         {card.labels.length ? <Labels card={card} /> : null}<Activity card={card} compact />
       </div>
     </td>
-    <td className="hidden border-b border-border-subtle px-2 py-1 align-middle @3xl:table-cell"><RowAssignees card={card} cardKey={cardKey} members={members} /></td>
+    <td className="hidden border-b border-border-subtle px-2 py-1 align-middle @3xl:table-cell"><RowAssignees card={card} cardKey={cardKey} /></td>
     <td className="hidden border-b border-border-subtle px-2 py-1 align-middle @3xl:table-cell"><RowDue card={card} cardKey={cardKey} now={now} /></td>
     <td className="hidden border-b border-border-subtle px-2 py-1 align-middle @3xl:table-cell"><Labels card={card} /></td>
     <td className="hidden border-b border-border-subtle px-2 py-1 align-middle @3xl:table-cell"><Activity card={card} /></td>

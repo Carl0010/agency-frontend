@@ -6,7 +6,7 @@ const DAY = 86_400_000;
 
 function card(over: Partial<CardTile>): CardTile {
   return {
-    id: 'c1', listId: 'l1', boardId: 'b1', projectId: 'p1', number: 7, title: 'Homepage wireframes', position: 1024,
+    id: 'c1', listId: 'l1', boardId: 'b1', projectId: 'p1', homeProjectId: 'p1', key: 'WEB', number: 7, title: 'Homepage wireframes', position: 1024,
     hasDescription: false, dueAt: null, dueCompletedAt: null, archivedAt: null, assignees: [], labels: [],
     commentCount: 0, attachmentCount: 0, checklistDone: 0, checklistTotal: 0, ...over,
   };

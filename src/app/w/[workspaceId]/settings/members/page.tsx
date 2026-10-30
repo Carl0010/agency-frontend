@@ -1,6 +1,7 @@
 'use client';
 
 import { LoadingSkeleton } from '@/components/skeleton';
+import { WorkingDays } from '@/components/arrival-settings';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState, type FormEvent } from 'react';
@@ -173,6 +174,7 @@ export default function MembersPage() {
           })}
         </ul>
       )}
+      <WorkingDays workspaceId={ws.id} canEdit={canManage} />
     </main>
   );
 }

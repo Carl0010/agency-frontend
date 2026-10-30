@@ -4,7 +4,7 @@ import type { Board, CardTile } from './types';
 const now = new Date('2026-03-07T20:00:00Z'); // Noon in Los Angeles, the day before DST starts.
 const tz = 'America/Los_Angeles';
 function tile(id: string, dueAt: string | null = null, dueCompletedAt: string | null = null): CardTile {
-  return { id, dueAt, dueCompletedAt, listId: 'l', boardId: 'b', projectId: 'p', number: 1, title: id, position: 1, hasDescription: false, archivedAt: null, assignees: [], labels: [], commentCount: 0, attachmentCount: 0, checklistDone: 0, checklistTotal: 0 };
+  return { id, dueAt, dueCompletedAt, listId: 'l', boardId: 'b', projectId: 'p', homeProjectId: 'p', key: 'P', number: 1, title: id, position: 1, hasDescription: false, archivedAt: null, assignees: [], labels: [], commentCount: 0, attachmentCount: 0, checklistDone: 0, checklistTotal: 0 };
 }
 const alice = { userId: 'a', name: 'Alice', avatarUrl: null };
 const bob = { userId: 'b', name: 'Bob', avatarUrl: null };

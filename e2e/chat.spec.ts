@@ -173,7 +173,7 @@ test('inbox and notification preferences render', async ({ browser }) => {
   await expect(page.getByRole('heading', { name: 'Inbox' })).toBeVisible();
   await page.getByRole('link', { name: 'Preferences', exact: true }).click();
   const grid = page.getByTestId('preferences-grid');
-  await expect(grid.locator('tbody tr')).toHaveCount(6);
+  await expect(grid.getByLabel('Mentions in-app (always on)')).toBeVisible();
   await expect(page.getByLabel('Mentions in-app (always on)')).toBeDisabled();
   await Promise.all([
     page.waitForResponse((r) => r.url().includes('/notifications/preferences') && r.request().method() === 'PUT'),

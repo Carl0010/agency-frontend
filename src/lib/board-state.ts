@@ -1,4 +1,4 @@
-import type { Board, BoardList, CardTile } from './types';
+import type { Board, BoardList, CardDetail, CardTile } from './types';
 
 /**
  * Immutable board-cache operations shared by drag-and-drop (optimistic moves)
@@ -19,6 +19,34 @@ export function upsertCard(board: Board, tile: CardTile): Board {
       return { ...l, cards: [...rest, tile].sort(byPosition) };
     }),
   };
+}
+
+/**
+ * The parts of a tile that belong to one placement. A card in several projects shares everything
+ * else, so a tile drawn in another project can still refresh its title, assignees or due date here.
+ */
+type PlacementFields = Pick<CardTile, 'listId' | 'boardId' | 'projectId' | 'position'>;
+const placementOf = (tile: CardTile): PlacementFields => ({ listId: tile.listId, boardId: tile.boardId, projectId: tile.projectId, position: tile.position });
+
+/**
+ * Applies a tile to a board that is not the tile's own: the card's shared fields change where it is
+ * already shown, in its place there. An archived card leaves every board.
+ */
+export function shareTile(board: Board, tile: CardTile): Board {
+  if (tile.boardId === board.id) return upsertCard(board, tile);
+  if (!findCard(board, tile.id)) return board;
+  if (tile.archivedAt) return removeCard(board, tile.id);
+  return { ...board, lists: board.lists.map((l) => (l.cards.some((c) => c.id === tile.id) ? { ...l, cards: l.cards.map((c) => (c.id === tile.id ? { ...tile, ...placementOf(c) } : c)) } : l)) };
+}
+
+/** A card detail shown in its own placement takes the whole tile; in another, only the shared fields. */
+export function mergeDetail<T extends CardDetail>(detail: T, tile: CardTile): T {
+  return tile.projectId === detail.projectId ? { ...detail, ...tile } : { ...detail, ...tile, ...placementOf(detail) };
+}
+
+/** `card.removed`: the card left the project whose list this is. */
+export function removeFromList(board: Board, cardId: string, listId: string): Board {
+  return board.lists.some((l) => l.id === listId) ? removeCard(board, cardId) : board;
 }
 
 export function removeCard(board: Board, cardId: string): Board {

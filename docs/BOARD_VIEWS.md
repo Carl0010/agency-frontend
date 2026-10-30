@@ -18,6 +18,8 @@ positions or cards and never requires another board read.
   empty groups, plus Unassigned. A card appears once per assignee, in board order
   (list order, then card position). Existing assignments remain visible even if a
   person is no longer assignable; that person's group cannot receive new drops.
+  The same holds for a card placed from another project whose assignee cannot see
+  this one: the group comes from the tile's `assignees` and is not a drop target.
 - Due date always shows Overdue, Today, Next 7 days, Later, No due date and Done.
   It applies the API's `DueWindow` in the viewer's profile timezone from `/me`:
   completed first, then no date, overdue before now, today before the next local
@@ -127,6 +129,42 @@ retain their existing semantic roles.
   or a failed save restores its previous expansion state. Other lists retain
   their state. Failed moves restore the authoritative snapshot and show errors.
   Drag is disabled during filters and pending inline card writes.
+
+## Cards in several projects
+
+A card can be on the boards of several projects and stay one card
+(`docs/CARD_PLACEMENTS.md` in the API repository). Its **home** project owns its
+number; each project it is in has its own **placement**: a list and a position.
+
+- References come from the tile, never the board: `${tile.key}-${tile.number}` on
+  tiles, rows, groups, drag overlays, the archive bin, the drawer and the portal.
+  The Launch board shows `WEB-42` for a card at home in Website.
+- Card requests from a project's screens send `?project=<projectId>` (`cardPath` in
+  `src/lib/cards.ts`): detail, edits, assignees, reschedule, labels, archive and
+  restore, checklists, comments and attachments. Moves send nothing extra: the
+  target list decides. The API draws the returned tile in that placement.
+- The detail opens with the URL's project. When the person cannot see the card
+  there, the API shows it in a project they can and the URL follows; the project
+  layout does the same for a link into a project they cannot see at all. Detail
+  caches are keyed by card and project (`['card', id, projectId]`).
+- **Projects** in the drawer lists `placements[]`, home first and marked; each opens
+  the card in that project. Other placements offer **Make home** (the key changes)
+  and **Remove** (confirmed: that project's labels come off). Neither is offered,
+  nor **Move to project**, to someone who cannot see the home.
+- **Add to project** and **Move to project** pick a visible project, then a list on
+  its board. `409 guests_will_see` asks before that project's guests see the card
+  and its comments, then resends with `exposeToGuests: true`; `409
+  already_in_project` and `422` show in the dialog. A move follows the card.
+- Tiles and rows with `placementCount > 1` show an **Also in N** marker. Guests
+  never receive the count, so the portal never shows it.
+- Assignee pickers (drawer and List rows) read `GET /cards/:id/assignable`, and
+  card mention autocomplete reads `GET /cards/:id/mentionable`: people who see the
+  card through a project the viewer cannot see are offered without naming it.
+  Board assignee groups still use the project's `GET /projects/:id/assignable`.
+- Realtime: a tile for another board updates the card's shared fields where this
+  board already shows it (`shareTile`), and an archived card leaves every board.
+  `card.removed { cardId, listId }` drops the tile from the board with that list.
+  `card.created` also arrives when a card is put on this board from elsewhere.
 
 ## Existing API actions
 

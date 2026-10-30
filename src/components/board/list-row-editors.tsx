@@ -7,20 +7,25 @@ import { DuePill } from '@/components/due-pill';
 import { Avatar, Button, Input } from '@/components/ui';
 import { useToast } from '@/components/toast';
 import { api, errorMessage } from '@/lib/api';
+import { cardPath, useCardPeople } from '@/lib/cards';
 import { applyTile } from '@/lib/realtime';
 import { toLocalInput } from '@/lib/time';
-import type { CardTile, Member } from '@/lib/types';
+import type { CardTile } from '@/lib/types';
 
-export function RowAssignees({ card, cardKey, members }: { card: CardTile; cardKey: string; members: Member[] }) {
+/** People come from the card's own read: a card in several projects can be assigned to anyone who sees one of them. */
+export function RowAssignees({ card, cardKey }: { card: CardTile; cardKey: string }) {
   const mutation = useRowSave(card);
-  return <RowPopover label={`Assign members for ${cardKey}`} title={`Assignees for ${cardKey}`} onOpen={() => mutation.reset()} trigger={card.assignees.length ? <span role="group" aria-label="Assignees" className="inline-flex min-w-0 items-center gap-1.5" title={card.assignees.map((person) => person.name).join(', ')}>
+  const [opened, setOpened] = useState(false);
+  const people = useCardPeople(card.id, 'assignable', card.projectId, opened);
+  const members = people.data?.data ?? [];
+  return <RowPopover label={`Assign members for ${cardKey}`} title={`Assignees for ${cardKey}`} onOpen={() => { mutation.reset(); setOpened(true); }} trigger={card.assignees.length ? <span role="group" aria-label="Assignees" className="inline-flex min-w-0 items-center gap-1.5" title={card.assignees.map((person) => person.name).join(', ')}>
     <span className="inline-flex -space-x-1.5">{card.assignees.slice(0, 2).map((person) => <Avatar key={person.id} person={person} size={22} />)}</span><span className="truncate">{card.assignees.length === 1 ? card.assignees[0]!.name : `${card.assignees.length} members`}</span>
   </span> : <span className="text-muted-foreground">Unassigned</span>}>
     {(close) => <>
       <div className="max-h-60 space-y-1 overflow-y-auto p-2">
-        {members.length ? members.map((member) => {
+        {people.isPending ? <p className="p-2 text-label text-muted-foreground">Loading people…</p> : people.error ? <div role="alert" className="space-y-2 p-2 text-label text-danger-text"><p>{errorMessage(people.error)}</p><Button variant="secondary" size="sm" onClick={() => void people.refetch()}>Retry people</Button></div> : members.length ? members.map((member) => {
           const selected = card.assignees.some((person) => person.id === member.userId);
-          return <button key={member.userId} type="button" aria-label={member.name} aria-pressed={selected} disabled={mutation.isPending} onClick={() => void mutation.save(() => selected ? api.del<CardTile>(`/cards/${card.id}/assignees/${member.userId}`) : api.post<CardTile>(`/cards/${card.id}/assignees/${member.userId}`))}
+          return <button key={member.userId} type="button" aria-label={member.name} aria-pressed={selected} disabled={mutation.isPending} onClick={() => void mutation.save(() => selected ? api.del<CardTile>(cardPath(card.id, card.projectId, `/assignees/${member.userId}`)) : api.post<CardTile>(cardPath(card.id, card.projectId, `/assignees/${member.userId}`)))}
             className={`tap flex min-h-9 w-full items-center gap-2 rounded-md px-2 py-1 text-left text-label disabled:opacity-50 ${selected ? 'bg-primary-subtle text-primary-text' : 'hover:bg-subtle'}`}>
             <Avatar person={{ id: member.userId, name: member.name, avatarUrl: member.avatarUrl }} size={24} /><span className="min-w-0 flex-1 break-words">{member.name}</span>{selected ? <Icon name="check" /> : null}
           </button>;
@@ -40,13 +45,13 @@ export function RowDue({ card, cardKey, now }: { card: CardTile; cardKey: string
     {(close) => <form className="space-y-3 p-3" onSubmit={(event) => {
       event.preventDefault();
       const dueAt = draft ? new Date(draft).toISOString() : null;
-      void mutation.save(() => api.patch<CardTile>(`/cards/${card.id}`, { dueAt, dueCompletedAt: dueAt && done ? card.dueCompletedAt ?? new Date().toISOString() : null })).then((saved) => { if (saved) close(); });
+      void mutation.save(() => api.patch<CardTile>(cardPath(card.id, card.projectId), { dueAt, dueCompletedAt: dueAt && done ? card.dueCompletedAt ?? new Date().toISOString() : null })).then((saved) => { if (saved) close(); });
     }}>
       <label className="block space-y-1 text-label"><span>Due date</span><Input data-autofocus type="datetime-local" value={draft} onChange={(event) => setDraft(event.target.value)} disabled={mutation.isPending} /></label>
       {draft ? <label className="tap flex items-center gap-2 text-label"><input type="checkbox" checked={done} onChange={(event) => setDone(event.target.checked)} disabled={mutation.isPending} />Mark due date complete</label> : null}
       {mutation.error ? <p role="alert" className="text-caption text-danger-text">{errorMessage(mutation.error)}</p> : null}
       <div className="flex flex-wrap items-center gap-2 border-t border-border pt-3">
-        {card.dueAt ? <Button variant="ghost" size="sm" disabled={mutation.isPending} onClick={() => void mutation.save(() => api.patch<CardTile>(`/cards/${card.id}`, { dueAt: null, dueCompletedAt: null })).then((saved) => { if (saved) close(); })}>Remove due date</Button> : null}
+        {card.dueAt ? <Button variant="ghost" size="sm" disabled={mutation.isPending} onClick={() => void mutation.save(() => api.patch<CardTile>(cardPath(card.id, card.projectId), { dueAt: null, dueCompletedAt: null })).then((saved) => { if (saved) close(); })}>Remove due date</Button> : null}
         <Button variant="ghost" size="sm" className="ml-auto" disabled={mutation.isPending} onClick={close}>Cancel</Button><Button type="submit" size="sm" disabled={mutation.isPending}>Save</Button>
       </div>
     </form>}
@@ -126,7 +131,7 @@ export function RowName({ card, cardKey }: { card: CardTile; cardKey: string }) 
     if (!title) { setValidation('Enter a card name.'); return; }
     if (title === card.title) { setEditing(false); return; }
     saving.current = true; setValidation(null);
-    const saved = await mutation.save(() => api.patch<CardTile>(`/cards/${card.id}`, { title }));
+    const saved = await mutation.save(() => api.patch<CardTile>(cardPath(card.id, card.projectId), { title }));
     if (saved) { setEditing(false); if (document.activeElement === document.body) restoreFocus(); }
     saving.current = false;
   }

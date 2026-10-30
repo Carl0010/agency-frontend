@@ -16,7 +16,7 @@ import { useNow } from '@/lib/use-now';
 import { useWorkspace } from '@/lib/workspace';
 
 const ICON: Record<NotificationType, IconName> = {
-  mention: 'mention', assignment: 'person', due_soon: 'clock', due_now: 'clock', new_message: 'comment', thread_reply: 'reply',
+  mention: 'mention', assignment: 'person', due_soon: 'clock', due_now: 'clock', card_late: 'clock', new_message: 'comment', thread_reply: 'reply',
 };
 
 /**

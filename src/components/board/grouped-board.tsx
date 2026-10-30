@@ -12,11 +12,13 @@ import { Dialog } from '@/components/ui-dialog';
 import { api, errorMessage } from '@/lib/api';
 import { assigneeChange, boardGroups, dueWindowOf, localDayAt, pickedDateEnd, previewAssignment, previewReschedule, type Assignable, type CardGroup, type Grouping, type RescheduleTarget } from '@/lib/board-grouping';
 import { isFiltering, matchesFilters, type BoardFilters } from '@/lib/filters';
+import { cardPath, cardRef } from '@/lib/cards';
 import { applyTile } from '@/lib/realtime';
-import type { Board, CardTile, Member, Page } from '@/lib/types';
+import type { Board, CardTile, Page } from '@/lib/types';
 import { useWriteAvailability } from '@/components/billing/billing-notices';
 import { useWorkspace } from '@/lib/workspace';
 import { CardTileView } from './card-tile';
+import { ReplanAction } from '@/components/arrival-actions';
 import { CardRowCells } from './list-view';
 
 /** Keyboard traverses whole groups rather than sorting cards within a group. */
@@ -38,8 +40,8 @@ const groupCoordinates: KeyboardCoordinateGetter = (event, { context, currentCoo
 };
 type Occurrence = { card: CardTile; groupId: string };
 
-export function GroupedBoard({ board, grouping, view, filters, now, timezone, members, cardHref }: {
-  board: Board; grouping: Exclude<Grouping, 'list'>; view: 'kanban' | 'list'; filters: BoardFilters; now: Date; timezone: string; members: Member[]; cardHref: (id: string) => string;
+export function GroupedBoard({ board, grouping, view, filters, now, timezone, cardHref }: {
+  board: Board; grouping: Exclude<Grouping, 'list'>; view: 'kanban' | 'list'; filters: BoardFilters; now: Date; timezone: string; cardHref: (id: string) => string;
 }) {
   const qc = useQueryClient(); const toast = useToast(); const ws = useWorkspace(); const { readOnly } = useWriteAvailability(ws);
   const people = useQuery({ queryKey: ['assignable', board.projectId], queryFn: ({ signal }) => api.get<Page<Assignable>>(`/projects/${board.projectId}/assignable`, signal), enabled: grouping === 'assignee' });
@@ -70,7 +72,7 @@ export function GroupedBoard({ board, grouping, view, filters, now, timezone, me
     setPending(true); applyTile(qc, preview);
     restore.current = { cardId: before.id, groupId: target };
     try {
-      const saved = grouping === 'assignee' ? await api.patch<CardTile>(`/cards/${before.id}/assignees`, assigneeChange(source.groupId, target)) : await api.post<CardTile>(`/cards/${before.id}/reschedule`, { to: target, ...(picked ? { dueAt: picked } : {}) });
+      const saved = grouping === 'assignee' ? await api.patch<CardTile>(cardPath(before.id, board.projectId, '/assignees'), assigneeChange(source.groupId, target)) : await api.post<CardTile>(cardPath(before.id, board.projectId, '/reschedule'), { to: target, ...(picked ? { dueAt: picked } : {}) });
       applyTile(qc, saved);
       setCollapsed((current) => { const next = new Set(current); next.delete(target); return next; });
       return true;
@@ -93,7 +95,7 @@ export function GroupedBoard({ board, grouping, view, filters, now, timezone, me
       if (grouping === 'due' && target === 'later') setLater(source); else void save(source, target);
     }}>
       <div data-testid="grouped-board" className={`@container min-h-0 flex-1 overflow-auto p-4 ${view === 'kanban' ? 'flex items-start gap-4' : ''}`}>
-        {view === 'list' ? <table aria-label="Board cards" className="w-full table-fixed border-separate border-spacing-0 rounded-lg border border-border bg-surface text-left"><thead className="text-caption text-muted-foreground"><tr><th className="w-full px-3 py-2 @3xl:w-auto">Card</th>{['Assignees', 'Due date', 'Labels', 'Activity'].map((label) => <th key={label} className="hidden w-28 px-2 py-2 @3xl:table-cell">{label}</th>)}</tr></thead>{groups.map((group) => <Group key={group.id} group={group} view={view} disabled={disabled} open={!collapsed.has(group.id)} onToggle={() => setCollapsed((current) => { const next = new Set(current); if (next.has(group.id)) next.delete(group.id); else next.add(group.id); return next; })}>{group.cards.map((card) => <GroupCard key={card.id} card={card} groupId={group.id} groupName={group.name} board={board} view={view} now={now} members={members} href={cardHref(card.id)} disabled={disabled} />)}</Group>)}</table> : groups.map((group) => <Group key={group.id} group={group} view={view} disabled={disabled} open={!collapsed.has(group.id)} onToggle={() => setCollapsed((current) => { const next = new Set(current); if (next.has(group.id)) next.delete(group.id); else next.add(group.id); return next; })}>{group.cards.map((card) => <GroupCard key={card.id} card={card} groupId={group.id} groupName={group.name} board={board} view={view} now={now} members={members} href={cardHref(card.id)} disabled={disabled} />)}</Group>)}
+        {view === 'list' ? <table aria-label="Board cards" className="w-full table-fixed border-separate border-spacing-0 rounded-lg border border-border bg-surface text-left"><thead className="text-caption text-muted-foreground"><tr><th className="w-full px-3 py-2 @3xl:w-auto">Card</th>{['Assignees', 'Due date', 'Labels', 'Activity'].map((label) => <th key={label} className="hidden w-28 px-2 py-2 @3xl:table-cell">{label}</th>)}</tr></thead>{groups.map((group) => <Group key={group.id} group={group} view={view} disabled={disabled} open={!collapsed.has(group.id)} onToggle={() => setCollapsed((current) => { const next = new Set(current); if (next.has(group.id)) next.delete(group.id); else next.add(group.id); return next; })}>{group.cards.map((card) => <GroupCard key={card.id} card={card} groupId={group.id} groupName={group.name} board={board} view={view} now={now} href={cardHref(card.id)} disabled={disabled} />)}</Group>)}</table> : groups.map((group) => <Group key={group.id} group={group} view={view} disabled={disabled} open={!collapsed.has(group.id)} onToggle={() => setCollapsed((current) => { const next = new Set(current); if (next.has(group.id)) next.delete(group.id); else next.add(group.id); return next; })}>{group.cards.map((card) => <GroupCard key={card.id} card={card} groupId={group.id} groupName={group.name} board={board} view={view} now={now} href={cardHref(card.id)} disabled={disabled} />)}</Group>)}
       </div>
       <DragOverlay dropAnimation={null}>{active ? <div className="w-72 rounded-lg border border-primary-border bg-surface p-3 text-label shadow-xl">{active.card.title}</div> : null}</DragOverlay>
     </DndContext>
@@ -108,12 +110,12 @@ function Group({ group, view, disabled, children, open, onToggle }: { group: Car
   return <section ref={drop.setNodeRef} aria-label={`Group ${group.name}`} data-group-id={group.id} className={`flex max-h-full w-80 shrink-0 flex-col rounded-xl border ${drop.isOver ? 'border-primary-border bg-primary-subtle' : 'border-border bg-subtle'}`}><h2 className="flex min-h-12 items-center gap-3 border-b border-border px-4 py-3 text-label font-semibold">{heading}</h2><div className="min-h-0 space-y-3 overflow-y-auto p-3">{children}{!group.cards.length ? <p className="flex min-h-48 items-center justify-center rounded-lg border border-dashed border-border-hover text-label text-muted-foreground">No cards</p> : null}</div></section>;
 }
 
-function GroupCard({ card, groupId, groupName, board, view, now, members, href, disabled }: { card: CardTile; groupId: string; groupName: string; board: Board; view: 'kanban' | 'list'; now: Date; members: Member[]; href: string; disabled: boolean }) {
+function GroupCard({ card, groupId, groupName, view, now, href, disabled }: { card: CardTile; groupId: string; groupName: string; board: Board; view: 'kanban' | 'list'; now: Date; href: string; disabled: boolean }) {
   const drag = useDraggable({ id: `${groupId}:${card.id}`, data: { card, groupId }, disabled });
-  const cardKey = `${board.project.key}-${card.number}`;
+  const cardKey = cardRef(card);
   const handle = <button type="button" ref={drag.setActivatorNodeRef} {...drag.attributes} {...drag.listeners} disabled={disabled} aria-label={`Move ${cardKey} from ${groupName}`} data-group-card-handle data-card-id={card.id} data-group-id={groupId} title="Space to lift, arrows to change group, Space to drop" className="tap inline-flex size-8 shrink-0 cursor-grab items-center justify-center rounded-md text-muted-foreground hover:bg-muted disabled:cursor-not-allowed disabled:opacity-30"><Icon name="grip" className="size-3.5" /></button>;
-  if (view === 'list') return <tr ref={drag.setNodeRef} data-testid="card-row" data-card-row-id={card.id} className={`group/list-row hover:bg-background ${drag.isDragging ? 'opacity-30' : ''}`}><CardRowCells card={card} cardKey={cardKey} now={now} href={href} selected={false} members={members} handle={handle} /></tr>;
-  return <div ref={drag.setNodeRef} className={`relative ${drag.isDragging ? 'opacity-30' : ''}`}><div className="absolute right-1 top-1 z-10 rounded-md bg-surface">{handle}</div><CardLink cardId={card.id} href={href} scroll={false} data-card-id={card.id} className="block rounded-lg focus-visible:outline-2 focus-visible:outline-ring [&_[data-testid=card-tile-title]]:pr-6" aria-label={`${cardKey}: ${card.title}`}><CardTileView card={card} projectKey={board.project.key} now={now} /></CardLink></div>;
+  if (view === 'list') return <tr ref={drag.setNodeRef} data-testid="card-row" data-card-row-id={card.id} className={`group/list-row hover:bg-background ${drag.isDragging ? 'opacity-30' : ''}`}><CardRowCells card={card} cardKey={cardKey} now={now} href={href} selected={false} handle={handle} /></tr>;
+  return <div ref={drag.setNodeRef} className={`relative ${drag.isDragging ? 'opacity-30' : ''}`}><div className="absolute right-1 top-1 z-10 rounded-md bg-surface">{handle}</div><CardLink cardId={card.id} href={href} scroll={false} data-card-id={card.id} className="block rounded-lg focus-visible:outline-2 focus-visible:outline-ring [&_[data-testid=card-tile-title]]:pr-6" aria-label={`${cardKey}: ${card.title}`}><CardTileView card={card} now={now} /></CardLink><ReplanAction boardId={card.boardId} projectId={card.projectId} cardId={card.id} title={card.title} /></div>;
 }
 
 function LaterDate({ timezone, pending, onClose, onSave }: { timezone: string; pending: boolean; onClose: () => void; onSave: (picked: string) => Promise<void> }) {

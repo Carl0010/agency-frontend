@@ -25,6 +25,10 @@ import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import { Icon } from '@/components/icon';
+import { ProjectArrivalLine } from '@/components/arrival';
+import { ProjectArrivalSettings } from '@/components/arrival-settings';
+import { ConfidencePrompt } from '@/components/arrival-actions';
+import { useBoardArrivals } from '@/lib/arrival';
 import { ProjectActions } from '@/components/project-chrome';
 import { ProjectIcon } from '@/components/projects/project-icon';
 import { ProjectStatusMenu } from '@/components/projects/project-status';
@@ -33,6 +37,7 @@ import { Avatar, Button } from '@/components/ui';
 import { api, errorMessage } from '@/lib/api';
 import { findCard, moveCardLocal, moveListLocal, upsertCard, upsertList } from '@/lib/board-state';
 import { isFiltering, matchesFilters, parseFilters, writeFilters, type BoardFilters } from '@/lib/filters';
+import { cardRef } from '@/lib/cards';
 import { useProjectRealtime } from '@/lib/realtime';
 import type { Board, CardTile, Label, Page, Project } from '@/lib/types';
 import { useGroupingClock } from '@/lib/use-grouping-clock';
@@ -111,6 +116,7 @@ export function BoardScreen({ boardId, projectId }: { boardId: string; projectId
   const project = useQuery({ queryKey: ['project', projectId], queryFn: () => api.get<Project>(`/projects/${projectId}`) });
   useEffect(() => { if (project.error) toast(errorMessage(project.error)); }, [project.error, toast]);
   const board = useQuery({ queryKey: ['board', boardId], queryFn: () => api.get<Board>(`/boards/${boardId}`) });
+  const arrivals = useBoardArrivals(boardId);
   const now = useGroupingClock(board.data, timezone);
   const grouping = parseGrouping(params.get('group'));
   const members = useProjectPeople(ws.id, projectId);
@@ -234,8 +240,10 @@ export function BoardScreen({ boardId, projectId }: { boardId: string; projectId
               {shown.project.name}
             </h1>
             {project.data ? <ProjectStatusMenu project={project.data} /> : null}
+            <ProjectArrivalLine projectId={projectId} />
           </div>
           <div className="flex max-w-full flex-wrap items-center gap-2">
+            {project.data ? <ProjectArrivalSettings projectId={projectId} canEdit={project.data.access === 'admin'} /> : null}
             <ProjectActions projectId={projectId} />
             <div role="group" aria-label="Project members" className="flex -space-x-1.5">
               {activeMembers.slice(0, 5).map((member) => (
@@ -251,6 +259,8 @@ export function BoardScreen({ boardId, projectId }: { boardId: string; projectId
             <button type="button" aria-pressed={view === 'list'} onClick={() => setView('list')} className={`ui-button tap min-h-8 gap-1.5 px-2.5 ${view === 'list' ? 'bg-surface text-foreground shadow-sm' : 'text-muted-foreground hover:bg-subtle'}`}><Icon name="list" />List</button>
           </div><GroupingSelect /></div>
         } />
+        {arrivals.error ? <p role="alert" className="px-4 py-1 text-caption text-danger-text">{errorMessage(arrivals.error)}</p> : arrivals.data?.history === 'insufficient' ? <p className="px-4 py-1 text-caption text-muted-foreground">Arrival times appear once the team has finished 20 cards.</p> : null}
+        <ConfidencePrompt projectId={projectId} />
 
         {grouping === 'list' && view === 'kanban' && shown.lists.length ? (
           <div className="flex shrink-0 gap-2 overflow-x-auto border-b border-border bg-surface px-4 py-2 sm:hidden" role="tablist" aria-label="Lists">
@@ -270,7 +280,7 @@ export function BoardScreen({ boardId, projectId }: { boardId: string; projectId
         ) : null}
 
 
-        {grouping !== 'list' ? <GroupedBoard key={`${grouping}:${view}`} board={board.data} grouping={grouping} view={view} filters={filters} now={now} timezone={timezone} members={activeMembers} cardHref={cardHref} /> : view === 'list' ? <BoardListView editingListId={editingListId} onListCreated={onListCreated} onListEditFinished={onListEditFinished} board={shown} filters={filters} now={now} cardHref={cardHref} members={activeMembers} activeDrag={drag} onDragStart={onDragStart} onDragOver={onDragOver} onDragEnd={onDragEnd} onDragCancel={() => setDrag(null)} /> : <DndContext
+        {grouping !== 'list' ? <GroupedBoard key={`${grouping}:${view}`} board={board.data} grouping={grouping} view={view} filters={filters} now={now} timezone={timezone} cardHref={cardHref} /> : view === 'list' ? <BoardListView editingListId={editingListId} onListCreated={onListCreated} onListEditFinished={onListEditFinished} board={shown} filters={filters} now={now} cardHref={cardHref} activeDrag={drag} onDragStart={onDragStart} onDragOver={onDragOver} onDragEnd={onDragEnd} onDragCancel={() => setDrag(null)} /> : <DndContext
           sensors={sensors}
           collisionDetection={collision}
           onDragStart={onDragStart}
@@ -300,7 +310,7 @@ export function BoardScreen({ boardId, projectId }: { boardId: string; projectId
           <DragOverlay>
             {activeCard ? (
               <div className="w-80">
-                <CardTileView card={activeCard} projectKey={shown.project.key} now={now} dragging />
+                <CardTileView card={activeCard} now={now} dragging />
               </div>
             ) : activeList ? (
               <div className="w-80 rounded-xl border border-border bg-subtle p-4 text-sm font-semibold shadow-lg">{activeList.name}</div>
@@ -331,7 +341,7 @@ function ArchivedCards({ boardId, cardHref }: { boardId: string; cardHref: (id: 
               {archived.data.data.map((c) => (
                 <li key={c.id}>
                   <Link href={cardHref(c.id)} onClick={() => setOpen(false)} className="tap block truncate rounded px-2 py-1 text-sm hover:bg-subtle">
-                    #{c.number} {c.title}
+                    <span className="font-mono text-caption text-muted-foreground">{cardRef(c)}</span> {c.title}
                   </Link>
                 </li>
               ))}

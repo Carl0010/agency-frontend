@@ -5,11 +5,22 @@ import { CSS } from '@dnd-kit/utilities';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useRef, type KeyboardEvent } from 'react';
 import { Icon } from '@/components/icon';
+import { ArrivalChip } from '@/components/arrival';
+import { ReplanAction } from '@/components/arrival-actions';
 import { DuePill } from '@/components/due-pill';
 import { Avatar, LABEL_BG } from '@/components/ui';
+import { cardRef } from '@/lib/cards';
 import type { CardTile as Tile } from '@/lib/types';
 
-export function CardTileView({ card, projectKey, now, dragging }: { card: Tile; projectKey: string; now: Date; dragging?: boolean }) {
+/** "Also in N projects": the other projects a card is in. Agency only; guests never get the count. */
+export function AlsoInProjects({ card }: { card: Pick<Tile, 'placementCount'> }) {
+  const others = (card.placementCount ?? 1) - 1;
+  if (others < 1) return null;
+  const label = `Also in ${others} other project${others === 1 ? '' : 's'}`;
+  return <span data-testid="card-also-in" title={label} aria-label={label} className="inline-flex shrink-0 items-center gap-1 rounded-sm bg-subtle px-1.5 py-0.5 text-caption font-medium text-secondary-foreground"><Icon name="board" className="size-3.5" />+{others}</span>;
+}
+
+export function CardTileView({ card, now, dragging, guest = false }: { card: Tile; now: Date; dragging?: boolean; guest?: boolean }) {
   const shown = card.assignees.slice(0, 3);
   const extra = card.assignees.length - shown.length;
   const hasFacts = card.dueAt || card.checklistTotal || card.commentCount || card.attachmentCount || card.hasDescription;
@@ -28,6 +39,7 @@ export function CardTileView({ card, projectKey, now, dragging }: { card: Tile; 
         </div>
       ) : null}
       <p title={card.title} data-testid="card-tile-title" className="line-clamp-3 break-words text-body-lg font-medium leading-6 text-foreground">{card.title}</p>
+      <ArrivalChip boardId={card.boardId} cardId={card.id} guest={guest} />
       {hasFacts ? (
         <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 text-caption text-muted-foreground">
           <DuePill dueAt={card.dueAt} dueCompletedAt={card.dueCompletedAt} now={now} />
@@ -46,7 +58,7 @@ export function CardTileView({ card, projectKey, now, dragging }: { card: Tile; 
         </div>
       ) : null}
       <div className="mt-3 flex min-h-6 items-center justify-between gap-3 border-t border-border-subtle pt-3">
-        <span className="truncate font-mono text-caption text-muted-foreground" data-testid="card-tile-key">{projectKey}-{card.number}</span>
+        <span className="flex min-w-0 items-center gap-2"><span className="truncate font-mono text-caption text-muted-foreground" data-testid="card-tile-key">{cardRef(card)}</span><AlsoInProjects card={card} /></span>
         {card.assignees.length ? (
           <span className="flex shrink-0 items-center -space-x-1.5">
             {shown.map((person) => <Avatar key={person.id} person={person} size={24} />)}
@@ -59,7 +71,7 @@ export function CardTileView({ card, projectKey, now, dragging }: { card: Tile; 
 }
 
 /** A tile that can be dragged with mouse, touch (long-press) or keyboard (Space). Enter or click opens it. */
-export function SortableCard({ card, projectKey, now, href, disabled }: { card: Tile; projectKey: string; now: Date; href: string; disabled?: boolean }) {
+export function SortableCard({ card, now, href, disabled }: { card: Tile; now: Date; href: string; disabled?: boolean }) {
   const router = useRouter();
   const selected = usePathname().endsWith(`/c/${card.id}`);
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
@@ -81,6 +93,7 @@ export function SortableCard({ card, projectKey, now, href, disabled }: { card: 
     if (!e.defaultPrevented && e.key === 'Enter') open();
   };
   return (
+    <div>
     <div
       ref={setNodeRef}
       style={{ transform: CSS.Translate.toString(transform), transition }}
@@ -91,7 +104,7 @@ export function SortableCard({ card, projectKey, now, href, disabled }: { card: 
       role="button"
       // Filtering disables sorting, while opening the card remains available.
       aria-disabled={undefined}
-      aria-label={`${projectKey}-${card.number}: ${card.title}`}
+      aria-label={`${cardRef(card)}: ${card.title}`}
       data-testid="card-tile"
       data-tour="card"
       data-card-id={card.id}
@@ -99,7 +112,9 @@ export function SortableCard({ card, projectKey, now, href, disabled }: { card: 
       aria-controls={selected ? 'card-drawer' : undefined}
       className={`tap shrink-0 cursor-pointer rounded-lg focus-visible:outline-2 focus-visible:outline-ring ${isDragging ? 'opacity-40' : ''} ${selected ? 'ring-2 ring-primary-border' : ''}`}
     >
-      <CardTileView card={card} projectKey={projectKey} now={now} />
+      <CardTileView card={card} now={now} />
+    </div>
+    <ReplanAction boardId={card.boardId} projectId={card.projectId} cardId={card.id} title={card.title} />
     </div>
   );
 }

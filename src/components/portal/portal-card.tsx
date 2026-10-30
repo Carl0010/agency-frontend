@@ -7,10 +7,12 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { Comments } from '@/components/card/comments';
 import { DuePill } from '@/components/due-pill';
+import { ArrivalChip } from '@/components/arrival';
 import { Markdown } from '@/components/markdown';
 import { useToast } from '@/components/toast';
 import { LABEL_BG } from '@/components/ui';
 import { api, ApiError, errorMessage } from '@/lib/api';
+import { cardDetailKey, cardPath, cardRef } from '@/lib/cards';
 import { MentionScopeContext } from '@/lib/mention-scope';
 import { useProjectRealtime, useRoom } from '@/lib/realtime';
 import { formatBytes } from '@/lib/time';
@@ -26,7 +28,7 @@ import { useNow } from '@/lib/use-now';
 export function PortalCard({ project, cardId }: { project: PortalProject; cardId: string }) {
   const params = useSearchParams();
   const now = useNow();
-  const card = useQuery({ queryKey: ['card', cardId], queryFn: () => api.get<CardDetail>(`/cards/${cardId}`) });
+  const card = useQuery({ queryKey: cardDetailKey(cardId, project.id), queryFn: () => api.get<CardDetail>(cardPath(cardId, project.id)) });
   useProjectRealtime(project.id);
   useRoom(card.data ? `card:${cardId}` : null, {});
 
@@ -52,7 +54,7 @@ export function PortalCard({ project, cardId }: { project: PortalProject; cardId
         {back}
         <header>
           <p className="text-xs text-muted-foreground">
-            {c.listName} · {c.key}-{c.number}
+            {c.listName} · {cardRef(c)}
           </p>
           <h1 className="text-xl font-semibold break-words">{c.title}</h1>
           <div className="mt-2 flex flex-wrap items-center gap-2">
@@ -62,6 +64,7 @@ export function PortalCard({ project, cardId }: { project: PortalProject; cardId
               </span>
             ))}
             <DuePill dueAt={c.dueAt} dueCompletedAt={c.dueCompletedAt} now={now} />
+            <ArrivalChip boardId={c.boardId} cardId={c.id} guest />
           </div>
         </header>
         {c.description ? (
@@ -74,8 +77,8 @@ export function PortalCard({ project, cardId }: { project: PortalProject; cardId
           <ReadOnlyChecklist key={k.id} checklist={k} />
         ))}
         {c.attachments.length ? <ReadOnlyAttachments attachments={c.attachments} /> : null}
-        <MentionScopeContext.Provider value={{ projectId: project.id, surface: 'card' }}>
-          <Comments cardId={c.id} canPost={project.access === 'comment'} />
+        <MentionScopeContext.Provider value={{ projectId: project.id, surface: 'card', cardId: c.id }}>
+          <Comments cardId={c.id} projectId={project.id} canPost={project.access === 'comment'} />
         </MentionScopeContext.Provider>
       </article>
     </div>
