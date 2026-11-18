@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useState, type FormEvent } from 'react';
 import { countLabel, Snippet, TYPE_LABEL } from '@/components/search/snippet';
-import { Button, Input, Spinner } from '@/components/ui';
+import { Button, Combobox, Input, Select, Spinner } from '@/components/ui';
 import { api, errorMessage } from '@/lib/api';
 import { timeAgo } from '@/lib/time';
 import type { Member, Page, Project, SearchResult, SearchType } from '@/lib/types';
@@ -77,37 +77,37 @@ function SearchScreen() {
         <Button type="submit">Search</Button>
       </form>
       <div className="mb-4 flex flex-wrap items-center gap-2 text-sm" aria-label="Filters">
-        <select aria-label="Type" value={typeFilter[0] ?? ''} onChange={(e) => set({ type: e.target.value || null })} className="tap rounded-md border border-input px-2">
+        <Select aria-label="Type" value={typeFilter[0] ?? ''} onChange={(e) => set({ type: e.target.value || null })} className="w-auto">
           <option value="">All types</option>
           {TYPES.map((t) => (
             <option key={t} value={t}>
               {TYPE_LABEL[t]}
             </option>
           ))}
-        </select>
-        <select aria-label="Project" value={project ?? ''} onChange={(e) => set({ project: e.target.value || null })} className="tap rounded-md border border-input px-2">
-          <option value="">All projects</option>
-          {(projects.data?.data ?? []).map((p) => (
-            <option key={p.id} value={p.id}>
-              {p.name}
-            </option>
-          ))}
-        </select>
-        <select aria-label="Author" value={author ?? ''} onChange={(e) => set({ author: e.target.value || null })} className="tap rounded-md border border-input px-2">
-          <option value="">Anyone</option>
-          {(members.data?.data ?? [])
-            .filter((m) => m.status !== 'invited')
-            .map((m) => (
-              <option key={m.userId} value={m.userId}>
-                {m.name}
-              </option>
-            ))}
-        </select>
+        </Select>
+        <Combobox
+          aria-label="Project"
+          placeholder="All projects"
+          className="w-48"
+          value={project ?? null}
+          onChange={(v) => set({ project: v })}
+          options={(projects.data?.data ?? []).map((p) => ({ value: p.id, label: p.name }))}
+          emptyText="No matching projects"
+        />
+        <Combobox
+          aria-label="Author"
+          placeholder="Anyone"
+          className="w-48"
+          value={author ?? null}
+          onChange={(v) => set({ author: v })}
+          options={(members.data?.data ?? []).filter((m) => m.status !== 'invited').map((m) => ({ value: m.userId, label: m.name }))}
+          emptyText="No matching people"
+        />
         <label className="flex items-center gap-1">
-          From <input type="date" value={from ?? ''} onChange={(e) => set({ from: e.target.value || null })} className="tap rounded-md border border-input px-2" />
+          From <Input type="date" value={from ?? ''} onChange={(e) => set({ from: e.target.value || null })} className="w-auto" />
         </label>
         <label className="flex items-center gap-1">
-          To <input type="date" value={to ?? ''} onChange={(e) => set({ to: e.target.value || null })} className="tap rounded-md border border-input px-2" />
+          To <Input type="date" value={to ?? ''} onChange={(e) => set({ to: e.target.value || null })} className="w-auto" />
         </label>
         <label className="flex items-center gap-1">
           <input type="checkbox" checked={params.get('archived') === '1'} onChange={(e) => set({ archived: e.target.checked ? '1' : null })} />
