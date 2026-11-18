@@ -153,7 +153,11 @@ export function Combobox({
           disabled={disabled}
           placeholder={selected ? selected.label : placeholder}
           value={lb.typed ? lb.query : selected?.label ?? ''}
-          onChange={(e) => lb.type(e.target.value)}
+          onChange={(e) => {
+            // Typing after the chosen label (caret at the end) searches only for the new text.
+            const text = e.target.value;
+            lb.type(!lb.typed && selected && text.startsWith(selected.label) ? text.slice(selected.label.length) : text);
+          }}
           onFocus={(e) => e.currentTarget.select()}
           onClick={() => { if (!lb.open) lb.openWith(selectedIndex); }}
           onBlur={() => lb.close()}
