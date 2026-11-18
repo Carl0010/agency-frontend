@@ -5,7 +5,7 @@ import { useState, type FormEvent } from 'react';
 import { FormError } from '@/components/auth-card';
 import { useConfirm } from '@/components/confirmation';
 import { useToast } from '@/components/toast';
-import { Avatar, Button, GuestChip, Input, Spinner } from '@/components/ui';
+import { Avatar, Button, GuestChip, Input, Select, Spinner } from '@/components/ui';
 import { api, ApiError, errorMessage } from '@/lib/api';
 import { useSession } from '@/lib/session';
 import type { Member, Page, Seats } from '@/lib/types';
@@ -77,10 +77,10 @@ export default function MembersPage() {
           <FormError message={inviteError} />
           <div className="mt-2 grid gap-2 sm:grid-cols-[1fr_auto_auto]">
             <Input name="email" type="email" placeholder="name@agency.com" aria-label="Email" required />
-            <select name="role" aria-label="Role" defaultValue="member" className="tap rounded-md border border-input bg-surface px-2 text-sm">
+            <Select name="role" aria-label="Role" defaultValue="member" className="w-auto">
               <option value="member">Member</option>
               <option value="admin">Admin</option>
-            </select>
+            </Select>
             <Button type="submit">Send invite</Button>
           </div>
           <p className="mt-2 text-xs text-muted-foreground">A pending invite holds a seat until it is accepted or revoked.</p>
@@ -124,15 +124,15 @@ export default function MembersPage() {
                     ) : null}
                   </span>
                 ) : canManage && !isOwner && m.status === 'active' ? (
-                  <select
+                  <Select
                     aria-label={`Role for ${m.name}`}
                     value={m.role}
                     onChange={(e) => act.mutate(() => api.patch(`/workspaces/${ws.id}/members/${m.userId}`, { role: e.target.value }))}
-                    className="tap rounded-md border border-input bg-surface px-2 py-1 text-sm"
+                    className="w-auto"
                   >
                     <option value="member">Member</option>
                     <option value="admin">Admin</option>
-                  </select>
+                  </Select>
                 ) : (
                   <span className="text-sm capitalize text-secondary-foreground">{m.role}</span>
                 )}

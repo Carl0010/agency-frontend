@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Icon } from '@/components/icon';
-import { Avatar, Input, LABEL_BG } from '@/components/ui';
+import { Avatar, Input, LABEL_BG, Select } from '@/components/ui';
 import { EMPTY_FILTERS, isFiltering, type BoardFilters, type DueFilter } from '@/lib/filters';
 import type { Label, Member } from '@/lib/types';
 
@@ -91,16 +91,16 @@ export function FilterBar({
           </fieldset>
           <label className="flex items-center gap-1 text-xs font-medium text-muted-foreground">
             Due
-            <select
+            <Select
               value={filters.due ?? ''}
               onChange={(e) => onChange({ ...filters, due: (e.target.value || null) as DueFilter | null })}
-              className="tap min-h-9 rounded-md border border-input bg-surface px-2 py-1 text-label text-foreground"
+              className="w-auto text-label"
             >
               <option value="">Any time</option>
               <option value="overdue">Overdue</option>
               <option value="week">Due this week</option>
               <option value="none">No due date</option>
-            </select>
+            </Select>
           </label>
         </div>
       ) : null}

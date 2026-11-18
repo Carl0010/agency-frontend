@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState, type FormEvent } from 'react';
 import { useConfirm } from '@/components/confirmation';
 import { useToast } from '@/components/toast';
-import { Avatar, Button, Input } from '@/components/ui';
+import { Avatar, Button, Input, Select } from '@/components/ui';
 import { api, errorMessage } from '@/lib/api';
 import type { GuestAccess, Page, ProjectGuest } from '@/lib/types';
 
@@ -108,15 +108,15 @@ function GuestPanel({ projectId, onClose }: { projectId: string; onClose: () => 
             onChange={(e) => setEmail(e.target.value)}
             className="min-w-0 flex-1"
           />
-          <select
+          <Select
             aria-label="Access"
             value={access}
             onChange={(e) => setAccess(e.target.value as GuestAccess)}
-            className="tap rounded-md border border-input bg-surface px-2 text-sm"
+            className="w-auto"
           >
             <option value="comment">{ACCESS_LABEL.comment}</option>
             <option value="read">{ACCESS_LABEL.read}</option>
-          </select>
+          </Select>
           <Button type="submit" disabled={busy || !email.trim()}>
             Invite
           </Button>
@@ -132,15 +132,15 @@ function GuestPanel({ projectId, onClose }: { projectId: string; onClose: () => 
                   {g.status === 'invited' ? ' · invited' : ''}
                 </p>
               </div>
-              <select
+              <Select
                 aria-label={`Access for ${g.name}`}
                 value={g.access}
                 onChange={(e) => void change(g, e.target.value as GuestAccess)}
-                className="tap rounded-md border border-input bg-surface px-2 text-sm"
+                className="w-auto"
               >
                 <option value="comment">{ACCESS_LABEL.comment}</option>
                 <option value="read">{ACCESS_LABEL.read}</option>
-              </select>
+              </Select>
               <Button variant="ghost" onClick={() => void remove(g)}>
                 Remove
               </Button>
