@@ -1,9 +1,17 @@
 # Agency design system
 
-Accepted direction, 2026-10-15: a calm, precise workspace for small agencies.
-Use warm gray surfaces, deep green actions, legible compact typography, and
+Accepted direction, 2026-11-18: **Quiet Pro**, a calm, dense, keyboard-first workspace
+for small agencies. Cool near-neutral surfaces, one teal accent, Geist type, and
 clear boundaries between navigation, work content and client communication.
-The palette is Agency's own; it does not copy a product's branding.
+Dark mode is designed first and light mode is equally supported. The palette is
+Agency's own; it does not copy a product's branding.
+
+The full reference (tokens with usage notes, the brand book and live component
+previews) is the Quiet Pro design system artifact. This file is the source of truth
+for how it applies in this repository. Colors are authored in OKLCH and stored here
+as the nearest sRGB hex, because the contrast tests read hex.
+
+Superseded direction, 2026-10-15: warm gray surfaces and deep green actions.
 
 ## Research and decisions
 
@@ -17,7 +25,7 @@ The palette is Agency's own; it does not copy a product's branding.
 These are selected first-party design references, not a ranking of products.
 We adopt their methods of hierarchy and consistency rather than combine their
 logos, component libraries or exact palettes. In particular, Shopify's admin
-uses its own color meanings; Agency retains green as its brand accent and
+uses its own color meanings; Agency uses teal as its brand accent and
 uses explicit status labels to distinguish brand actions from success states.
 
 ## Sources of truth
@@ -26,7 +34,8 @@ uses explicit status labels to distinguish brand actions from success states.
 | --- | --- |
 | Palette, type scale, radii, elevation | `src/styles/tokens.css` |
 | Global baseline, focus, touch targets, motion | `src/app/globals.css` |
-| Buttons, fields, badges, panels, page headers, empty states | `src/components/ui.tsx` |
+| Buttons, fields, pickers, toggles, badges, panels, page headers, empty states | `src/components/ui.tsx` (comboboxes in `combobox.tsx`, re-exported) |
+| Listbox filtering and keyboard movement | `src/lib/listbox.ts` |
 | Outline icons and brand mark | `src/components/icon.tsx` |
 | Content label/project/avatar mappings | `src/lib/content-colors.ts` |
 | Automated enforcement | `design-system-eslint.mjs` |
@@ -39,26 +48,25 @@ component library to fix an individual screen.
 
 ## Color roles
 
-| Role / utility | Value | Use |
+| Role / utility | Light / dark | Use |
 | --- | --- | --- |
-| `bg-background` | `#F7F8F5` | App canvas and quiet navigation rail |
-| `bg-board-canvas` | `#EEF2F6` light / `#151F27` dark | Cool neutral board work area, distinct from the warm sidebar; pair with foreground/secondary/muted text |
-| `bg-surface` | `#FFFFFF` | Cards, forms, dialogs, main headers |
-| `bg-subtle` | `#F0F2EE` | Board lanes, code, secondary control hover |
-| `bg-muted` | `#E7EBE5` | Neutral selected/pressed surfaces |
-| `text-foreground` | `#202822` | Titles, content, primary values |
-| `text-secondary-foreground` | `#46534A` | Supporting labels and navigation |
-| `text-muted-foreground` | `#626F65` | Metadata, descriptions, placeholders |
-| `border-border` | `#DBE1D9` | Noninteractive surfaces and dividers |
-| `border-input` | `#859287` | Form controls that need a visible boundary |
-| `bg-primary`, `text-primary` | `#196747` | Main actions, links, focus |
-| `hover:bg-primary-hover` | `#145539` | Primary hover |
-| `active:bg-primary-active` | `#10452F` | Primary pressed |
-| `bg-primary-subtle` / `text-primary-text` | `#EDF5EE` / `#174E36` | Selected navigation, low-emphasis brand accents |
-| `bg-danger` / `text-danger-text` | `#B43737` / `#942E2E` | Destructive actions / errors |
-| `text-warning-text` | `#805012` | Due soon, trial ending, action needed |
-| `text-success-text` | `#235C3B` | Completed work and positive status |
-| `text-info-text` | `#244F79` | Informational messages |
+| `bg-background` | `#F9FAFB` / `#0A0C0F` | App canvas and quiet navigation rail |
+| `bg-board-canvas` | `#EEF0F3` / `#111315` | Board work area, one step off the sidebar; pair with foreground/secondary/muted text |
+| `bg-surface` | `#FFFFFF` / `#171A1D` | Cards, forms, dialogs, popovers, main headers |
+| `bg-subtle` | `#F2F3F5` / `#1F2225` | Board lanes, code, hover rows and options |
+| `bg-muted` | `#E8EAEC` / `#282C30` | Neutral selected/pressed surfaces, chips |
+| `text-foreground` | `#15171A` / `#F2F3F5` | Titles, content, primary values |
+| `text-secondary-foreground` | `#44484D` / `#C8CBCE` | Supporting labels and navigation |
+| `text-muted-foreground` | `#5C6167` / `#A1A5AA` | Metadata, descriptions, placeholders |
+| `border-border` | `#D7D9DC` / `#2D3135` | Noninteractive surfaces and dividers |
+| `border-input` | `#81878D` / `#6B7177` | Form controls that need a visible boundary |
+| `bg-primary`, `text-primary` | `#00767D` / `#40D2D2` | Main actions, links, focus, checked controls |
+| `hover:bg-primary-hover` | `#00656B` / `#69E4E4` | Primary hover |
+| `bg-primary-subtle` / `text-primary-text` | `#DEF6F5`·`#00646A` / `#073232`·`#73DFDF` | Selected navigation, low-emphasis brand accents |
+| `bg-danger` / `text-danger-text` | `#B63132` / `#A82D2E`·`#FBA8A0` | Destructive actions / errors |
+| `text-warning-text` | `#834B14` / `#F7C97B` | Due soon, trial ending, action needed |
+| `text-success-text` | `#036639` / `#8BDDA8` | Completed work and positive status |
+| `text-info-text` | `#1D5B92` / `#A5CCF4` | Informational messages |
 
 Status roles have matching `*-subtle`, `*-muted` where needed, and `*-border`
 tokens. Never use an accent as a substitute for a status. Unread counts use
@@ -72,13 +80,13 @@ must remain identifiable and unavailable to activation.
 
 The base pairs are checked with WCAG relative luminance calculations:
 
-| Pair | Contrast |
-| --- | --- |
-| Main text on canvas | 14.19:1 |
-| Muted text on white | 5.28:1 |
-| Muted text on subtle surface | 4.68:1 |
-| White text on primary | 6.84:1 |
-| Input outline on white | 3.25:1 |
+| Pair | Light | Dark |
+| --- | --- | --- |
+| Main text on canvas | 17.18:1 | 17.64:1 |
+| Muted text on surface | 6.25:1 | 7.05:1 |
+| Muted text on subtle surface | 5.63:1 | 6.45:1 |
+| Primary foreground on primary | 5.40:1 | 9.74:1 |
+| Input outline on surface | 3.63:1 | 3.54:1 |
 
 These checks validate the defined opaque token pairs. They do not certify every
 page, opacity combination or user-supplied image. Keep text at least 4.5:1 and
@@ -194,12 +202,29 @@ including metadata bounds and access to list headings and bottom actions.
 </Field>
 <Badge tone="warning">Due soon</Badge>
 <PageHeader title="Clients" description="All your client work in one place." />
+<Combobox aria-label="Project" value={projectId} onChange={setProjectId}
+  options={projects.map((p) => ({ value: p.id, label: p.name }))} placeholder="All projects" />
+<MultiCombobox aria-label="Labels" values={labelIds} onChange={setLabelIds} options={labelOptions} />
+<RadioGroup legend="Due" name="due" value={due} onChange={setDue} options={dueOptions} />
+<Switch label="Compact rows" checked={compact} onChange={setCompact} />
 ```
 
 - Shared `Button` supports primary, secondary, ghost and danger plus default,
   small and icon sizes. An icon-only button requires an accessible label.
 - Use `Input`, `Textarea` and `Select` for new forms. Mark invalid controls with
   `aria-invalid`, associate error text with `aria-describedby`, and show API failures.
+- Choose a picker by list size: `RadioGroup` for 2–5 visible choices, `Select` (native)
+  for a short fixed list, `Combobox` when people would rather type than scroll
+  (projects, people, anything that grows), `MultiCombobox` for several values such as
+  labels or assignees. Never hand-style a raw `<select>`.
+- `Combobox` and `MultiCombobox` follow the ARIA 1.2 combobox pattern: arrow keys move,
+  Enter picks, Escape closes (and clears a single value when already closed), Backspace
+  in an empty multi field removes the last chip. Filtering is accent- and case-insensitive
+  and ranks prefix matches first (`src/lib/listbox.ts`, unit-tested). Pass `name` to
+  submit with a form. `onCreate` offers "Create …" for new text; the caller creates the
+  item through the API and then selects it.
+- `Checkbox` is for values saved with a form; `Switch` is for settings that apply
+  immediately. `Kbd` shows shortcuts in menus and tooltips.
 - Use `Panel`, `PageHeader`, `EmptyState` and `Badge` instead of rebuilding their
   spacing, color and typography for each feature.
 - Use `ui-nav-link` and `ui-tab` with `aria-current`/`aria-selected`. Selection
