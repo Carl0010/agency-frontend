@@ -1,3 +1,9 @@
+/* Quiet Pro (@carl0010/quiet-pro) supplies the palette and the shared pickers.
+   Its tokens sit in the lowest layer, so Agency's radius, shadow and font scale win where names
+   collide; its component styles sit with Agency's components, below utilities. */
+@layer quiet-pro, theme, base, components, utilities;
+@import '@carl0010/quiet-pro/tokens.css' layer(quiet-pro);
+@import '@carl0010/quiet-pro/components.css' layer(components);
 @import 'tailwindcss';
 @import '../styles/tokens.css';
 
@@ -53,33 +59,13 @@
     background-size: 14px 14px;
     background-repeat: no-repeat;
   }
-  /* A field that contains other things (chips, icons) behaves like one input. */
-  .ui-input-group { @apply flex items-center gap-x-1.5 gap-y-1 pr-1.5; }
-  .ui-input-group:focus-within { border-color: var(--color-ring); box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-ring) 14%, transparent); }
-  .ui-input-group[aria-invalid='true'] { border-color: var(--color-danger); }
-  .ui-input-group[data-disabled] { background: var(--color-subtle); color: var(--color-disabled-foreground); }
-  .ui-input-bare { @apply min-w-0 flex-1 border-0 bg-transparent p-0 text-body outline-none; box-shadow: none; }
-  .ui-input-bare:focus-visible { outline: none; }
-  .ui-input-icon { @apply flex size-6 shrink-0 items-center justify-center rounded-sm text-muted-foreground hover:bg-subtle hover:text-foreground; }
-  .ui-combobox { @apply relative w-full; }
-  .ui-listbox { @apply absolute inset-x-0 top-full z-50 mt-1 max-h-64 overflow-auto rounded-lg border border-border bg-surface p-1 shadow-lg; }
-  .ui-listbox[hidden] { display: none; }
-  .ui-listbox-empty { @apply px-2 py-3 text-center text-label text-muted-foreground; }
-  .ui-option { @apply flex min-h-8 cursor-pointer items-center gap-2 rounded-md px-2 py-1 text-body text-secondary-foreground; }
-  .ui-option[data-active] { @apply bg-subtle text-foreground; }
-  .ui-option[aria-selected='true'] { @apply font-medium text-foreground; }
-  .ui-option[aria-disabled='true'] { @apply cursor-not-allowed opacity-50; }
-  .ui-option-check { @apply flex size-4 shrink-0 items-center justify-center rounded-sm border border-input bg-surface; }
-  .ui-option-check[data-checked] { @apply border-primary bg-primary text-primary-foreground; }
-  .ui-chip { @apply inline-flex h-6 max-w-48 items-center gap-1 rounded-sm bg-muted pl-2 pr-0.5 text-label text-foreground; }
-  .ui-chip-remove { @apply flex size-5 items-center justify-center rounded-sm text-muted-foreground hover:bg-subtle hover:text-foreground; }
-  .ui-check { @apply flex w-fit cursor-pointer items-start gap-2.5; }
-  .ui-check-input { @apply mt-0.5 size-4 shrink-0 cursor-pointer; }
-  .ui-switch { @apply relative inline-flex h-5 w-9 shrink-0 items-center rounded-full border border-input bg-muted p-0; }
-  .ui-switch[aria-checked='true'] { @apply border-primary bg-primary; }
-  .ui-switch-thumb { @apply ml-0.5 size-3.5 rounded-full bg-muted-foreground; transition: transform 150ms var(--ease-ui), background-color 150ms var(--ease-ui); }
-  .ui-switch[aria-checked='true'] .ui-switch-thumb { @apply bg-primary-foreground; transform: translateX(16px); }
-  .ui-kbd { @apply inline-grid h-5 min-w-5 place-items-center rounded-sm border border-b-2 border-border bg-subtle px-1 font-mono text-[11px] leading-none text-muted-foreground; }
+  /* Quiet Pro controls at Agency's density and radius. */
+  .qp-input { height: auto; min-height: 2.625rem; border-radius: var(--radius-md); }
+  .qp-input-multi { padding-top: 0.4375rem; padding-bottom: 0.4375rem; }
+  .qp-textarea { border-radius: var(--radius-md); }
+  .qp-listbox { border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); }
+  .qp-field-label { font-size: var(--text-label); line-height: var(--text-label--line-height); }
+  .qp-check, .qp-switch-row { display: flex; width: fit-content; }
   .ui-panel { @apply rounded-xl border border-border bg-surface; }
   .ui-page { @apply mx-auto w-full max-w-5xl px-4 py-6 sm:px-8 sm:py-8; }
   .ui-nav-link { @apply flex min-h-8 items-center gap-2 rounded-md px-2.5 py-1 text-label text-secondary-foreground hover:bg-subtle hover:text-foreground; }
@@ -92,13 +78,15 @@
 
 @media (max-width: 639px) {
   .tap, .ui-button, .ui-nav-link, .ui-tab { min-height: 44px; min-width: 44px; }
-  .ui-option { min-height: 44px; }
-  .ui-input-group { min-height: 44px; }
-  .ui-input-group input { min-height: 0; }
   input:not([type='checkbox'], [type='radio'], [type='hidden']), select, textarea { min-height: 44px; }
-  input[type='checkbox'], input[type='radio'] { min-height: 44px; min-width: 44px; }
+  input[type='checkbox']:not(.qp-check-box), input[type='radio']:not(.qp-radio) { min-height: 44px; min-width: 44px; }
   /* iOS should focus fields without zooming the viewport. */
   input, select, textarea { font-size: 16px; }
+  /* Quiet Pro controls: the field, not its inner input, takes the 44px touch height. */
+  .qp-input { min-height: 44px; }
+  .qp-input input { min-height: 0; }
+  .qp-option { min-height: 44px; }
+  .qp-check, .qp-switch-row { min-height: 44px; align-items: center; }
 }
 
 @media (prefers-reduced-motion: reduce) {
