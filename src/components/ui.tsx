@@ -32,8 +32,68 @@ export function Textarea({ className = '', ...props }: TextareaHTMLAttributes<HT
   return <textarea className={`ui-input min-h-24 resize-y ${className}`} {...props} />;
 }
 
-export function Select({ className = '', ...props }: SelectHTMLAttributes<HTMLSelectElement>) {
-  return <select className={`ui-input tap ${className}`} {...props} />;
+/** Native select for short, fixed lists (up to ~10 options). For long or searchable lists use Combobox. */
+export function Select({ className = '', ...props }: SelectHTMLAttributes<HTMLSelectElement> & { ref?: Ref<HTMLSelectElement> }) {
+  return <select className={`ui-input ui-select tap ${className}`} {...props} />;
+}
+
+export { Combobox, MultiCombobox, type ListOption } from './combobox';
+
+/** A checkbox with its label (and optional description) as one click target. Use inside forms saved later. */
+export function Checkbox({ label, description, className = '', ...props }: Omit<InputHTMLAttributes<HTMLInputElement>, 'type'> & {
+  label: ReactNode; description?: ReactNode;
+}) {
+  return (
+    <label className={`ui-check ${props.disabled ? 'opacity-50' : ''} ${className}`}>
+      <input type="checkbox" className="ui-check-input" {...props} />
+      <span className="min-w-0">
+        <span className="block text-body text-foreground">{label}</span>
+        {description ? <span className="block text-label text-muted-foreground">{description}</span> : null}
+      </span>
+    </label>
+  );
+}
+
+/** One choice from 2–5 visible options. More options, or long labels: use Select or Combobox. */
+export function RadioGroup<V extends string>({ legend, name, value, onChange, options, disabled, className = '' }: {
+  legend: ReactNode; name: string; value: V; onChange: (value: V) => void; disabled?: boolean; className?: string;
+  options: Array<{ value: V; label: ReactNode; description?: ReactNode; disabled?: boolean }>;
+}) {
+  return (
+    <fieldset className={`space-y-2 ${className}`} disabled={disabled}>
+      <legend className="mb-1 text-label font-medium text-secondary-foreground">{legend}</legend>
+      {options.map((o) => (
+        <label key={o.value} className={`ui-check ${o.disabled || disabled ? 'opacity-50' : ''}`}>
+          <input type="radio" className="ui-check-input" name={name} value={o.value} checked={value === o.value}
+            disabled={o.disabled} onChange={() => onChange(o.value)} />
+          <span className="min-w-0">
+            <span className="block text-body text-foreground">{o.label}</span>
+            {o.description ? <span className="block text-label text-muted-foreground">{o.description}</span> : null}
+          </span>
+        </label>
+      ))}
+    </fieldset>
+  );
+}
+
+/** An on/off setting that applies immediately. Inside a form with a Save button, use Checkbox. */
+export function Switch({ checked, onChange, label, disabled, className = '' }: {
+  checked: boolean; onChange: (checked: boolean) => void; label: ReactNode; disabled?: boolean; className?: string;
+}) {
+  return (
+    <label className={`ui-check items-center ${disabled ? 'opacity-50' : ''} ${className}`}>
+      <button type="button" role="switch" aria-checked={checked} disabled={disabled} className="ui-switch"
+        onClick={() => onChange(!checked)}>
+        <span className="ui-switch-thumb" />
+      </button>
+      <span className="text-body text-foreground">{label}</span>
+    </label>
+  );
+}
+
+/** Keyboard shortcut keys, e.g. <Kbd keys={['⌘', 'K']} />. */
+export function Kbd({ keys }: { keys: string[] }) {
+  return <span className="inline-flex gap-0.5">{keys.map((k) => <kbd key={k} className="ui-kbd">{k}</kbd>)}</span>;
 }
 
 export function Panel({ className = '', ...props }: HTMLAttributes<HTMLDivElement>) {
