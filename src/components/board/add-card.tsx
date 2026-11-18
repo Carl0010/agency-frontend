@@ -3,13 +3,13 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useState, type FormEvent, type KeyboardEvent } from 'react';
 import { Icon } from '@/components/icon';
-import { Button, Textarea } from '@/components/ui';
+import { Button, Input, Textarea } from '@/components/ui';
 import { useToast } from '@/components/toast';
 import { api, errorMessage } from '@/lib/api';
 import { upsertCard } from '@/lib/board-state';
 import type { Board, CardTile } from '@/lib/types';
 
-export function AddCard({ listId, boardId }: { listId: string; boardId: string }) {
+export function AddCard({ listId, boardId, compact = false }: { listId: string; boardId: string; compact?: boolean }) {
   const qc = useQueryClient();
   const toast = useToast();
   const [open, setOpen] = useState(false);
@@ -32,7 +32,7 @@ export function AddCard({ listId, boardId }: { listId: string; boardId: string }
     }
   }
 
-  const onKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
+  const onKeyDown = (e: KeyboardEvent<HTMLTextAreaElement | HTMLInputElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       void submit();
@@ -47,15 +47,15 @@ export function AddCard({ listId, boardId }: { listId: string; boardId: string }
         onClick={() => setOpen(true)}
         data-testid="add-card-end"
         data-tour="add-card"
-        className="tap min-h-12 shrink-0 rounded-xl border border-border bg-surface px-4 py-3 text-left text-label font-medium text-secondary-foreground shadow-sm hover:border-primary-border hover:bg-primary-subtle active:bg-primary-muted"
+        className={`tap shrink-0 text-left text-label font-medium text-secondary-foreground hover:bg-primary-subtle active:bg-primary-muted ${compact ? 'min-h-8 rounded-md px-2 py-1' : 'min-h-12 rounded-xl border border-border bg-surface px-4 py-3 shadow-sm hover:border-primary-border'}`}
       >
         <span className="inline-flex items-center gap-2"><Icon name="plus" />Add card</span>
       </button>
     );
   }
   return (
-    <form onSubmit={(e) => void submit(e)} className="shrink-0 space-y-3 rounded-xl border border-border bg-surface p-3 shadow-sm">
-      <Textarea
+    <form onSubmit={(e) => void submit(e)} className={compact ? 'flex flex-wrap items-start gap-2 py-2' : 'shrink-0 space-y-3 rounded-xl border border-border bg-surface p-3 shadow-sm'}>
+      {compact ? <Input autoFocus value={title} maxLength={500} aria-label="Card title" placeholder="Card title — Enter to add" onChange={(event) => setTitle(event.target.value)} onKeyDown={onKeyDown} className="min-w-40 flex-1 py-1 text-label" /> : <Textarea
         autoFocus
         rows={2}
         value={title}
@@ -65,7 +65,7 @@ export function AddCard({ listId, boardId }: { listId: string; boardId: string }
         onChange={(e) => setTitle(e.target.value)}
         onKeyDown={onKeyDown}
         className="min-h-20 resize-none"
-      />
+      />}
       <div className="flex gap-2">
         <Button type="submit" disabled={busy} size="sm">
           Add

@@ -1,11 +1,13 @@
 'use client';
 
+import { LoadingSkeleton } from '@/components/skeleton';
+
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { useState, type FormEvent } from 'react';
 import { AuthCard, FormError } from '@/components/auth-card';
-import { Button, Field, Input, Spinner } from '@/components/ui';
+import { Button, Field, Input } from '@/components/ui';
 import { ApiError, errorMessage, request } from '@/lib/api';
 import { rememberWorkspace } from '@/lib/landing';
 import { useSession } from '@/lib/session';
@@ -42,15 +44,15 @@ export default function InvitePage() {
         router.replace(`/portal/${res.portalProjectId}`);
         return;
       }
-      rememberWorkspace(res.workspace.slug);
-      router.replace(`/w/${res.workspace.slug}/projects`);
+      rememberWorkspace(res.workspace.id);
+      router.replace(`/w/${res.workspace.id}/projects`);
     } catch (err) {
       setError(errorMessage(err));
       setBusy(false);
     }
   }
 
-  if (preview.isPending || user === undefined) return <Spinner />;
+  if (preview.isPending || user === undefined) return <LoadingSkeleton variant="form" className="p-4 sm:p-6" />;
   if (preview.error) {
     const expired = preview.error instanceof ApiError && preview.error.status === 410;
     return (

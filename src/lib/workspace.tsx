@@ -7,6 +7,6 @@ export const WorkspaceContext = createContext<Workspace | null>(null);
 
 export function useWorkspace(): Workspace {
   const ws = useContext(WorkspaceContext);
-  if (!ws) throw new Error('useWorkspace outside a /w/[slug] route');
+  if (!ws) throw new Error('useWorkspace outside a /w/[workspaceId] route');
   return ws;
 }

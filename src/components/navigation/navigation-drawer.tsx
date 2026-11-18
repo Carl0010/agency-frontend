@@ -3,11 +3,11 @@
 import { useEffect, useRef, type KeyboardEvent, type ReactNode } from 'react';
 
 /** Native modal dialog supplies focus containment and makes the rest of the app inert. */
-export function NavigationDrawer({ children, onClose }: { children: ReactNode; onClose: () => void }) {
+export function NavigationDrawer({ children, open, onClose }: { children: ReactNode; open: boolean; onClose: () => void }) {
   const dialog = useRef<HTMLDialogElement>(null);
   useEffect(() => {
     const element = dialog.current;
-    if (!element) return;
+    if (!element || !open) return;
     const previous = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     const overflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
@@ -21,7 +21,7 @@ export function NavigationDrawer({ children, onClose }: { children: ReactNode; o
       document.body.style.overflow = overflow;
       if (previous?.isConnected) previous.focus();
     };
-  }, [onClose]);
+  }, [open, onClose]);
 
   function containFocus(event: KeyboardEvent<HTMLDialogElement>) {
     if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
@@ -53,7 +53,7 @@ export function NavigationDrawer({ children, onClose }: { children: ReactNode; o
     onKeyDown={containFocus}
     onCancel={(event) => { event.preventDefault(); onClose(); }}
     onClick={(event) => { if (event.target === event.currentTarget) onClose(); }}
-    className="fixed inset-y-0 left-0 m-0 h-dvh max-h-none w-[min(20rem,calc(100vw-2rem))] max-w-none overflow-hidden border-r border-border bg-background p-0 text-foreground shadow-xl backdrop:bg-overlay/40">
+    className="navigation-drawer fixed inset-y-0 left-0 m-0 h-dvh max-h-none w-[min(20rem,calc(100vw-2rem))] max-w-none overflow-hidden border-r border-border bg-background p-0 text-foreground shadow-xl backdrop:bg-overlay/40">
     {children}
   </dialog>;
 }

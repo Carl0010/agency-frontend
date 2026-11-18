@@ -8,13 +8,13 @@ test('app bar spans the viewport with centered search and a reopenable contextua
   const rail = page.getByRole('complementary', { name: 'Module rail' });
   const search = bar.getByRole('button', { name: 'Search workspace' });
   const [barBox, searchBox, railBox, expanded] = await Promise.all([bar.boundingBox(), search.boundingBox(), rail.boundingBox(), page.locator('#workspace-content').boundingBox()]);
-  expect(barBox!.x).toBe(0); expect(barBox!.width).toBe(1440); expect(barBox!.height).toBe(64);
+  expect(barBox!.x).toBe(0); expect(barBox!.width).toBe(1440); expect(barBox!.height).toBe(56);
   expect(Math.abs(searchBox!.x + searchBox!.width / 2 - 720)).toBeLessThan(2);
   expect(railBox!.y).toBe(barBox!.height);
   await expect(sidebar.getByRole('button', { name: /Search/ })).toHaveCount(0);
   await bar.getByRole('button', { name: 'Close sidebar' }).click();
   await expect(sidebar).toBeHidden(); await expect(rail).toBeVisible();
-  expect((await page.locator('#workspace-content').boundingBox())!.width - expanded!.width).toBe(256);
+  await expect.poll(async () => (await page.locator('#workspace-content').boundingBox())!.width - expanded!.width).toBe(256);
   await rail.getByRole('link', { name: 'Inbox', exact: true }).click();
   await expect(sidebar).toBeHidden();
   await bar.getByRole('button', { name: 'Open sidebar' }).click();

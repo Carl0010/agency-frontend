@@ -1,8 +1,8 @@
 # Sidebar and page responsibilities
 
-Member routes (`/w/[slug]/*`) use two navigation levels: a **72px module
+Member routes (`/w/[workspaceId]/*`; a legacy `/w/<slug>/*` link resolves and is replaced by the id) use two navigation levels: a **56px icon module
 rail on the far left**, followed by the existing **256px contextual sidebar**.
-A 64px app bar spans the full viewport above both levels.
+A 56px app bar spans the full viewport above both levels.
 The guest portal keeps its separate navigation and imports none of this shell.
 
 ## Ownership
@@ -12,9 +12,9 @@ The guest portal keeps its separate navigation and imports none of this shell.
 | Module rail | Switch high-level areas | Projects, Inbox with live unread count, Workspace |
 | Sidebar identity | Identify workspace and selected module | Workspace name and current module label |
 | App bar | Global actions and navigation visibility | Centered search palette trigger, hamburger, Agency home, labelled light/dark switch |
-| Projects sidebar | Browse client work and project surfaces | Projects overview, import, project list, create button, per-project menu, current project's Board/Chat/internal Team |
+| Projects sidebar | Browse shared work and project surfaces | Projects overview, import, team groups, Starred, create button, per-project menu, current project's Board/Shared/internal Team |
 | Inbox sidebar | Browse activity and configure delivery | All notifications and notification preferences |
-| Workspace sidebar | Manage people, preferences and subscription | Members, notifications, owner-only billing |
+| Workspace sidebar | Manage people, preferences and subscription | Members, teams, notifications, owner-only billing |
 | Sidebar footer | Resume setup, understand trial status, account actions | Setup progress, trial link, user identity/role, log out |
 | Project/page header | Describe and act on the current view | Project title, sharing, collaborators, archive; page-specific primary actions |
 | Content toolbars | Manipulate the current content | Kanban/List presentation, card filters, list selection, message/thread controls |
@@ -22,18 +22,18 @@ The guest portal keeps its separate navigation and imports none of this shell.
 
 The module rail is global navigation. The neighboring sidebar shows only the
 selected module's destinations. Do not duplicate all workspace settings inside
-the Projects sidebar or repeat Board/Chat/Team tabs above content. Page actions
+the Projects sidebar or repeat Board/Shared/Team tabs above content. Page actions
 remain local: card creation, dragging, message composition, sharing and
 destructive operations belong beside the content they affect.
 
 ## Module destinations
 
-- **Projects** opens the projects overview. Project boards, cards, client Chat,
+- **Projects** opens the projects overview. Project boards, cards, Shared channel,
   internal Team, import and global search results belong to this module.
 - **Inbox** opens workspace activity, retaining its live unread badge across
   all member screens. The sidebar's notification preferences link moves into
   the Workspace module because preferences live under workspace settings.
-- **Workspace** opens Members. The contextual sidebar contains Members,
+- **Workspace** opens Members. The contextual sidebar contains Members, Teams,
   Notifications and owner-only Billing; existing API permissions still apply.
 
 Module selection comes from the current URL, including direct links, reloads
@@ -41,14 +41,14 @@ and browser history. It is not a second copy of router state or server data.
 
 ## Responsive behavior
 
-- At 1024px and above, the 72px rail and 256px sidebar are adjacent and fill the
-  remaining height below the app bar. The content begins after 328px of navigation.
+- At 1024px and above, the 56px rail and 256px sidebar are adjacent and fill the
+  remaining height below the app bar. The content begins after 312px of navigation.
   The hamburger collapses/reopens the 256px sidebar while retaining the module rail;
   the content gains that space. This visibility persists during member-route navigation.
 - Each navigation area's middle scrolls independently. Workspace identity and
   account/status footer remain accessible. Long names truncate.
 - Below 1024px, **Open navigation** opens one native modal drawer up to 320px
-  wide. It contains the same 72px rail and a flexible contextual sidebar. Both
+  wide. It contains the same 56px rail and a flexible contextual sidebar. Both
   navigation levels leave the board's normal mobile work area available when closed.
 - The drawer contains keyboard focus and makes background content inert.
   Escape, close, backdrop click, selecting a destination and resizing to desktop
@@ -56,7 +56,8 @@ and browser history. It is not a second copy of router state or server data.
   Closing restores focus to the opener when it still exists.
 - Module destinations close the mobile drawer just like other destinations;
   reopening shows the selected module's links. Search is in the app bar, never the sidebar.
-  Ctrl/Cmd K from the drawer closes navigation before the palette opens. All rail entries have icons, visible names and focus states.
+  Ctrl/Cmd K from the drawer closes navigation before the palette opens. Rail entries have
+  44px icon targets, accessible names, title tooltips and visible focus/selection states.
 - Mobile still shows one board list at a time below 640px. Navigation does not
   replace that content control or alter drag-and-drop behavior.
 
@@ -78,7 +79,7 @@ queries, so the persistent sidebar discovers new destinations without a reload.
 ## Card inspector
 
 Opening a member card from a board uses a non-modal right drawer in the board's
-intercepted `@modal` route slot. The URL still identifies the card.
+persistent board layout. The URL identifies the card and its presentation.
 
 - At 768px and above, the board and drawer share the available work area. The
   drawer is 448px wide, 512px from 1280px, and 576px from 1536px. The board's
@@ -96,9 +97,12 @@ intercepted `@modal` route slot. The URL still identifies the card.
   closes it unless an inline editor or popover consumes the key. Board controls
   retain their own Escape behavior.
 - Closing returns to the board with the current filters. Browser Back/Forward
-  dismiss/reopen the inspector. Reloading or opening a direct card URL renders
-  the existing full-page detail. Open card as full page explicitly bypasses
-  route interception with a normal anchor.
+  dismiss/reopen the inspector. Reloading or opening a direct card URL keeps
+  the drawer unless `full=true` is set. `full=false` also explicitly selects the drawer.
+  The top-right **Open card as full page** control sets `full=true`; the full-page
+  Back to board link removes that flag and retains filters and presentation.
+  Clicking an already-open card does nothing, including keyboard activation; modified
+  link clicks still open a separate tab normally.
 - Card switches remount card-specific editors and reset inspector scrolling.
   Description drafts retain their existing per-card local-storage keys.
 - A loading or unavailable card stays inside the drawer, with Close and the
@@ -125,9 +129,37 @@ Keep server state in TanStack Query. Sidebar/drawer visibility and browser theme
 Existing API authorization remains authoritative. Billing navigation and plan
 details stay owner-only; do not infer extra permissions from visible links.
 
+## Panel motion
+
+The desktop sidebar and card inspector resize their reserved space with the shared
+`--duration-panel` (220ms) and `--ease-ui` tokens. Their content keeps a stable
+width while sliding, so text does not repeatedly wrap during the transition.
+Rapid sidebar toggles reverse the current transition. Collapsed navigation is
+inert and hidden from assistive technology immediately.
+
+Mobile navigation uses native dialog display/overlay transitions for its slide
+and backdrop fade. Closing releases modal focus and scroll containment without
+waiting for the visual exit; this keeps the search shortcut responsive. Browsers
+without discrete-transition support retain immediate native dismissal.
+
+The board layout owns both the stable board and `CardDrawerHost`; the card route registers the
+current card with it. This retains the inspector through closing transitions,
+including browser Back, without retaining a stale route tree. Exiting content is
+inert and hidden from assistive technology; focus returns to the board at the
+start of closing. Card switches update the open inspector without replaying its
+entrance. Once its own width/slide transitions finish, card content unmounts.
+Navigation away from the board disposes the entire inspector normally.
+
+Reduced-motion preferences remove the visible travel in every panel. This panel
+resize is the specific exception to the general rule against animating content
+layout; do not add layout animations to board cards or unrelated page content.
+`e2e/panel-motion.spec.ts` uses presentation fixtures to check intermediate sizes,
+rapid reversal, history, focus, mobile search handoff and reduced motion. It does
+not verify compatibility with the pending backend contract upgrade.
+
 ## Verification
 
-`e2e/navigation.spec.ts` covers the exact 72px rail width, module switching,
+`e2e/navigation.spec.ts` covers the exact 56px rail width, module switching,
 contextual destination ownership, active states, local
 sharing, mobile focus containment/restoration, dismissal, search handoff and
 viewport changes. Existing guest, onboarding, chat and board journeys exercise
@@ -138,16 +170,33 @@ member navigation directory in the guest portal's transitive import graph.
 
 ## Project actions
 
-The Client projects heading has an Add project button. Its native dialog creates
+The Projects heading has an Add project button and no outbound arrow;
+the Projects overview link above already owns that destination. The current project
+expands automatically without a decorative chevron. Its native creation dialog creates
 through the existing API and navigates to the returned default board. A separate
 menu beside each project contains Open board, Edit project and Copy project link;
 it is never nested inside the project link. The editor supports project name,
-optional client name and the eight server-defined colors. Create/edit failures
+eight server-defined colors and a predefined icon picker. Creation also shows team selection. Create/edit failures
 stay visible and preserve form input. The API decides authorization and billing.
 
-Saved custom icons and per-user stars are not in the API yet. See
-[the implementation handoff](handoffs/PROJECT_PERSONALIZATION.md). Do not add a
-pretend Starred list or silently persist project settings only in the browser.
+Saved icons and personal stars use the live API; see
+[the personalization record](handoffs/PROJECT_PERSONALIZATION.md). Starred reads
+the complete personal collection, separately from team groups. Projects shared
+with several teams can appear under each, with one expanded set of active project
+sections. Projects without a visible team group remain under Other projects.
+
+Team groups and Other projects list open projects only (`?status=planned,in_progress,on_hold`),
+so Completed and Cancelled work leaves navigation without being archived; Planned and On hold
+carry a small status marker. Starred keeps every status and marks any that is not In progress.
+The project header's status pill is a menu for members; see
+[the project status record](handoffs/PROJECT_STATUS.md). Guest surfaces never show status.
+
+Share opens the project access dialog only for project admins. It manages teams,
+direct member edit/admin grants and direct guest grants. Workspace → Teams owns
+team names, membership, team roles, guest levels and archive/restore. The API
+remains authoritative for access and billing gates. People pickers use the scoped
+project roster. [Contract integration](handoffs/BACKEND_CONTRACT_UPGRADE.md) records
+access-change cache handling and the difference between new grants and revocation.
 
 ## Themes
 
@@ -162,3 +211,18 @@ routes, including auth and portal; member navigation remains excluded from porta
 [Kanban and List](BOARD_VIEWS.md) share filters, card routes and API state.
 The presentation switch belongs with board content, never in the app bar or
 sidebar. Preserve `view=list` and filters when opening/closing card details.
+
+## Permanent workspace URLs
+
+Member links use `/w/<workspaceId>/…`, resolved with `GET /workspaces/:id`. The
+workspace name and editable slug are metadata; renaming either does not change
+its permanent address. Existing `/w/<slug>/…` links resolve with the legacy API
+lookup and replace the URL with the UUID, preserving the nested path, query and
+hash. New navigation, onboarding, invite and remembered-workspace destinations
+use IDs; old browser preferences containing a slug remain readable.
+
+The API now emits UUIDs in search, notifications and billing links. Its audience
+cookie lists each member workspace ID followed by its legacy slug. Cookies from
+before this rollout refresh automatically; UUID routes with an old member cookie
+are resolved through the API and a guest role is redirected before the workspace
+shell can render. Portal routes and project authorization remain API-controlled.

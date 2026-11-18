@@ -1,10 +1,14 @@
 'use client';
 
+import { LoadingSkeleton } from '@/components/skeleton';
+
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { TeamPicker } from '@/components/teams/team-picker';
+import { useTeams } from '@/lib/teams';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
 import { AuthCard, FormError } from '@/components/auth-card';
-import { Button, Field, Input, Spinner } from '@/components/ui';
+import { Button, Field, Input, Select } from '@/components/ui';
 import { api, ApiError, errorMessage } from '@/lib/api';
 import { formText } from '@/lib/form';
 import { rememberWorkspace } from '@/lib/landing';
@@ -12,7 +16,7 @@ import { useSession } from '@/lib/session';
 import type { Page, Project, Seats, TemplateSummary, Workspace } from '@/lib/types';
 
 type Step = 1 | 2 | 3 | 4;
-const LABELS = ['Workspace', 'First client project', 'Invite your team', 'Bring your work over'] as const;
+const LABELS = ['Workspace', 'First project', 'Invite your team', 'Bring your work over'] as const;
 
 /**
  * The 4-step setup stepper (§3.5, AC20–AC24). Every step is skippable. The
@@ -47,12 +51,12 @@ export default function OnboardingPage() {
     setStep((s) => s ?? (ws.setup!.step as Step));
   }, [workspaces.data, ws, router]);
 
-  if (!ws?.setup || step === null) return <Spinner />;
+  if (!ws?.setup || step === null) return <LoadingSkeleton variant="form" className="p-4 sm:p-6" />;
 
   const refresh = async (): Promise<Workspace> => {
     const fresh = await api.get<Workspace>(`/workspaces/${ws.id}`);
     await qc.invalidateQueries({ queryKey: ['workspaces'] });
-    await qc.invalidateQueries({ queryKey: ['workspace', fresh.slug] });
+    await qc.invalidateQueries({ queryKey: ['workspace', fresh.id] });
     return fresh;
   };
   /** Records progress and moves on; a skip is remembered as a skip, not as done. */
@@ -66,7 +70,7 @@ export default function OnboardingPage() {
   const finish = async (path: (fresh: Workspace) => string, patch: Record<string, unknown> = {}) => {
     await api.patch(`/workspaces/${ws.id}/onboarding`, { ...patch, completed: true });
     const fresh = await refresh();
-    rememberWorkspace(fresh.slug);
+    rememberWorkspace(fresh.id);
     router.replace(path(fresh));
   };
 
@@ -90,7 +94,7 @@ export default function OnboardingPage() {
     <button
       type="button"
       className="text-secondary-foreground underline-offset-2 hover:underline"
-      onClick={() => void finish((f) => `/w/${f.slug}/projects`)}
+      onClick={() => void finish((f) => `/w/${f.id}/projects`)}
     >
       Finish setup later
     </button>
@@ -147,13 +151,13 @@ function WorkspaceStep({ ws, header, footer, onDone, onSkip }: StepProps & { onD
   const slugOk = slug === ws.slug || (slugValid && availability.data?.available === true);
   const slugHint =
     slug === ws.slug
-      ? `Your workspace lives at /w/${slug}`
+      ? `Your permanent workspace address is /w/${ws.id}`
       : !slugValid
         ? '3–40 lowercase letters, digits or dashes.'
         : availability.isFetching
           ? 'Checking…'
           : availability.data?.available
-            ? `✓ /w/${slug} is available`
+            ? `✓ This legacy alias is available`
             : 'That address is taken or reserved.';
 
   async function onSubmit(e: FormEvent) {
@@ -179,7 +183,7 @@ function WorkspaceStep({ ws, header, footer, onDone, onSkip }: StepProps & { onD
         <Field label="Agency name">
           <Input value={name} onChange={(e) => setName(e.target.value)} required maxLength={120} />
         </Field>
-        <Field label="Workspace address" hint={<span data-testid="slug-hint">{slugHint}</span>}>
+        <Field label="Workspace alias" hint={<span data-testid="slug-hint">{slugHint}</span>}>
           <Input value={slug} onChange={(e) => setSlug(e.target.value.toLowerCase())} required />
         </Field>
         <Field label="Timezone">
@@ -192,10 +196,11 @@ function WorkspaceStep({ ws, header, footer, onDone, onSkip }: StepProps & { onD
 }
 
 // ---------------------------------------------------------------------------
-// Step 2 — first client project (AC22)
+// Step 2 — first project (AC22)
 // ---------------------------------------------------------------------------
 
 function ProjectStep({ ws, header, footer, onDone, onSkip }: StepProps & { onDone: () => Promise<void>; onSkip: () => Promise<void> }) {
+  const teams = useTeams(ws.id);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const existing = ws.setup?.projectId ?? null;
@@ -207,11 +212,10 @@ function ProjectStep({ ws, header, footer, onDone, onSkip }: StepProps & { onDon
     setError(null);
     try {
       if (!existing) {
-        const clientName = formText(form, 'clientName');
         // One transaction on the server: project, board, three lists, both channels.
         await api.post<Project>(`/workspaces/${ws.id}/projects`, {
           name: formText(form, 'name'),
-          ...(clientName ? { clientName } : {}),
+          teamIds: form.getAll('teamIds').map(String),
         });
       }
       await onDone();
@@ -222,7 +226,7 @@ function ProjectStep({ ws, header, footer, onDone, onSkip }: StepProps & { onDon
   }
 
   return (
-    <AuthCard title="Your first client project" footer={footer}>
+    <AuthCard title="Your first project" footer={footer}>
       {header}
       <form onSubmit={(e) => void onSubmit(e)} className="space-y-4">
         <FormError message={error} />
@@ -233,12 +237,10 @@ function ProjectStep({ ws, header, footer, onDone, onSkip }: StepProps & { onDon
             <Field label="Project name" hint="e.g. “Acme — Q4 site rebuild”">
               <Input name="name" required maxLength={120} />
             </Field>
-            <Field label="Client name">
-              <Input name="clientName" maxLength={120} />
-            </Field>
+            <TeamPicker workspaceId={ws.id} disabled={busy} />
           </>
         )}
-        <StepButtons busy={busy} label={existing ? 'Continue' : 'Create project'} onSkip={onSkip} />
+        <StepButtons busy={busy || (!existing && (teams.isPending || Boolean(teams.error)))} label={existing ? 'Continue' : 'Create project'} onSkip={onSkip} />
       </form>
     </AuthCard>
   );
@@ -257,6 +259,7 @@ interface InviteRow {
 }
 
 function InviteStep({ ws, header, footer, onDone, onSkip }: StepProps & { onDone: () => Promise<void>; onSkip: () => Promise<void> }) {
+  const teams = useTeams(ws.id);
   const qc = useQueryClient();
   const seats = useQuery({ queryKey: ['seats', ws.id], queryFn: () => api.get<Seats>(`/workspaces/${ws.id}/seats`) });
   const [rows, setRows] = useState<InviteRow[]>([{ key: 0, email: '', role: 'member', error: null, sent: false }]);
@@ -266,15 +269,17 @@ function InviteStep({ ws, header, footer, onDone, onSkip }: StepProps & { onDone
 
   const update = (key: number, patch: Partial<InviteRow>) => setRows((rs) => rs.map((r) => (r.key === key ? { ...r, ...patch } : r)));
 
-  async function onSubmit(e: FormEvent) {
+  async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    const teamIds = new FormData(e.currentTarget).getAll('teamIds').map(String);
+    if (teamIds.length > 50) { update(rows[0]!.key, { error: 'Choose at most 50 teams.' }); return; }
     setBusy(true);
     let failed = false;
     let sent = false;
     for (const row of rows) {
       if (row.sent || !row.email.trim()) continue;
       try {
-        await api.post(`/workspaces/${ws.id}/members/invites`, { email: row.email.trim(), role: row.role });
+        await api.post(`/workspaces/${ws.id}/members/invites`, { email: row.email.trim(), role: row.role, teamIds });
         update(row.key, { sent: true, error: null });
         sent = true;
       } catch (err) {
@@ -317,16 +322,16 @@ function InviteStep({ ws, header, footer, onDone, onSkip }: StepProps & { onDone
                 disabled={row.sent}
                 onChange={(e) => update(row.key, { email: e.target.value, error: null })}
               />
-              <select
+              <Select
                 aria-label={`Teammate ${i + 1} role`}
                 value={row.role}
                 disabled={row.sent}
                 onChange={(e) => update(row.key, { role: e.target.value as InviteRow['role'] })}
-                className="tap rounded-md border border-input bg-surface px-2 text-sm"
+                className="w-auto"
               >
                 <option value="member">Member</option>
                 <option value="admin">Admin</option>
-              </select>
+              </Select>
             </div>
             {row.sent ? <p className="text-xs text-success-text">Invite sent.</p> : null}
             {row.error ? (
@@ -345,8 +350,9 @@ function InviteStep({ ws, header, footer, onDone, onSkip }: StepProps & { onDone
             + Add another
           </button>
         ) : null}
-        <p className="text-xs text-muted-foreground">Client guests are free and don&apos;t use a seat — invite them from a project later.</p>
-        <StepButtons busy={busy} label="Send invites" onSkip={onSkip} disabled={!rows.some((r) => r.email.trim() && !r.sent)} />
+        <p className="text-xs text-muted-foreground">Guests are free and don&apos;t use a seat — invite them from a project later.</p>
+        <TeamPicker workspaceId={ws.id} disabled={busy} />
+        <StepButtons busy={busy || teams.isPending || Boolean(teams.error)} label="Send invites" onSkip={onSkip} disabled={!rows.some((r) => r.email.trim() && !r.sent)} />
       </form>
     </AuthCard>
   );
@@ -388,16 +394,16 @@ function WorkStep({
     run(t.id, async () => {
       const project = await targetProject(t.name);
       const applied = await api.post<{ projectId: string; boardId: string }>(`/projects/${project.id}/template`, { templateId: t.id });
-      await finish((f) => `/w/${f.slug}/p/${applied.projectId}/b/${applied.boardId}`);
+      await finish((f) => `/w/${f.id}/p/${applied.projectId}/b/${applied.boardId}`);
     });
 
   const startEmpty = () =>
     run('empty', async () => {
       const project = ws.setup?.projectId ? await api.get<Project>(`/projects/${ws.setup.projectId}`) : null;
-      await finish((f) => (project ? `/w/${f.slug}/p/${project.id}/b/${project.defaultBoardId}` : `/w/${f.slug}/projects`), { startedEmpty: true });
+      await finish((f) => (project ? `/w/${f.id}/p/${project.id}/b/${project.defaultBoardId}` : `/w/${f.id}/projects`), { startedEmpty: true });
     });
 
-  const importTrello = () => run('import', () => finish((f) => `/w/${f.slug}/import`));
+  const importTrello = () => run('import', () => finish((f) => `/w/${f.id}/import`));
 
   const card = 'flex flex-col items-start gap-1 rounded-lg border border-border bg-surface p-4 text-left hover:border-primary-border hover:shadow-sm disabled:opacity-60';
   return (
@@ -407,7 +413,7 @@ function WorkStep({
       {picking ? (
         <div className="space-y-3">
           <p className="text-sm text-secondary-foreground">Pick a starting board. You can rename, move or delete anything afterwards.</p>
-          {templates.isPending ? <Spinner /> : null}
+          {templates.isPending ? <LoadingSkeleton variant="form" className="p-4 sm:p-6" /> : null}
           <div className="grid gap-3 sm:grid-cols-3">
             {(templates.data?.data ?? []).map((t) => (
               <button key={t.id} type="button" className={card} disabled={busy !== null} onClick={() => void applyTemplate(t)} aria-label={`Use the ${t.name} template`}>
@@ -432,7 +438,7 @@ function WorkStep({
           </button>
           <button type="button" className={card} disabled={busy !== null} onClick={() => setPicking(true)}>
             <span className="font-medium">Start from a template</span>
-            <span className="text-sm text-secondary-foreground">Client onboarding, Design sprint or Website build — with example cards.</span>
+            <span className="text-sm text-secondary-foreground">Project onboarding, Design sprint or Website build — with example cards.</span>
           </button>
           <button type="button" className={card} disabled={busy !== null} onClick={() => void startEmpty()}>
             <span className="font-medium">Start empty</span>

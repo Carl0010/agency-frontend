@@ -28,7 +28,7 @@ export function NotificationBell({ active, onNavigate }: { active?: boolean; onN
   const n = count.data ?? 0;
   return (
     <Link
-      href={`/w/${ws.slug}/inbox`}
+      href={`/w/${ws.id}/inbox`}
       aria-label={n ? `Inbox, ${n} unread` : 'Inbox'}
       data-testid="notification-bell"
       aria-current={active ? 'location' : undefined}
@@ -36,7 +36,7 @@ export function NotificationBell({ active, onNavigate }: { active?: boolean; onN
       className="ui-module-link tap relative"
       title={n ? `Inbox, ${n} unread` : 'Inbox'}
     >
-      <Icon name="inbox" className="size-5" /><span>Inbox</span>
+      <Icon name="inbox" className="size-5" /><span className="sr-only">Inbox</span>
       {n ? (
         <span data-testid="unread-badge" className="absolute right-1 top-1 min-w-4 rounded-full bg-primary px-1 text-center text-caption font-semibold leading-4 text-primary-foreground">
           {n > 99 ? '99+' : n}

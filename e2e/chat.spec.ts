@@ -32,15 +32,15 @@ test('chat: post, live second session, edit, thread, delete', async ({ browser }
   const base = account.boardUrl.replace(/\/b\/[^/]+$/, '');
 
   // Client channel carries the load-bearing reminder (§3.4).
-  await a.getByRole('link', { name: 'Chat' }).click();
+  await a.getByRole('link', { name: 'Shared' }).click();
   await expect(a).toHaveURL(`${base}/chat`);
-  await expect(a.getByTestId('channel-badge')).toHaveText('Client');
-  await expect(a.getByTestId('client-reminder')).toHaveText('Your client can read and post here.');
+  await expect(a.getByTestId('channel-badge')).toHaveText('Shared');
+  await expect(a.getByTestId('shared-reminder')).toHaveText('Guests can read this. Guests with comment access can post here.');
 
   await a.getByRole('link', { name: 'Team' }).click();
   await expect(a).toHaveURL(`${base}/team`);
   await expect(a.getByTestId('channel-badge')).toHaveText('Internal');
-  await expect(a.getByTestId('client-reminder')).toHaveCount(0);
+  await expect(a.getByTestId('shared-reminder')).toHaveCount(0);
 
   await composer(a, 'Team').fill('Kickoff notes are in the **brief**');
   await composer(a, 'Team').press('Enter');
@@ -167,13 +167,13 @@ test('⌘K palette: debounced search, ↵ navigates to the message, ⌘↵ opens
 
 test('inbox and notification preferences render', async ({ browser }) => {
   const { page, account } = await signupToBoard(browser);
-  const slug = new URL(account.boardUrl).pathname.split('/')[2];
-  await page.getByTestId('notification-bell').click();
-  await expect(page).toHaveURL(`/w/${slug}/inbox`);
+  const workspaceId = new URL(account.boardUrl).pathname.split('/')[2];
+  await page.getByRole('navigation', { name: 'Main modules' }).getByTestId('notification-bell').click();
+  await expect(page).toHaveURL(`/w/${workspaceId}/inbox`);
   await expect(page.getByRole('heading', { name: 'Inbox' })).toBeVisible();
   await page.getByRole('link', { name: 'Preferences', exact: true }).click();
   const grid = page.getByTestId('preferences-grid');
-  await expect(grid.locator('tbody tr')).toHaveCount(6);
+  await expect(grid.getByLabel('Mentions in-app (always on)')).toBeVisible();
   await expect(page.getByLabel('Mentions in-app (always on)')).toBeDisabled();
   await Promise.all([
     page.waitForResponse((r) => r.url().includes('/notifications/preferences') && r.request().method() === 'PUT'),

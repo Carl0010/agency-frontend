@@ -1,30 +1,50 @@
 'use client';
 
+import { CardSkeleton } from '@/components/skeleton';
+
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
 import { DuePill } from '@/components/due-pill';
+import { ArrivalChip } from '@/components/arrival';
+import { ReplanAction } from '@/components/arrival-actions';
 import { Markdown } from '@/components/markdown';
 import { useToast } from '@/components/toast';
-import { Avatar, Button, LABEL_BG, Spinner } from '@/components/ui';
-import { api, ApiError, errorMessage } from '@/lib/api';
+import { Avatar, Button, Input, LABEL_BG, Select } from '@/components/ui';
+import { api, errorMessage } from '@/lib/api';
 import { MentionScopeContext } from '@/lib/mention-scope';
 import { applyTile, useProjectRealtime, useRoom } from '@/lib/realtime';
 import { timeAgo, toLocalInput } from '@/lib/time';
-import type { Board, CardDetail as Detail, CardTile, Label, Member, Page } from '@/lib/types';
+import type { Board, CardDetail as Detail, CardTile, Label, Page } from '@/lib/types';
 import { useNow } from '@/lib/use-now';
 import { useWorkspace } from '@/lib/workspace';
+import { cardDetailKey, cardPath, cardRef, useCardPeople } from '@/lib/cards';
+import { cardUrl } from '@/lib/card-url';
+import { ProjectError } from '@/components/projects/project-error';
 import { Attachments } from './attachments';
+import { CardPlacements, PlacementActions } from './card-placements';
 import { Checklists } from './checklists';
 import { Comments } from './comments';
 
 const LABEL_COLORS = ['grey', 'red', 'orange', 'yellow', 'green', 'teal', 'blue', 'purple', 'pink', 'brown'] as const;
 
-/** Card detail (§3.3). Rendered inside the board drawer and as a full page on hard load. */
-export function CardDetail({ cardId, boardHref, layout = 'page' }: { cardId: string; boardHref: string; layout?: 'page' | 'drawer' }) {
+/**
+ * Card detail (§3.3). Rendered inside the board drawer and as a full page with full=true. Opened in
+ * the URL's project: a card can be in several (docs/CARD_PLACEMENTS.md in the API repository). When
+ * the person cannot see it there, the API shows it in a project they can, and the URL follows.
+ */
+export function CardDetail({ cardId, projectId, boardHref, layout = 'page' }: { cardId: string; projectId: string; boardHref: string; layout?: 'page' | 'drawer' }) {
   const qc = useQueryClient();
   const toast = useToast();
   const now = useNow();
-  const card = useQuery({ queryKey: ['card', cardId], queryFn: () => api.get<Detail>(`/cards/${cardId}`) });
+  const ws = useWorkspace();
+  const router = useRouter();
+  const card = useQuery({ queryKey: cardDetailKey(cardId, projectId), queryFn: () => api.get<Detail>(cardPath(cardId, projectId)) });
+  const shownProject = card.data?.projectId;
+  const shownBoard = card.data?.boardId;
+  useEffect(() => {
+    if (shownProject && shownBoard && shownProject !== projectId) router.replace(cardUrl(ws.id, { projectId: shownProject, boardId: shownBoard }, cardId, window.location.search), { scroll: false });
+  }, [shownProject, shownBoard, projectId, cardId, ws.id, router]);
   useProjectRealtime(card.data?.projectId);
   // Being in card:{id} marks this card as "being viewed": comments on it arrive in-app, not as a push (§4.1).
   useRoom(card.data ? `card:${cardId}` : null, {});
@@ -41,9 +61,9 @@ export function CardDetail({ cardId, boardHref, layout = 'page' }: { cardId: str
     }
   };
 
-  if (card.isPending) return <Spinner />;
+  if (card.isPending) return <CardSkeleton />;
   if (card.error) {
-    return <p className="p-8 text-center text-secondary-foreground">{card.error instanceof ApiError && card.error.status === 404 ? 'This card does not exist or you cannot see it.' : errorMessage(card.error)}</p>;
+    return <ProjectError error={card.error} retry={() => void card.refetch()} />;
   }
   const c = card.data;
   const createdBy = (
@@ -56,8 +76,9 @@ export function CardDetail({ cardId, boardHref, layout = 'page' }: { cardId: str
     <>
       <MoveToList card={c} onMove={(listId) => mutate(() => api.patch<CardTile>(`/cards/${c.id}/move`, { listId, beforeCardId: null }))} />
       <div className="flex flex-wrap gap-2">
+        <PlacementActions card={c} />
         {c.archivedAt ? null : (
-          <Button variant="secondary" onClick={() => void mutate(() => api.post<CardTile>(`/cards/${c.id}/archive`))}>
+          <Button variant="secondary" onClick={() => void mutate(() => api.post<CardTile>(cardPath(c.id, c.projectId, '/archive')))}>
             Archive
           </Button>
         )}
@@ -65,7 +86,7 @@ export function CardDetail({ cardId, boardHref, layout = 'page' }: { cardId: str
           variant="secondary"
           onClick={() => {
             void navigator.clipboard
-              .writeText(`${window.location.origin}${boardHref}/c/${c.id}`)
+              .writeText(`${window.location.origin}${boardHref}/c/${c.id}${new URLSearchParams(window.location.search).get('full') === 'true' ? '?full=true' : ''}`)
               .then(() => toast('Link copied.', 'info'))
               .catch(() => toast('Could not copy the link.'));
           }}
@@ -82,37 +103,46 @@ export function CardDetail({ cardId, boardHref, layout = 'page' }: { cardId: str
         {c.archivedAt ? (
           <div role="status" className="flex items-center justify-between rounded-md bg-warning-subtle px-3 py-2 text-sm text-warning-text">
             This card is archived.
-            <Button variant="secondary" onClick={() => void mutate(() => api.post<CardTile>(`/cards/${c.id}/restore`))}>
+            <Button variant="secondary" onClick={() => void mutate(() => api.post<CardTile>(cardPath(c.id, c.projectId, '/restore')))}>
               Restore
             </Button>
           </div>
         ) : null}
         <header>
           <p className="text-xs text-muted-foreground">
-            <span>{c.listName}</span> · <span data-testid="card-key">{c.key}-{c.number}</span>
+            <span>{c.listName}</span> · <span data-testid="card-key">{cardRef(c)}</span>
           </p>
-          <Title card={c} onSave={(title) => mutate(() => api.patch<CardTile>(`/cards/${c.id}`, { title }))} />
+          <Title card={c} onSave={(title) => mutate(() => api.patch<CardTile>(cardPath(c.id, c.projectId), { title }))} />
+          <ArrivalChip boardId={c.boardId} cardId={c.id} />
+          <ReplanAction boardId={c.boardId} projectId={c.projectId} cardId={c.id} title={c.title} />
         </header>
 
         {layout === 'drawer' ? <div className="space-y-3 rounded-lg border border-border bg-background p-3 text-sm">{actions}</div> : null}
 
         <div className={`flex gap-y-4 ${layout === 'drawer' ? 'flex-col border-b border-border pb-6' : 'flex-wrap gap-x-8'}`}>
           <Field label="Assignees">
-            <Assignees card={c} onToggle={(userId, on) => mutate(() => (on ? api.post<CardTile>(`/cards/${c.id}/assignees/${userId}`) : api.del<CardTile>(`/cards/${c.id}/assignees/${userId}`)))} />
+            <Assignees card={c} onToggle={(userId, on) => mutate(() => (on ? api.post<CardTile>(cardPath(c.id, c.projectId, `/assignees/${userId}`)) : api.del<CardTile>(cardPath(c.id, c.projectId, `/assignees/${userId}`))))} />
           </Field>
           <Field label="Labels">
-            <Labels card={c} onToggle={(labelId, on) => mutate(() => (on ? api.post<CardTile>(`/cards/${c.id}/labels/${labelId}`) : api.del<CardTile>(`/cards/${c.id}/labels/${labelId}`)))} />
+            <Labels card={c} onToggle={(labelId, on) => mutate(() => (on ? api.post<CardTile>(cardPath(c.id, c.projectId, `/labels/${labelId}`)) : api.del<CardTile>(cardPath(c.id, c.projectId, `/labels/${labelId}`))))} />
           </Field>
           <Field label="Due">
-            <Due card={c} now={now} onSave={(patch) => mutate(() => api.patch<CardTile>(`/cards/${c.id}`, patch))} />
+            <Due card={c} now={now} onSave={(patch) => mutate(() => api.patch<CardTile>(cardPath(c.id, c.projectId), patch))} />
           </Field>
+          {c.placements?.length ? (
+            <div className="w-full">
+              <Field label="Projects">
+                <CardPlacements card={c} />
+              </Field>
+            </div>
+          ) : null}
         </div>
 
-        <MentionScopeContext.Provider value={{ projectId: c.projectId, surface: 'card' }}>
-          <Description card={c} onSave={(description) => mutate(() => api.patch<CardTile>(`/cards/${c.id}`, { description }))} />
-          <Checklists cardId={c.id} checklists={c.checklists} />
-          <Attachments cardId={c.id} attachments={c.attachments} />
-          <Comments cardId={c.id} />
+        <MentionScopeContext.Provider value={{ projectId: c.projectId, surface: 'card', cardId: c.id }}>
+          <Description card={c} onSave={(description) => mutate(() => api.patch<CardTile>(cardPath(c.id, c.projectId), { description }))} />
+          <Checklists cardId={c.id} projectId={c.projectId} checklists={c.checklists} />
+          <Attachments cardId={c.id} projectId={c.projectId} attachments={c.attachments} />
+          <Comments cardId={c.id} projectId={c.projectId} />
         </MentionScopeContext.Provider>
         {layout === 'drawer' ? <div className="border-t border-border pt-4 text-caption">{createdBy}</div> : null}
       </div>
@@ -181,10 +211,10 @@ function Popover({ label, children }: { label: string; children: (close: () => v
   );
 }
 
+/** The card's own people: anyone who can see one of its projects, including ones the viewer cannot see. */
 function Assignees({ card, onToggle }: { card: Detail; onToggle: (userId: string, on: boolean) => Promise<void> }) {
-  const ws = useWorkspace();
-  const members = useQuery({ queryKey: ['members', ws.id], queryFn: () => api.get<Page<Member>>(`/workspaces/${ws.id}/members`) });
-  const assignable = (members.data?.data ?? []).filter((m) => m.status === 'active' && m.role !== 'guest');
+  const members = useCardPeople(card.id, 'assignable', card.projectId);
+  const assignable = members.data?.data ?? [];
   const assigned = new Set(card.assignees.map((a) => a.id));
   return (
     <div className="flex items-center gap-1">
@@ -194,6 +224,7 @@ function Assignees({ card, onToggle }: { card: Detail; onToggle: (userId: string
       <Popover label="Assign members">
         {() => (
           <ul className="space-y-0.5">
+            {members.error ? <li role="alert" className="text-label text-danger-text">{errorMessage(members.error)} <Button variant="ghost" onClick={() => void members.refetch()}>Retry people</Button></li> : null}
             {assignable.map((m) => (
               <li key={m.userId}>
                 <label className="tap flex cursor-pointer items-center gap-2 rounded px-2 py-1 text-sm hover:bg-background">
@@ -253,17 +284,17 @@ function Labels({ card, onToggle }: { card: Detail; onToggle: (labelId: string, 
               ))}
             </ul>
             <form onSubmit={(e) => void create(e)} className="flex gap-1 border-t border-border-subtle pt-2">
-              <input name="name" required maxLength={60} placeholder="New label" aria-label="New label name" className="min-w-0 flex-1 rounded border border-input px-1 text-sm" />
-              <select name="color" aria-label="Label colour" defaultValue="blue" className="rounded border border-input text-sm">
+              <Input name="name" required maxLength={60} placeholder="New label" aria-label="New label name" className="min-w-0 flex-1" />
+              <Select name="color" aria-label="Label colour" defaultValue="blue" className="w-auto">
                 {LABEL_COLORS.map((col) => (
                   <option key={col} value={col}>
                     {col}
                   </option>
                 ))}
-              </select>
-              <button type="submit" className="rounded bg-primary px-2 text-sm text-primary-foreground">
+              </Select>
+              <Button type="submit" size="sm">
                 Add
-              </button>
+              </Button>
             </form>
           </div>
         )}
@@ -379,18 +410,18 @@ function MoveToList({ card, onMove }: { card: Detail; onMove: (listId: string) =
   return (
     <label className="block">
       <span className="mb-1 block text-xs font-medium text-muted-foreground">List</span>
-      <select
+      <Select
         value={card.listId}
         aria-label="Move to list"
         onChange={(e) => void onMove(e.target.value)}
-        className="tap w-full rounded-md border border-input bg-surface px-2 py-1 text-sm"
+        className="w-full"
       >
         {(board.data?.lists ?? [{ id: card.listId, name: card.listName }]).map((l) => (
           <option key={l.id} value={l.id}>
             {l.name}
           </option>
         ))}
-      </select>
+      </Select>
     </label>
   );
 }

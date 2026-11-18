@@ -1,0 +1,12 @@
+node_modules
+.next
+coverage
+playwright-report
+test-results
+e2e
+*.tsbuildinfo
+.env
+.env.*
+.git
+.github
+docs

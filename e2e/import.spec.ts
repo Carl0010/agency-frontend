@@ -16,11 +16,11 @@ const FIXTURE = path.resolve(__dirname, 'fixtures/trello-board.csv');
 
 test('import: CSV upload → preview + mapping → progress → summary and report.csv', async ({ browser }) => {
   const { page, account } = await signupToBoard(browser);
-  const slug = new URL(account.boardUrl).pathname.split('/')[2] ?? '';
+  const workspaceId = new URL(account.boardUrl).pathname.split('/')[2] ?? '';
 
-  await page.goto(`/w/${slug}/projects`);
+  await page.goto(`/w/${workspaceId}/projects`);
   await page.getByRole('link', { name: 'Import from Trello' }).click();
-  await expect(page).toHaveURL(new RegExp(`/w/${slug}/import$`));
+  await expect(page).toHaveURL(new RegExp(`/w/${workspaceId}/import$`));
 
   // AC19: counts and the mapping screen, before anything is written.
   await page.getByLabel('Trello CSV export').setInputFiles(FIXTURE);
@@ -30,20 +30,20 @@ test('import: CSV upload → preview + mapping → progress → summary and repo
   await expect(preview).toContainText('arrive as one archive comment');
   const rows = preview.getByTestId('member-map-row');
   await expect(rows).toHaveCount(4);
-  await page.goto(`/w/${slug}/projects`);
+  await page.goto(`/w/${workspaceId}/projects`);
   const projectList = page.getByRole('main');
   await expect(projectList.getByRole('link', { name: /Acme site rebuild/ })).toBeVisible();
   await expect(projectList.getByRole('link', { name: /Acme Website Relaunch/ })).toHaveCount(0);
 
   // Back to the wizard: map one Trello member to the owner, leave the others unassigned (AC24).
-  await page.goto(`/w/${slug}/import`);
+  await page.goto(`/w/${workspaceId}/import`);
   await page.getByLabel('Trello CSV export').setInputFiles(FIXTURE);
   await page.getByLabel('Match Dana Scully').selectOption({ label: 'E2E Owner' });
   await expect(page.getByLabel('New project name')).toHaveValue('Acme Website Relaunch');
   await page.getByRole('button', { name: 'Start import' }).click();
 
   // AC32: the job page polls GET /imports/:id until it finishes.
-  await expect(page).toHaveURL(new RegExp(`/w/${slug}/import/[0-9a-f-]{36}$`));
+  await expect(page).toHaveURL(new RegExp(`/w/${workspaceId}/import/[0-9a-f-]{36}$`));
   await expect(page.getByTestId('import-status')).toHaveAttribute('data-status', 'succeeded', { timeout: 30_000 });
   await expect(page.getByRole('progressbar', { name: 'Import progress' })).toHaveAttribute('aria-valuenow', '100');
 
@@ -72,7 +72,7 @@ test('import: CSV upload → preview + mapping → progress → summary and repo
  */
 test('import: Connect Trello → token off the URL → board picker → preview', async ({ browser }) => {
   const { page, account } = await signupToBoard(browser);
-  const slug = new URL(account.boardUrl).pathname.split('/')[2] ?? '';
+  const workspaceId = new URL(account.boardUrl).pathname.split('/')[2] ?? '';
   const token = 'f'.repeat(64);
 
   await page.route('**/api/v1/workspaces/*/imports/trello/boards', (route) =>
@@ -95,7 +95,7 @@ test('import: Connect Trello → token off the URL → board picker → preview'
     });
   });
 
-  await page.goto(`/w/${slug}/import#token=${token}`);
+  await page.goto(`/w/${workspaceId}/import#token=${token}`);
   await expect(page.getByTestId('trello-boards')).toContainText('Globex retainer');
   expect(page.url()).not.toContain(token);
 

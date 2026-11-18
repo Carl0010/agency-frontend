@@ -14,7 +14,7 @@ export function SetupChip({ ws, onNavigate }: { ws: Workspace; onNavigate?: () =
   const dismiss = async () => {
     try {
       await api.patch(`/workspaces/${ws.id}/onboarding`, { dismissed: true });
-      await qc.invalidateQueries({ queryKey: ['workspace', ws.slug] });
+      await qc.invalidateQueries({ queryKey: ['workspace', ws.id] });
       await qc.invalidateQueries({ queryKey: ['workspaces'] });
     } catch (error) {
       toast(errorMessage(error));

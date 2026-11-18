@@ -137,7 +137,7 @@ export interface PortalProject {
   workspaceId: string;
   workspaceName: string;
   name: string;
-  clientName: string | null;
+  icon: string;
   key: string;
   color: string;
   defaultBoardId: string;
@@ -167,13 +167,64 @@ export interface Project {
   id: string;
   workspaceId: string;
   name: string;
-  clientName: string | null;
   key: string;
   color: string;
+  /** Saved identifier; render unknown values with the folder fallback. */
+  icon: string;
+  teamIds: string[];
+  /** Agency members only; render unknown values as In progress. */
+  status: ProjectStatus;
+  statusChangedAt: string | null;
+  access: 'edit' | 'admin';
+  starredByMe: boolean;
   defaultBoardId: string;
   archivedAt: string | null;
   createdAt: string;
 }
+
+/** Open: planned, in_progress, on_hold. Closed: completed, cancelled. Separate from archive. */
+export type ProjectStatus = 'planned' | 'in_progress' | 'on_hold' | 'completed' | 'cancelled';
+export type TeamRole = 'admin' | 'member';
+export type MemberProjectAccess = 'edit' | 'admin';
+export type ProjectIconName = 'folder' | 'board' | 'briefcase' | 'code' | 'megaphone' | 'pen' | 'globe' | 'rocket';
+export interface Team {
+  id: string;
+  workspaceId: string;
+  name: string;
+  memberCount: number;
+  myRole: TeamRole | null;
+  archivedAt: string | null;
+  createdAt: string;
+}
+export interface TeamMember {
+  userId: string;
+  name: string;
+  avatarUrl: string | null;
+  role: TeamRole;
+  guest: boolean;
+  access: GuestAccess | null;
+  status: 'active' | 'invited';
+}
+export interface TeamDetail extends Team { members: TeamMember[] }
+export interface ProjectAccess {
+  projectId: string;
+  teams: Pick<Team, 'id' | 'name' | 'memberCount'>[];
+  members: {
+    userId: string;
+    name: string;
+    avatarUrl: string | null;
+    role: Role;
+    access: MemberProjectAccess;
+  }[];
+}
+export interface ProjectStar { projectId: string; starredByMe: boolean }
+
+/** Board grouping contracts; DueWindow is evaluated in the viewer's profile timezone. */
+export type DueWindow = 'overdue' | 'today' | 'next_7_days' | 'later' | 'none' | 'done';
+export type RescheduleTarget = Exclude<DueWindow, 'overdue'>;
+export interface Assignable { userId: string; name: string; avatarUrl: string | null }
+export interface ChangeAssigneesRequest { add?: string[]; remove?: string[] }
+export interface RescheduleCardRequest { to: RescheduleTarget; dueAt?: string }
 
 export interface Label {
   id: string;
@@ -191,11 +242,18 @@ export interface PersonRef {
   guest?: boolean;
 }
 
+/**
+ * A card as drawn in one placement (docs/CARD_PLACEMENTS.md in the API repository):
+ * `projectId`, `boardId`, `listId` and `position` are that placement's; `homeProjectId`,
+ * `key` (the home project's key) and `number` are the card's, the same on every board.
+ */
 export interface CardTile {
   id: string;
   listId: string;
   boardId: string;
   projectId: string;
+  homeProjectId: string;
+  key: string;
   number: number;
   title: string;
   position: number;
@@ -209,6 +267,27 @@ export interface CardTile {
   attachmentCount: number;
   checklistDone: number;
   checklistTotal: number;
+  /** How many projects the card is in. Never sent to guests. */
+  placementCount?: number;
+}
+
+/** One project a card is in, as the viewer can see it. */
+export interface CardPlacement {
+  projectId: string;
+  projectName: string;
+  projectIcon: string;
+  projectColor: string;
+  boardId: string;
+  listId: string;
+  listName: string;
+  isHome: boolean;
+}
+
+/** Someone a card's assignee or mention picker offers. */
+export interface CardPerson {
+  userId: string;
+  name: string;
+  avatarUrl: string | null;
 }
 
 export interface BoardList {
@@ -225,7 +304,7 @@ export interface Board {
   project: {
     id: string;
     name: string;
-    clientName: string | null;
+    icon: string;
     key: string;
     color: string;
     workspaceId: string;
@@ -264,9 +343,10 @@ export interface Attachment {
 }
 
 export interface CardDetail extends CardTile {
-  key: string;
   description: string | null;
   listName: string;
+  /** The projects the viewer can see the card in, home first. Never sent to guests. */
+  placements?: CardPlacement[];
   createdAt: string;
   createdBy: PersonRef;
   checklists: Checklist[];
@@ -298,7 +378,7 @@ export interface ErrorEnvelope {
 // Slice 2: chat, notifications, search
 // ---------------------------------------------------------------------------
 
-export type ChannelKind = 'client' | 'internal';
+export type ChannelKind = 'shared' | 'internal';
 
 export interface Channel {
   id: string;
@@ -335,7 +415,7 @@ export interface Message {
   deletedAt: string | null;
 }
 
-export type NotificationType = 'mention' | 'assignment' | 'due_soon' | 'due_now' | 'new_message' | 'thread_reply';
+export type NotificationType = 'mention' | 'assignment' | 'due_soon' | 'due_now' | 'new_message' | 'thread_reply' | 'card_late';
 
 export interface AppNotification {
   id: string;
@@ -351,7 +431,7 @@ export interface AppNotification {
   url: string;
   readAt: string | null;
   createdAt: string;
-  fromClient: boolean;
+  fromGuest: boolean;
 }
 
 export interface NotificationFeed extends Page<AppNotification> {

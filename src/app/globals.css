@@ -1,3 +1,9 @@
+/* Quiet Pro (@carl0010/quiet-pro) supplies the palette and the shared pickers.
+   Its tokens sit in the lowest layer, so Agency's radius, shadow and font scale win where names
+   collide; its component styles sit with Agency's components, below utilities. */
+@layer quiet-pro, theme, base, components, utilities;
+@import '@carl0010/quiet-pro/tokens.css' layer(quiet-pro);
+@import '@carl0010/quiet-pro/components.css' layer(components);
 @import 'tailwindcss';
 @import '../styles/tokens.css';
 
@@ -44,11 +50,86 @@
   .ui-input:disabled { background: var(--color-subtle); color: var(--color-disabled-foreground); }
   .ui-input[aria-invalid='true'] { border-color: var(--color-danger); }
   .ui-input[aria-invalid='true']:focus { box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-danger) 14%, transparent); }
+  .ui-select {
+    @apply min-h-9 w-full min-w-0 max-w-full rounded-md border border-input bg-surface px-3 py-1.5 text-label font-medium text-foreground shadow-sm;
+    cursor: pointer;
+  }
+  .ui-select:hover:not(:disabled) { border-color: var(--color-border-hover); background-color: var(--color-background); }
+  .ui-select:focus-visible, .ui-select:open {
+    border-color: var(--color-ring);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-ring) 14%, transparent);
+    outline: none;
+  }
+  .ui-select:disabled { background-color: var(--color-subtle); color: var(--color-disabled-foreground); box-shadow: none; }
+  .ui-select[aria-invalid='true'] { border-color: var(--color-danger); }
+  .ui-select[aria-invalid='true']:focus-visible { box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-danger) 14%, transparent); }
+
+  /* Keep native values, forms, validation and keyboard behavior. Older browsers
+     retain their native picker; supporting browsers get the themed top-layer menu. */
+  @supports (appearance: base-select) {
+    .ui-select, .ui-select::picker(select) { appearance: base-select; }
+    .ui-select { align-items: center; gap: 0.75rem; }
+    .ui-select::picker-icon {
+      content: '';
+      width: 0.4375rem;
+      height: 0.4375rem;
+      margin-inline: auto 0.125rem;
+      border-right: 1.5px solid currentColor;
+      border-bottom: 1.5px solid currentColor;
+      color: var(--color-muted-foreground);
+      transform: translateY(-2px) rotate(45deg);
+      transition: transform 150ms var(--ease-ui);
+    }
+    .ui-select:open::picker-icon { transform: translateY(2px) rotate(225deg); }
+    .ui-select::picker(select) {
+      min-inline-size: max(11rem, anchor-size(self-inline));
+      max-inline-size: min(28rem, calc(100vw - 1.5rem));
+      max-block-size: min(22rem, 50dvh);
+      margin-block: 0.375rem;
+      padding: 0.375rem;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-xl);
+      background: var(--color-surface);
+      color: var(--color-foreground);
+      box-shadow: var(--shadow-lg);
+      overflow: auto;
+      overscroll-behavior: contain;
+    }
+    .ui-select option {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      min-block-size: 2.25rem;
+      padding: 0.5rem 0.625rem;
+      border-radius: var(--radius-md);
+      color: var(--color-secondary-foreground);
+      font-size: var(--text-label);
+      font-weight: 400;
+      line-height: 1.25rem;
+      overflow-wrap: anywhere;
+      cursor: pointer;
+    }
+    .ui-select option + option { margin-block-start: 0.125rem; }
+    .ui-select option:checked { background: var(--color-primary-subtle); color: var(--color-primary-text); font-weight: 600; }
+    .ui-select option:hover:not(:disabled), .ui-select option:focus-visible:not(:disabled) { background: var(--color-subtle); color: var(--color-foreground); outline: none; }
+    .ui-select option:checked:hover, .ui-select option:checked:focus-visible { background: var(--color-primary-muted); color: var(--color-primary-text); }
+    .ui-select option:disabled { color: var(--color-disabled-foreground); cursor: not-allowed; }
+    .ui-select option::checkmark { order: 1; margin-inline-start: auto; color: var(--color-primary-text); font-weight: 600; }
+    .ui-select optgroup { padding: 0.375rem 0; color: var(--color-muted-foreground); font-size: var(--text-caption); font-weight: 600; }
+    .ui-select optgroup + optgroup { margin-block-start: 0.25rem; border-top: 1px solid var(--color-border); }
+  }
+  /* Quiet Pro controls at Agency's density and radius. */
+  .qp-input { height: auto; min-height: 2.625rem; border-radius: var(--radius-md); }
+  .qp-input-multi { padding-top: 0.4375rem; padding-bottom: 0.4375rem; }
+  .qp-textarea { border-radius: var(--radius-md); }
+  .qp-listbox { border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); }
+  .qp-field-label { font-size: var(--text-label); line-height: var(--text-label--line-height); }
+  .qp-check, .qp-switch-row { display: flex; width: fit-content; }
   .ui-panel { @apply rounded-xl border border-border bg-surface; }
   .ui-page { @apply mx-auto w-full max-w-5xl px-4 py-6 sm:px-8 sm:py-8; }
   .ui-nav-link { @apply flex min-h-8 items-center gap-2 rounded-md px-2.5 py-1 text-label text-secondary-foreground hover:bg-subtle hover:text-foreground; }
   .ui-nav-link[aria-current='page'] { @apply bg-primary-subtle font-medium text-primary-text; }
-  .ui-module-link { @apply flex min-h-16 w-full max-w-16 shrink-0 flex-col items-center justify-center gap-1 rounded-lg py-2 text-caption font-medium text-secondary-foreground hover:bg-subtle hover:text-foreground active:bg-muted focus-visible:outline-offset-1; }
+  .ui-module-link { @apply flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-secondary-foreground hover:bg-subtle hover:text-foreground active:bg-muted focus-visible:outline-offset-1; }
   .ui-module-link[aria-current='location'] { @apply bg-primary-subtle text-primary-text; }
   .ui-tab { @apply inline-flex min-h-8 items-center justify-center gap-2 rounded-md px-3 py-1 text-label text-secondary-foreground hover:bg-subtle; }
   .ui-tab[aria-current='page'], .ui-tab[aria-selected='true'] { @apply bg-primary-subtle font-medium text-primary-text; }
@@ -57,12 +138,19 @@
 @media (max-width: 639px) {
   .tap, .ui-button, .ui-nav-link, .ui-tab { min-height: 44px; min-width: 44px; }
   input:not([type='checkbox'], [type='radio'], [type='hidden']), select, textarea { min-height: 44px; }
-  input[type='checkbox'], input[type='radio'] { min-height: 44px; min-width: 44px; }
+  input[type='checkbox']:not(.qp-check-box), input[type='radio']:not(.qp-radio) { min-height: 44px; min-width: 44px; }
   /* iOS should focus fields without zooming the viewport. */
   input, select, textarea { font-size: 16px; }
+  .ui-select option { min-block-size: 44px; font-size: 16px; }
+  /* Quiet Pro controls: the field, not its inner input, takes the 44px touch height. */
+  .qp-input { min-height: 44px; }
+  .qp-input input { min-height: 0; }
+  .qp-option { min-height: 44px; }
+  .qp-check, .qp-switch-row { min-height: 44px; align-items: center; }
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .ui-select::picker-icon { transition: none; }
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
@@ -78,10 +166,77 @@
 .prose-sm a { @apply text-primary underline decoration-primary-border underline-offset-2; }
 .prose-sm code { @apply rounded bg-subtle px-1 text-[0.85em]; }
 
+.workspace-sidebar-panel {
+  width: 16rem;
+  overflow: clip;
+  transition: width var(--duration-panel) var(--ease-ui);
+}
+.workspace-sidebar-content {
+  transition: transform var(--duration-panel) var(--ease-ui), opacity var(--duration-panel) var(--ease-ui);
+}
+.workspace-sidebar-panel[data-open='false'] { width: 0; }
+.workspace-sidebar-panel[data-open='false'] > .workspace-sidebar-content { transform: translateX(-12px); opacity: 0; }
+
+/* Leave native focus/scroll lifecycle to dialog; keep its top-layer rendering
+   alive just long enough to slide out. Older browsers close immediately. */
+.navigation-drawer {
+  transform: translateX(-100%);
+  transition: transform var(--duration-panel) var(--ease-ui),
+    display var(--duration-panel) allow-discrete, overlay var(--duration-panel) allow-discrete;
+}
+.navigation-drawer[open] { transform: translateX(0); }
+.navigation-drawer:not([open]), .navigation-drawer:not([open])::backdrop { pointer-events: none; }
+.navigation-drawer::backdrop {
+  opacity: 0;
+  transition: opacity var(--duration-panel) var(--ease-ui),
+    display var(--duration-panel) allow-discrete, overlay var(--duration-panel) allow-discrete;
+}
+.navigation-drawer[open]::backdrop { opacity: 1; }
+
+.card-drawer-frame {
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  width: 100%;
+  min-height: 0;
+  overflow: clip;
+}
+.card-drawer-panel { transition: transform var(--duration-panel) var(--ease-ui); }
+.card-drawer-frame[data-open='false'] { pointer-events: none; }
+.card-drawer-frame[data-open='false'] > .card-drawer-panel { transform: translateX(100%); }
+@media (min-width: 768px) {
+  .card-drawer-frame {
+    --inspector-width: 28rem;
+    position: relative;
+    inset: auto;
+    flex-shrink: 0;
+    width: var(--inspector-width);
+    transition: width var(--duration-panel) var(--ease-ui);
+  }
+  .card-drawer-panel { width: var(--inspector-width); }
+  .card-drawer-frame[data-open='false'] { width: 0; }
+  @starting-style { .card-drawer-frame { width: 0; } }
+}
+@media (min-width: 1280px) { .card-drawer-frame { --inspector-width: 32rem; } }
+@media (min-width: 1536px) { .card-drawer-frame { --inspector-width: 36rem; } }
+@media (min-width: 1024px) {
+  .navigation-drawer, .navigation-drawer::backdrop { transition: none; }
+}
+@starting-style {
+  .navigation-drawer[open] { transform: translateX(-100%); }
+  .navigation-drawer[open]::backdrop { opacity: 0; }
+  .card-drawer-panel { transform: translateX(100%); }
+}
+
 /* A narrow card inspector uses the work area; workspace navigation stays usable.
    Keep the board mounted, but remove its covered controls from keyboard order. */
 @media (max-width: 767px) {
-  .board-split-view:has(#card-drawer) > #board-view { display: none; }
+  .board-split-view:has(.card-drawer-frame[data-open='true']) > #board-view { display: none; }
 }
 
 html[data-theme='dark'] { color-scheme: dark; }
+
+/* Keep loading geometry steady; motion changes only the decorative shapes. */
+.skeleton-shape { animation: skeleton-breathe 1.8s ease-in-out infinite; }
+@keyframes skeleton-breathe { 0%, 100% { opacity: .55; } 50% { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .skeleton-shape { animation: none; } }

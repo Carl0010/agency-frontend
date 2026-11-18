@@ -1,5 +1,7 @@
 'use client';
 
+import { BoardSkeleton, LoadingSkeleton } from '@/components/skeleton';
+
 import {
   closestCenter,
   closestCorners,
@@ -11,6 +13,7 @@ import {
   useSensor,
   useSensors,
   type CollisionDetection,
+  type ClientRect,
   type KeyboardCoordinateGetter,
   type DragEndEvent,
   type DragOverEvent,
@@ -20,23 +23,36 @@ import { horizontalListSortingStrategy, SortableContext, sortableKeyboardCoordin
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Icon } from '@/components/icon';
+import { ProjectArrivalLine } from '@/components/arrival';
+import { ProjectArrivalSettings } from '@/components/arrival-settings';
+import { ConfidencePrompt } from '@/components/arrival-actions';
+import { useBoardArrivals } from '@/lib/arrival';
 import { ProjectActions } from '@/components/project-chrome';
+import { ProjectIcon } from '@/components/projects/project-icon';
+import { ProjectStatusMenu } from '@/components/projects/project-status';
 import { useToast } from '@/components/toast';
-import { Avatar, Button, Spinner } from '@/components/ui';
+import { Avatar, Button } from '@/components/ui';
 import { api, errorMessage } from '@/lib/api';
 import { findCard, moveCardLocal, moveListLocal, upsertCard, upsertList } from '@/lib/board-state';
 import { isFiltering, matchesFilters, parseFilters, writeFilters, type BoardFilters } from '@/lib/filters';
+import { cardRef } from '@/lib/cards';
 import { useProjectRealtime } from '@/lib/realtime';
-import type { Board, CardTile, Label, Member, Page } from '@/lib/types';
-import { useNow } from '@/lib/use-now';
+import type { Board, CardTile, Label, Page, Project } from '@/lib/types';
+import { useGroupingClock } from '@/lib/use-grouping-clock';
+import { parseGrouping } from '@/lib/board-grouping';
+import { useSession } from '@/lib/session';
 import { useWorkspace } from '@/lib/workspace';
+import { useProjectPeople } from '@/lib/project-people';
+import { ProjectError } from '@/components/projects/project-error';
 import { AddList } from './add-list';
 import { BoardListView } from './list-view';
 import { CardTileView } from './card-tile';
 import { FilterBar } from './filter-bar';
 import { ListColumn } from './list-column';
+import { GroupedBoard } from './grouped-board';
+import { GroupingSelect } from './grouping-select';
 
 type Drag = { type: 'card' | 'list'; activeId: string; board: Board; snapshot: Board };
 
@@ -52,11 +68,20 @@ function resolveOver(board: Board, overId: string): { listId: string; index: num
   return found ? { listId: found.list.id, index: found.index } : null;
 }
 
-/** Lists only collide with lists; cards collide with cards and list bodies. */
+/** Compare list headers (60px), so columns with different card counts have the same drag target. */
+const listHeaderRect = (rect: ClientRect): ClientRect => ({
+  left: rect.left, right: rect.right, width: rect.width,
+  top: rect.top, bottom: rect.top + 60, height: 60,
+});
+
+/** Lists only collide with list headers; cards collide with cards and list bodies. */
 const collision: CollisionDetection = (args) => {
   const isList = args.active.data.current?.type === 'list';
   const droppableContainers = args.droppableContainers.filter((c) => (c.data.current?.type === 'list') === isList);
-  return isList ? closestCenter({ ...args, droppableContainers }) : closestCorners({ ...args, droppableContainers });
+  return isList ? closestCenter({
+    ...args, droppableContainers, collisionRect: listHeaderRect(args.collisionRect),
+    droppableRects: new Map([...args.droppableRects].map(([id, rect]) => [id, listHeaderRect(rect)])),
+  }) : closestCorners({ ...args, droppableContainers });
 };
 
 /** List keyboard moves must ignore the inset card-drop zones inside each list. */
@@ -64,8 +89,11 @@ const boardKeyboardCoordinates: KeyboardCoordinateGetter = (event, args) => {
   if (args.context.active?.data.current?.type !== 'list') return sortableKeyboardCoordinates(event, args);
   const droppableRects = new Map([...args.context.droppableRects].filter(([id]) =>
     args.context.droppableContainers.get(id)?.data.current?.type === 'list',
-  ));
-  return sortableKeyboardCoordinates(event, { ...args, context: { ...args.context, droppableRects } });
+  ).map(([id, rect]) => [id, listHeaderRect(rect)]));
+  return sortableKeyboardCoordinates(event, { ...args, context: {
+    ...args.context, droppableRects,
+    collisionRect: args.context.collisionRect ? listHeaderRect(args.context.collisionRect) : null,
+  } });
 };
 
 export function BoardScreen({ boardId, projectId }: { boardId: string; projectId: string }) {
@@ -75,7 +103,8 @@ export function BoardScreen({ boardId, projectId }: { boardId: string; projectId
   const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
-  const now = useNow();
+  const { user } = useSession();
+  const timezone = user?.timezone ?? 'UTC';
   const [drag, setDrag] = useState<Drag | null>(null);
   const [editingListId, setEditingListId] = useState<string | null>(null);
   const onListCreated = (id: string) => { setMobileListId(id); setEditingListId(id); };
@@ -83,20 +112,29 @@ export function BoardScreen({ boardId, projectId }: { boardId: string; projectId
   const [mobileListId, setMobileListId] = useState<string | null>(null);
 
   useProjectRealtime(projectId);
+  // The scoped project supplies member access; board data also includes the icon.
+  const project = useQuery({ queryKey: ['project', projectId], queryFn: () => api.get<Project>(`/projects/${projectId}`) });
+  useEffect(() => { if (project.error) toast(errorMessage(project.error)); }, [project.error, toast]);
   const board = useQuery({ queryKey: ['board', boardId], queryFn: () => api.get<Board>(`/boards/${boardId}`) });
-  const members = useQuery({ queryKey: ['members', ws.id], queryFn: () => api.get<Page<Member>>(`/workspaces/${ws.id}/members`) });
+  const arrivals = useBoardArrivals(boardId);
+  const now = useGroupingClock(board.data, timezone);
+  const grouping = parseGrouping(params.get('group'));
+  const members = useProjectPeople(ws.id, projectId);
   const labels = useQuery({ queryKey: ['labels', ws.id], queryFn: () => api.get<Page<Label>>(`/workspaces/${ws.id}/labels`) });
 
   const filters = useMemo(() => parseFilters(new URLSearchParams(params.toString())), [params]);
-  const setFilters = (f: BoardFilters) => {
-    const next = writeFilters(new URLSearchParams(params.toString()), f).toString();
-    router.replace(next ? `${pathname}?${next}` : pathname, { scroll: false });
+  const setFilters = (update: (current: BoardFilters) => BoardFilters) => {
+    // Client-only filters use Next's integrated History API. Compose against the
+    // current URL so rapid selections cannot replace one another with stale props.
+    const current = new URLSearchParams(window.location.search);
+    const next = writeFilters(current, update(parseFilters(current))).toString();
+    window.history.replaceState(null, '', `${pathname}${next ? `?${next}` : ''}${window.location.hash}`);
   };
   const filtering = isFiltering(filters);
   const view = params.get('view') === 'list' ? 'list' : 'kanban';
   const setView = (nextView: 'kanban' | 'list') => {
     setDrag(null); // A cancelled drag preview must never become the other view's data.
-    const next = new URLSearchParams(params.toString());
+    const next = new URLSearchParams(window.location.search);
     if (nextView === 'list') next.set('view', 'list'); else next.delete('view');
     const query = next.toString();
     router.push(query ? `${pathname}?${query}` : pathname, { scroll: false });
@@ -113,14 +151,13 @@ export function BoardScreen({ boardId, projectId }: { boardId: string; projectId
     }),
   );
 
-  if (board.isPending) return <Spinner />;
-  if (board.error) return <p className="p-8 text-center text-secondary-foreground">{errorMessage(board.error)}</p>;
+  if (board.isPending) return <BoardSkeleton view={view} />;
+  if (board.error) return <ProjectError error={board.error} retry={() => void board.refetch()} />;
 
   const shown = drag?.board ?? board.data;
   const qs = params.toString();
-  const cardHref = (cardId: string) => `/w/${ws.slug}/p/${projectId}/b/${boardId}/c/${cardId}${qs ? `?${qs}` : ''}`;
+  const cardHref = (cardId: string) => `/w/${ws.id}/p/${projectId}/b/${boardId}/c/${cardId}${qs ? `?${qs}` : ''}`;
   const activeMembers = (members.data?.data ?? []).filter((m) => m.status === 'active' && m.role !== 'guest');
-  const totalCards = shown.lists.reduce((n, l) => n + l.cards.length, 0);
   const selectedList = shown.lists.find((l) => l.id === mobileListId) ?? shown.lists[0];
 
   function onDragStart(e: DragStartEvent) {
@@ -196,17 +233,17 @@ export function BoardScreen({ boardId, projectId }: { boardId: string; projectId
   return (
     <div data-testid="board-canvas" className="flex h-full bg-board-canvas">
       <div className="flex min-w-0 flex-1 flex-col">
-        <div className="flex shrink-0 flex-wrap items-center gap-x-4 gap-y-3 border-b border-border bg-surface px-4 py-4 sm:px-6">
-          <div className="min-w-0 grow basis-48">
-            <h1 className="truncate text-xl font-semibold leading-7" data-testid="board-title">
+        <div data-testid="board-project-header" className="flex shrink-0 flex-wrap items-center gap-x-4 gap-y-1 border-b border-border bg-surface px-4 py-2">
+          <div className="flex min-w-0 grow basis-40 items-center gap-2.5">
+            <ProjectIcon project={{ color: project.data?.color ?? shown.project.color, icon: project.data?.icon ?? shown.project.icon }} />
+            <h1 className="min-w-0 max-w-full truncate text-lg font-semibold leading-6" data-testid="board-title">
               {shown.project.name}
             </h1>
-            <p className="mt-1 flex flex-wrap items-center gap-x-2 text-label text-muted-foreground">
-              {shown.project.clientName ? <><span className="truncate">{shown.project.clientName}</span><span aria-hidden="true">·</span></> : null}
-              <span>{totalCards} {totalCards === 1 ? 'card' : 'cards'} in {shown.lists.length} {shown.lists.length === 1 ? 'list' : 'lists'}</span>
-            </p>
+            {project.data ? <ProjectStatusMenu project={project.data} /> : null}
+            <ProjectArrivalLine projectId={projectId} />
           </div>
           <div className="flex max-w-full flex-wrap items-center gap-2">
+            {project.data ? <ProjectArrivalSettings projectId={projectId} canEdit={project.data.access === 'admin'} /> : null}
             <ProjectActions projectId={projectId} />
             <div role="group" aria-label="Project members" className="flex -space-x-1.5">
               {activeMembers.slice(0, 5).map((member) => (
@@ -216,16 +253,16 @@ export function BoardScreen({ boardId, projectId }: { boardId: string; projectId
             <ArchivedCards boardId={boardId} cardHref={cardHref} />
           </div>
         </div>
-        <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-border bg-surface px-4 py-2 sm:px-6">
-          <div role="group" aria-label="Board view" className="inline-flex gap-1 rounded-lg border border-border bg-background p-1">
-            <button type="button" aria-pressed={view === 'kanban'} onClick={() => setView('kanban')} className={`ui-button tap ${view === 'kanban' ? 'bg-surface text-foreground shadow-sm' : 'text-muted-foreground hover:bg-subtle'}`}><Icon name="board" />Kanban</button>
-            <button type="button" aria-pressed={view === 'list'} onClick={() => setView('list')} className={`ui-button tap ${view === 'list' ? 'bg-surface text-foreground shadow-sm' : 'text-muted-foreground hover:bg-subtle'}`}><Icon name="list" />List</button>
-          </div>
-          <p className="text-caption text-muted-foreground">{view === 'list' ? 'Cards grouped by list' : 'Arrange cards across lists'}</p>
-        </div>
-        <FilterBar filters={filters} onChange={setFilters} members={activeMembers} labels={labels.data?.data ?? []} />
+        <FilterBar filters={filters} onChange={setFilters} members={activeMembers} labels={labels.data?.data ?? []} leading={
+          <div className="flex flex-wrap items-center gap-3"><div role="group" aria-label="Board view" className="inline-flex shrink-0 gap-0.5 rounded-lg border border-border bg-background p-0.5">
+            <button type="button" aria-pressed={view === 'kanban'} onClick={() => setView('kanban')} className={`ui-button tap min-h-8 gap-1.5 px-2.5 ${view === 'kanban' ? 'bg-surface text-foreground shadow-sm' : 'text-muted-foreground hover:bg-subtle'}`}><Icon name="board" />Kanban</button>
+            <button type="button" aria-pressed={view === 'list'} onClick={() => setView('list')} className={`ui-button tap min-h-8 gap-1.5 px-2.5 ${view === 'list' ? 'bg-surface text-foreground shadow-sm' : 'text-muted-foreground hover:bg-subtle'}`}><Icon name="list" />List</button>
+          </div><GroupingSelect /></div>
+        } />
+        {arrivals.error ? <p role="alert" className="px-4 py-1 text-caption text-danger-text">{errorMessage(arrivals.error)}</p> : arrivals.data?.history === 'insufficient' ? <p className="px-4 py-1 text-caption text-muted-foreground">Arrival times appear once the team has finished 20 cards.</p> : null}
+        <ConfidencePrompt projectId={projectId} />
 
-        {view === 'kanban' && shown.lists.length ? (
+        {grouping === 'list' && view === 'kanban' && shown.lists.length ? (
           <div className="flex shrink-0 gap-2 overflow-x-auto border-b border-border bg-surface px-4 py-2 sm:hidden" role="tablist" aria-label="Lists">
             {shown.lists.map((l) => (
               <button
@@ -242,12 +279,8 @@ export function BoardScreen({ boardId, projectId }: { boardId: string; projectId
           </div>
         ) : null}
 
-        {totalCards === 0 && !filtering ? (
-          <p className="mx-4 mt-4 shrink-0 rounded-lg border border-primary-border bg-primary-subtle px-4 py-3 text-label text-primary-text sm:mx-6">Add your first card to get started.</p>
-        ) : null}
-        {filtering ? <p className="mx-4 mt-3 shrink-0 text-caption text-muted-foreground sm:mx-6">{view === 'kanban' ? 'Filters are on — clear them to drag cards.' : 'Filters apply to cards in every list.'}</p> : null}
 
-        {view === 'list' ? <BoardListView editingListId={editingListId} onListCreated={onListCreated} onListEditFinished={onListEditFinished} board={shown} filters={filters} now={now} cardHref={cardHref} /> : <DndContext
+        {grouping !== 'list' ? <GroupedBoard key={`${grouping}:${view}`} board={board.data} grouping={grouping} view={view} filters={filters} now={now} timezone={timezone} cardHref={cardHref} /> : view === 'list' ? <BoardListView editingListId={editingListId} onListCreated={onListCreated} onListEditFinished={onListEditFinished} board={shown} filters={filters} now={now} cardHref={cardHref} activeDrag={drag} onDragStart={onDragStart} onDragOver={onDragOver} onDragEnd={onDragEnd} onDragCancel={() => setDrag(null)} /> : <DndContext
           sensors={sensors}
           collisionDetection={collision}
           onDragStart={onDragStart}
@@ -255,7 +288,7 @@ export function BoardScreen({ boardId, projectId }: { boardId: string; projectId
           onDragEnd={onDragEnd}
           onDragCancel={() => setDrag(null)}
         >
-          <div className="flex min-h-0 flex-1 items-start gap-4 overflow-auto p-4 sm:p-6" data-testid="board-lists">
+          <div className="flex min-h-0 flex-1 items-start gap-4 overflow-auto p-4" data-testid="board-lists">
             <SortableContext items={shown.lists.map((l) => `list:${l.id}`)} strategy={horizontalListSortingStrategy}>
               {shown.lists.map((l) => (
                 <ListColumn
@@ -277,7 +310,7 @@ export function BoardScreen({ boardId, projectId }: { boardId: string; projectId
           <DragOverlay>
             {activeCard ? (
               <div className="w-80">
-                <CardTileView card={activeCard} projectKey={shown.project.key} now={now} dragging />
+                <CardTileView card={activeCard} now={now} dragging />
               </div>
             ) : activeList ? (
               <div className="w-80 rounded-xl border border-border bg-subtle p-4 text-sm font-semibold shadow-lg">{activeList.name}</div>
@@ -302,13 +335,13 @@ function ArchivedCards({ boardId, cardHref }: { boardId: string; cardHref: (id: 
       {open ? (
         <div className="absolute right-0 z-30 mt-1 max-h-96 w-72 overflow-y-auto rounded-md border border-border bg-surface p-2 shadow-lg">
           {archived.isPending ? (
-            <Spinner />
+            <LoadingSkeleton label="Loading archived cards" />
           ) : archived.data?.data.length ? (
             <ul className="space-y-1">
               {archived.data.data.map((c) => (
                 <li key={c.id}>
                   <Link href={cardHref(c.id)} onClick={() => setOpen(false)} className="tap block truncate rounded px-2 py-1 text-sm hover:bg-subtle">
-                    #{c.number} {c.title}
+                    <span className="font-mono text-caption text-muted-foreground">{cardRef(c)}</span> {c.title}
                   </Link>
                 </li>
               ))}

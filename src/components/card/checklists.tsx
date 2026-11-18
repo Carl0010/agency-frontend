@@ -6,11 +6,12 @@ import { useConfirm } from '@/components/confirmation';
 import { useToast } from '@/components/toast';
 import { Button } from '@/components/ui';
 import { api, errorMessage } from '@/lib/api';
+import { cardPath } from '@/lib/cards';
 import type { Checklist } from '@/lib/types';
 import { formText } from '@/lib/form';
 
 /** Checklists (AC17). Progress is computed from items here and on the tile — never stored. */
-export function Checklists({ cardId, checklists }: { cardId: string; checklists: Checklist[] }) {
+export function Checklists({ cardId, projectId, checklists }: { cardId: string; projectId: string; checklists: Checklist[] }) {
   const qc = useQueryClient();
   const toast = useToast();
   const [adding, setAdding] = useState(false);
@@ -31,7 +32,7 @@ export function Checklists({ cardId, checklists }: { cardId: string; checklists:
     e.preventDefault();
     const title = formText(new FormData(e.currentTarget), 'title');
     if (!title) return;
-    await run(() => api.post(`/cards/${cardId}/checklists`, { title }));
+    await run(() => api.post(cardPath(cardId, projectId, '/checklists'), { title }));
     setAdding(false);
   }
 

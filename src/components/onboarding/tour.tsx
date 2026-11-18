@@ -9,7 +9,7 @@ import type { User } from '@/lib/types';
 
 /**
  * The 3-step coach-mark tour (§3.5, AC25): add a card, open a card, open the
- * client channel. It points at `[data-tour=…]` anchors on whatever screen is
+ * shared channel. It points at `[data-tour=…]` anchors on whatever screen is
  * up; on the project list (where an invited member lands, AC27) it first
  * points at a project. Non-modal, so it never blocks the board. Finishing or
  * skipping persists on the user — it is never shown twice.
@@ -24,10 +24,10 @@ interface TourStep {
 }
 
 export const TOUR_STEPS: TourStep[] = [
-  { anchor: 'project', title: 'Open a client project', body: 'Each client gets a board, a client chat and a team-only channel.', counted: false },
+  { anchor: 'project', title: 'Open a project', body: 'Projects have boards, a Shared channel for guests, and an internal channel for workspace members.', counted: false },
   { anchor: 'add-card', title: 'Add a card', body: 'Cards are the work: a deliverable, a task, a round of feedback.', counted: true },
   { anchor: 'card', title: 'Open a card', body: 'Details, checklists, files and the comment thread live inside.', counted: true },
-  { anchor: 'client-channel', title: 'Open the client channel', body: 'Choose Chat under your project in navigation. Clients only see what you share.', counted: true },
+  { anchor: 'shared-channel', title: 'Open the shared channel', body: 'Choose Shared under your project in navigation. Guests only see what you share.', counted: true },
 ];
 
 const PROGRESS_KEY = 'agency:tourStep';

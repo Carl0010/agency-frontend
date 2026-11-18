@@ -56,7 +56,7 @@ test('guest: invite from the guest panel, portal only, no Team channel, no assig
   const { page: owner, account } = await signupToBoard(browser);
   const projectId = new URL(account.boardUrl).pathname.split('/')[4] ?? '';
   const base = account.boardUrl.replace(/\/b\/[^/]+$/, '');
-  const slug = new URL(account.boardUrl).pathname.split('/')[2] ?? '';
+  const workspaceId = new URL(account.boardUrl).pathname.split('/')[2] ?? '';
 
   // Seed: an assigned card, one message per channel, and a second (unshared) project.
   const me = await login(request, account);
@@ -67,26 +67,26 @@ test('guest: invite from the guest panel, portal only, no Team channel, no assig
   await call(request, me, 'post', `/cards/${card.id}/assignees/${me.userId}`);
   const channels = await call<{ data: { id: string; kind: string }[] }>(request, me, 'get', `/projects/${projectId}/channels`);
   const internal = channels.data.find((c) => c.kind === 'internal');
-  const client = channels.data.find((c) => c.kind === 'client');
+  const client = channels.data.find((c) => c.kind === 'shared');
   if (!internal || !client) throw new Error('missing default channels');
   await call(request, me, 'post', `/channels/${internal.id}/messages`, { body: 'Margin on this one is thin, keep it quiet' });
   await call(request, me, 'post', `/channels/${client.id}/messages`, { body: 'Hi Acme, first drafts land Friday' });
   const project = await call<{ workspaceId: string }>(request, me, 'get', `/projects/${projectId}`);
-  await call(request, me, 'post', `/workspaces/${project.workspaceId}/projects`, { name: 'Other client retainer', clientName: 'Globex' });
+  await call(request, me, 'post', `/workspaces/${project.workspaceId}/projects`, { name: 'Other client retainer',  });
 
   // AC18: member-side labels.
   await owner.goto(`${base}/chat`);
-  await expect(owner.getByTestId('client-reminder')).toHaveText('Your client can read and post here.');
-  await expect(owner.getByTestId('internal-badge')).toHaveText('Internal');
+  await expect(owner.getByTestId('shared-reminder')).toHaveText('Guests can read this. Guests with comment access can post here.');
+  await expect(owner.getByRole('complementary', { name: 'Workspace sidebar' }).getByTestId('internal-badge')).toHaveText('Internal');
 
   // AC1: invite from the guest panel; guests take no seat.
   await owner.getByTestId('guests-button').click();
   const panel = owner.getByTestId('guest-panel');
-  await expect(panel).toContainText("Guests don't use a seat");
+  await expect(panel).toContainText('Guests never use a seat');
   const guestEmail = `e2e-guest-${Date.now()}@example.test`;
   await panel.getByLabel('Guest email').fill(guestEmail);
-  await panel.getByLabel('Access').selectOption('comment');
-  await panel.getByRole('button', { name: 'Invite' }).click();
+  await panel.getByLabel('Guest access', { exact: true }).selectOption('comment');
+  await panel.getByRole('button', { name: 'Invite guest', exact: true }).click();
   await expect(panel.getByTestId('guest-row')).toContainText(`${guestEmail} · invited`);
 
   // AC2: the guest accepts and lands in the portal tree.
@@ -100,6 +100,8 @@ test('guest: invite from the guest panel, portal only, no Team channel, no assig
   await expect(guest).toHaveURL(new RegExp(`/portal/${projectId}$`));
   await expect(guest.getByTestId('portal-layout')).toBeVisible();
   await expect(guest.getByTestId('guest-chip')).toHaveText('Guest · Can comment');
+  // Project status is the agency's internal signal: never in the portal.
+  await expect(guest.getByTestId('project-status')).toHaveCount(0);
 
   // AC9: the card is there, its assignee is not.
   const tile = guest.getByTestId('portal-card').filter({ hasText: 'Homepage hero copy' });
@@ -111,8 +113,8 @@ test('guest: invite from the guest panel, portal only, no Team channel, no assig
 
   // Only two tabs; the Client channel, never the Team channel (AC5 on screen).
   const tabs = guest.getByRole('navigation', { name: 'Project sections' }).getByRole('link');
-  await expect(tabs).toHaveText(['Board', 'Chat']);
-  await tabs.filter({ hasText: 'Chat' }).click();
+  await expect(tabs).toHaveText(['Board', 'Shared']);
+  await tabs.filter({ hasText: 'Shared' }).click();
   await expect(guest.getByTestId('message').filter({ hasText: 'first drafts land Friday' })).toBeVisible();
   await expect(guest.getByText('Margin on this one is thin')).toHaveCount(0);
 
@@ -121,16 +123,16 @@ test('guest: invite from the guest panel, portal only, no Team channel, no assig
   await expect(guest.locator('body')).not.toContainText('Other client retainer');
 
   // AC3: the workspace tree redirects a guest back to the portal…
-  await guest.goto(`/w/${slug}/projects`);
+  await guest.goto(`/w/${workspaceId}/projects`);
   await expect(guest).toHaveURL(new RegExp(`/portal/${projectId}$`));
   await guest.goto(`${base}/team`);
   await expect(guest).toHaveURL(new RegExp(`/portal/${projectId}$`));
   await expect(guest.getByText('Margin on this one is thin')).toHaveCount(0);
   // AC12: the import wizard is workspace-only too.
-  await guest.goto(`/w/${slug}/import`);
+  await guest.goto(`/w/${workspaceId}/import`);
   await expect(guest).toHaveURL(new RegExp(`/portal/${projectId}$`));
 
   // …and the portal redirects a member back to the workspace.
   await owner.goto(`/portal/${projectId}`);
-  await expect(owner).toHaveURL(new RegExp(`/w/${slug}/projects$`));
+  await expect(owner).toHaveURL(new RegExp(`/w/${workspaceId}/projects$`));
 });

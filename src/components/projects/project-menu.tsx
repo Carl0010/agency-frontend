@@ -9,6 +9,7 @@ import { errorMessage } from '@/lib/api';
 import type { Project } from '@/lib/types';
 import { useWorkspace } from '@/lib/workspace';
 import { ProjectEditor } from './project-editor';
+import { ProjectStarButton } from './project-star';
 
 /** Native popover handles outside dismissal, Escape and focus return. */
 export function ProjectMenu({ project, onNavigate }: { project: Project; onNavigate?: () => void }) {
@@ -18,7 +19,7 @@ export function ProjectMenu({ project, onNavigate }: { project: Project; onNavig
   const popover = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState({ top: 0, left: 0 });
   const [editing, setEditing] = useState(false);
-  const board = `/w/${ws.slug}/p/${project.id}/b/${project.defaultBoardId}`;
+  const board = `/w/${ws.id}/p/${project.id}/b/${project.defaultBoardId}`;
   const dismiss = () => popover.current?.hidePopover();
   return <>
     <Button variant="ghost" size="icon" aria-label={`Project actions for ${project.name}`} popoverTarget={id} onClick={(event) => {
@@ -28,6 +29,7 @@ export function ProjectMenu({ project, onNavigate }: { project: Project; onNavig
     <div ref={popover} id={id} popover="auto" role="group" aria-label={`${project.name} actions`} style={position} className="fixed m-0 w-56 rounded-xl border border-border bg-surface p-1.5 text-foreground shadow-lg">
       <p className="truncate px-3 py-2 text-caption font-medium text-muted-foreground">{project.name}</p>
       <Link href={board} onClick={() => { dismiss(); onNavigate?.(); }} className="ui-nav-link tap"><Icon name="board" />Open board</Link>
+      <ProjectStarButton project={project} />
       <button type="button" className="ui-nav-link tap w-full" onClick={() => { dismiss(); setEditing(true); }}><Icon name="settings" />Edit project</button>
       <button type="button" className="ui-nav-link tap w-full" onClick={async () => {
         dismiss();

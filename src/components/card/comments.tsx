@@ -1,13 +1,16 @@
 'use client';
 
+import { LoadingSkeleton } from '@/components/skeleton';
+
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Markdown } from '@/components/markdown';
 import { useConfirm } from '@/components/confirmation';
 import { useToast } from '@/components/toast';
-import { Avatar, Button, GuestChip, Spinner } from '@/components/ui';
+import { Avatar, Button, GuestChip } from '@/components/ui';
 import { api, errorMessage } from '@/lib/api';
+import { cardPath } from '@/lib/cards';
 import { applyComment } from '@/lib/realtime';
 import { useSession } from '@/lib/session';
 import { timeAgo } from '@/lib/time';
@@ -26,7 +29,7 @@ export const VIEW_ONLY = 'You have view-only access to this project.';
  * the view-only notice. Nothing is rendered until the server accepts a write,
  * so a stale tab whose access was lowered shows only the error (AC6).
  */
-export function Comments({ cardId, canPost = true }: { cardId: string; canPost?: boolean }) {
+export function Comments({ cardId, projectId, canPost = true }: { cardId: string; projectId: string; canPost?: boolean }) {
   const qc = useQueryClient();
   const toast = useToast();
   const [draft, setDraft] = useState('');
@@ -34,13 +37,13 @@ export function Comments({ cardId, canPost = true }: { cardId: string; canPost?:
   const comments = useQuery({
     queryKey: ['comments', cardId],
     // Cached flat so realtime events can patch single comments; grouped at render time.
-    queryFn: async () => (await api.get<{ data: Thread[] }>(`/cards/${cardId}/comments`)).data.flatMap(({ replies, ...root }) => [root, ...replies]),
+    queryFn: async () => (await api.get<{ data: Thread[] }>(cardPath(cardId, projectId, '/comments'))).data.flatMap(({ replies, ...root }) => [root, ...replies]),
   });
 
   async function post(body: string, parentCommentId?: string): Promise<boolean> {
     if (!body.trim()) return false;
     try {
-      const c = await api.post<Comment>(`/cards/${cardId}/comments`, { body, ...(parentCommentId ? { parentCommentId } : {}) });
+      const c = await api.post<Comment>(cardPath(cardId, projectId, '/comments'), { body, ...(parentCommentId ? { parentCommentId } : {}) });
       applyComment(qc, c);
       void qc.invalidateQueries({ queryKey: ['card', cardId] });
       return true;
@@ -70,7 +73,7 @@ export function Comments({ cardId, canPost = true }: { cardId: string; canPost?:
   return (
     <section aria-label="Comments" className="space-y-4">
       <h2 className="text-sm font-semibold text-secondary-foreground">Comments</h2>
-      {comments.isPending ? <Spinner /> : null}
+      {comments.isPending ? <LoadingSkeleton variant="messages" className="p-4 sm:p-6" /> : null}
       <ol className="space-y-4">
         {roots.map((root) => (
           <li key={root.id}>

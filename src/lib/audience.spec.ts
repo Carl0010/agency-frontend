@@ -36,6 +36,25 @@ describe('AC3 audience routing', () => {
     expect(audienceRedirect('/wonder', guest)).toBeNull();
   });
 
+  it('routes canonical UUID links and legacy slug links alike', () => {
+    const W = '33333333-3333-4333-8333-333333333333';
+    const current = { m: [W, 'northlight'], g: [P2] };
+    expect(audienceRedirect(`/w/${W}/projects`, current)).toBeNull();
+    expect(audienceRedirect(`/w/${W.toUpperCase()}/projects`, current)).toBeNull();
+    expect(audienceRedirect('/w/northlight/projects', current)).toBeNull();
+    expect(audienceRedirect(`/portal/${P1}`, current)).toBe(`/w/${W}/projects`);
+    // A different workspace's UUID is someone else's tree.
+    expect(audienceRedirect('/w/44444444-4444-4444-8444-444444444444/projects', current)).toBe(`/portal/${P2}`);
+  });
+
+  it('a pre-UUID cookie (slugs only) lets UUID links through to the layout, which checks the role', () => {
+    const legacy = { m: ['northlight'], g: [P2] };
+    expect(audienceRedirect(`/w/${P1}/projects`, legacy)).toBeNull();
+    expect(audienceRedirect('/w/other/projects', legacy)).toBe(`/portal/${P2}`);
+    // A guest-only person has no workspace to resolve, so the portal still wins.
+    expect(audienceRedirect(`/w/${P1}/projects`, guest)).toBe(`/portal/${P1}`);
+  });
+
   it('parses the API cookie and rejects garbage', () => {
     expect(parseAudience(enc({ m: ['a'], g: [P1.toUpperCase()] }))).toEqual({ m: ['a'], g: [P1] });
     expect(parseAudience('not base64 json')).toBeNull();

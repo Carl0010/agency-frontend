@@ -10,9 +10,12 @@ import { PushExplainer } from '@/components/notifications';
 import { OPEN_EVENT } from '@/components/search/command-palette';
 import { Button } from '@/components/ui';
 import { api, errorMessage } from '@/lib/api';
+import { OPEN_STATUSES } from '@/lib/project-status';
 import type { Page, Project } from '@/lib/types';
 import { useWorkspaceChannels } from '@/lib/unread';
 import { useWorkspace } from '@/lib/workspace';
+import { useAccessSync } from '@/lib/access-sync';
+import { useTeams } from '@/lib/teams';
 import { ModuleRail } from './module-rail';
 import { ThemeToggle } from './theme-toggle';
 import { workspaceModule } from './workspace-modules';
@@ -22,22 +25,26 @@ import { WorkspaceSidebar, type SidebarData } from './workspace-sidebar';
 /** Module rail and contextual sidebar for all member routes; never imported by the guest portal. */
 export function WorkspaceShell({ children }: { children: ReactNode }) {
   const ws = useWorkspace();
+  useAccessSync();
   const pathname = usePathname();
-  const activeModule = workspaceModule(pathname, `/w/${ws.slug}`);
+  const activeModule = workspaceModule(pathname, `/w/${ws.id}`);
   const { projectId } = useParams<{ projectId?: string }>();
   const [open, setOpen] = useState(false);
   const [sidebarVisible, setSidebarVisible] = useState(true);
   const close = useCallback(() => setOpen(false), []);
-  const projects = useQuery({ queryKey: ['projects', ws.id], queryFn: () => api.get<Page<Project>>(`/workspaces/${ws.id}/projects`) });
+  // Navigation lists open projects only: finished work leaves it without being archived.
+  const projects = useQuery({ queryKey: ['projects', ws.id, { status: 'open' }], queryFn: () => api.get<Page<Project>>(`/workspaces/${ws.id}/projects?status=${OPEN_STATUSES.join(',')}`) });
+  const teams = useTeams(ws.id);
+  const starred = useQuery({ queryKey: ['projects', ws.id, { starred: true }], queryFn: () => api.get<Page<Project>>(`/workspaces/${ws.id}/projects?starred=true`) });
   // One subscription owner: mounting mobile navigation must not double-count live activity.
   const unread = useWorkspaceChannels();
   // Clear the old route's drawer before paint so a quick reopen belongs to the new route.
   useLayoutEffect(() => { close(); }, [pathname, close]);
 
   const data: SidebarData = {
-    projects: projects.data?.data ?? [], pending: projects.isPending,
-    error: projects.error ? errorMessage(projects.error) : null,
-    retry: () => { void projects.refetch(); }, channels: unread.channels,
+    projects: projects.data?.data ?? [], teams: teams.data?.data ?? [], starred: starred.data?.data ?? [], pending: projects.isPending,
+    error: projects.error || teams.error || starred.error ? errorMessage(projects.error ?? teams.error ?? starred.error) : null,
+    retry: () => { void projects.refetch(); void teams.refetch(); void starred.refetch(); }, channels: unread.channels,
   };
   const search = () => {
     close();
@@ -48,30 +55,32 @@ export function WorkspaceShell({ children }: { children: ReactNode }) {
   return (
     <div className="flex h-dvh min-w-0 flex-col overflow-hidden">
       <a href="#workspace-content" className="sr-only z-50 rounded-md bg-surface p-3 text-primary focus:not-sr-only focus:fixed focus:left-4 focus:top-4">Skip to content</a>
-      <header aria-label="Application bar" data-testid="workspace-header" className="grid h-16 shrink-0 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 border-b border-border bg-surface px-3 sm:gap-4 sm:px-5 lg:grid-cols-[1fr_minmax(20rem,36rem)_1fr]">
+      <header aria-label="Application bar" data-testid="workspace-header" className="grid h-14 shrink-0 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 border-b border-border bg-surface px-3 sm:gap-4 sm:px-5 lg:grid-cols-[1fr_minmax(20rem,36rem)_1fr]">
         <div className="flex min-w-0 items-center gap-3">
-          <Button variant="ghost" size="icon" className="lg:hidden" aria-label="Open navigation" aria-expanded={open} aria-haspopup="dialog" data-tour={projectId ? 'client-channel' : undefined} onClick={() => setOpen(true)}><Icon name="menu" className="size-5" /></Button>
+          <Button variant="ghost" size="icon" className="lg:hidden" aria-label="Open navigation" aria-expanded={open} aria-haspopup="dialog" data-tour={projectId ? 'shared-channel' : undefined} onClick={() => setOpen(true)}><Icon name="menu" className="size-5" /></Button>
           <Button variant="ghost" size="icon" className="hidden lg:inline-flex" aria-label={sidebarVisible ? 'Close sidebar' : 'Open sidebar'} aria-expanded={sidebarVisible} aria-controls="desktop-sidebar" onClick={() => setSidebarVisible((visible) => !visible)}><Icon name="menu" className="size-5" /></Button>
-          <Link href={`/w/${ws.slug}/projects`} aria-label="Agency home" className="hidden min-w-0 items-center gap-2.5 rounded-md sm:flex"><BrandMark /><span className="truncate text-body font-semibold">Agency</span></Link>
+          <Link href={`/w/${ws.id}/projects`} aria-label="Agency home" className="hidden min-w-0 items-center gap-2.5 rounded-md sm:flex"><BrandMark /><span className="truncate text-body font-semibold">Agency</span></Link>
         </div>
-        <button type="button" aria-label="Search workspace" onClick={search} className="tap flex min-h-10 min-w-0 items-center gap-2 rounded-lg border border-border bg-background px-3 text-label text-muted-foreground hover:border-input hover:bg-subtle">
+        <button type="button" aria-label="Search workspace" onClick={search} className="tap flex min-h-9 min-w-0 items-center gap-2 rounded-lg border border-border bg-background px-3 text-label text-muted-foreground hover:border-input hover:bg-subtle">
           <Icon name="search" /><span className="truncate">Search<span className="hidden sm:inline"> cards, comments and messages</span></span><kbd className="ml-auto hidden shrink-0 rounded border border-border bg-surface px-1.5 text-caption sm:inline">⌘ / Ctrl K</kbd>
         </button>
         <div className="justify-self-end"><ThemeToggle /></div>
       </header>
       <div className="flex min-h-0 min-w-0 flex-1">
-        <aside aria-label="Module rail" className="hidden w-[72px] shrink-0 border-r border-border bg-surface lg:block">
+        <aside aria-label="Module rail" className="hidden w-14 shrink-0 border-r border-border bg-surface lg:block">
           <ModuleRail activeModule={activeModule} />
         </aside>
-        <aside id="desktop-sidebar" aria-label="Workspace sidebar" className={`${sidebarVisible ? 'hidden lg:block' : 'hidden'} w-64 shrink-0 border-r border-border bg-background`}>
-          <WorkspaceSidebar data={data} projectId={projectId} activeModule={activeModule} />
+        <aside id="desktop-sidebar" aria-label="Workspace sidebar" aria-hidden={!sidebarVisible} inert={!sidebarVisible} data-open={sidebarVisible} className="workspace-sidebar-panel hidden shrink-0 bg-background lg:block">
+          <div className="workspace-sidebar-content h-full w-64 border-r border-border">
+            <WorkspaceSidebar data={data} projectId={projectId} activeModule={activeModule} />
+          </div>
         </aside>
-        {open ? <NavigationDrawer onClose={close}>
+        <NavigationDrawer open={open} onClose={close}>
           <div className="flex h-full min-w-0">
-            <div className="w-[72px] shrink-0 border-r border-border bg-surface"><ModuleRail activeModule={activeModule} onNavigate={close} /></div>
+            <div className="w-14 shrink-0 border-r border-border bg-surface"><ModuleRail activeModule={activeModule} onNavigate={close} /></div>
             <div className="min-w-0 flex-1"><WorkspaceSidebar data={data} projectId={projectId} activeModule={activeModule} onNavigate={close} onClose={close} /></div>
           </div>
-        </NavigationDrawer> : null}
+        </NavigationDrawer>
         <div className="flex min-w-0 flex-1 flex-col bg-background">
           <BillingBanners ws={ws} />
           <PushExplainer />

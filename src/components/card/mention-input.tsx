@@ -2,16 +2,17 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { useRef, useState, type KeyboardEvent } from 'react';
-import { Avatar } from '@/components/ui';
-import { api } from '@/lib/api';
-import { mentionableQuery, useMentionScope } from '@/lib/mention-scope';
+import { Avatar, Button } from '@/components/ui';
+import { api, errorMessage } from '@/lib/api';
+import { mentionablePath, useMentionScope } from '@/lib/mention-scope';
 import { activeMentionQuery, insertMention } from '@/lib/mentions';
 import type { Page, RosterEntry } from '@/lib/types';
 import { useWorkspace } from '@/lib/workspace';
 
 /**
- * Textarea with `@` mention typeahead (AC20). Candidates come from
- * `?mentionable=true`, scoped to the surface in MentionScopeContext; the API
+ * Textarea with `@` mention typeahead (AC20). Candidates come from the card's
+ * `/mentionable` read or the roster's `?mentionable=true`, scoped to the
+ * surface in MentionScopeContext; the API
  * decides who is mentionable there (members, the project's guests, or — for
  * a guest author — only people who posted where they can read).
  * `⌘↵` / `Ctrl↵` submits; with `enterToSend` (chat, §3.4) `↵` sends and
@@ -44,10 +45,11 @@ export function MentionInput({
   const [highlight, setHighlight] = useState(0);
   const [dismissed, setDismissed] = useState<number | null>(null);
   const scope = useMentionScope();
-  const qs = mentionableQuery(scope);
+  const path = mentionablePath(ws.id, scope);
   const members = useQuery({
-    queryKey: ['members', ws.id, qs],
-    queryFn: () => api.get<Page<RosterEntry>>(`/workspaces/${ws.id}/members?${qs}`),
+    queryKey: scope?.cardId ? ['card-people', scope.cardId, 'mentionable'] : ['members', ws.id, path],
+    queryFn: () => api.get<Page<RosterEntry>>(path),
+    enabled: Boolean(scope),
   });
 
   const active = activeMentionQuery(value, caret);
@@ -114,6 +116,7 @@ export function MentionInput({
         onKeyDown={onKeyDown}
         className="w-full rounded-md border border-input p-2 text-sm focus:border-ring focus:outline-none focus:ring-2 focus:ring-primary-border"
       />
+      {active && members.error ? <p role="alert" className="text-label text-danger-text">{errorMessage(members.error)} <Button variant="ghost" onClick={() => void members.refetch()}>Retry mentions</Button></p> : null}
       {options.length ? (
         <ul role="listbox" aria-label="Mention a teammate" data-testid="mention-options" className="absolute bottom-full left-0 z-30 mb-1 w-64 rounded-md border border-border bg-surface py-1 shadow-lg">
           {options.map((m, i) => (

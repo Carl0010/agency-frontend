@@ -1,59 +1,60 @@
-/* Agency UI foundations. Change values here; components consume semantic roles.
-   Palette rationale and usage: docs/DESIGN_SYSTEM.md. Theme overrides share the same semantic roles. */
+/* Agency UI foundations. The palette comes from Quiet Pro (@carl0010/quiet-pro, loaded in globals.css):
+   a token set to var(--…) follows Quiet Pro in both themes; a hex value is Agency's own role
+   (board canvas, fills, info, highlight, content colours). Rationale: docs/DESIGN_SYSTEM.md. */
 @theme {
   --font-sans: var(--font-geist), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, 'SF Mono', Menlo, monospace;
 
-  --color-background: #f7f8f5;
-  --color-board-canvas: #eef2f6;
-  --color-surface: #ffffff;
-  --color-subtle: #f0f2ee;
-  --color-muted: #e7ebe5;
-  --color-foreground: #202822;
-  --color-secondary-foreground: #46534a;
-  --color-muted-foreground: #626f65;
-  --color-disabled-foreground: #78847b;
-  --color-inverse: #26372d;
+  --color-background: var(--bg);
+  --color-board-canvas: #fcfdfe;
+  --color-surface: var(--surface-2);
+  --color-subtle: var(--surface-3);
+  --color-muted: #e8eaec;
+  --color-foreground: var(--text);
+  --color-secondary-foreground: var(--text-muted);
+  --color-muted-foreground: var(--text-subtle);
+  --color-disabled-foreground: #82878c;
+  --color-inverse: #1d1f23;
   --color-inverse-foreground: #ffffff;
-  --color-border: #dbe1d9;
-  --color-border-subtle: #e9ede6;
-  --color-input: #859287;
-  --color-border-hover: #65776a;
+  --color-border: var(--border);
+  --color-border-subtle: var(--border-subtle);
+  --color-input: var(--border-strong);
+  --color-border-hover: #5f646a;
 
-  --color-primary: #196747;
-  --color-primary-hover: #145539;
-  --color-primary-active: #10452f;
-  --color-primary-foreground: #ffffff;
-  --color-primary-subtle: #edf5ee;
-  --color-primary-muted: #dcecdf;
-  --color-primary-border: #a7c9b0;
-  --color-primary-text: #174e36;
-  --color-ring: #196747;
+  --color-primary: var(--accent);
+  --color-primary-hover: var(--accent-hover);
+  --color-primary-active: #00555b;
+  --color-primary-foreground: var(--on-accent);
+  --color-primary-subtle: var(--accent-soft);
+  --color-primary-muted: #c7eded;
+  --color-primary-border: #90caca;
+  --color-primary-text: var(--accent-text);
+  --color-ring: var(--accent);
 
-  --color-danger: #b43737;
-  --color-danger-hover: #982c2c;
-  --color-danger-active: #7d2525;
-  --color-danger-subtle: #fff1ef;
-  --color-danger-muted: #f9deda;
-  --color-danger-border: #eab5ae;
-  --color-danger-text: #942e2e;
-  --color-success: #247348;
-  --color-success-subtle: #edf7ef;
-  --color-success-muted: #d9eddf;
-  --color-success-border: #acd0b7;
-  --color-success-text: #235c3b;
-  --color-warning: #9a5c0d;
-  --color-warning-subtle: #fff6e6;
-  --color-warning-muted: #f8e9c8;
-  --color-warning-border: #e4c88f;
-  --color-warning-text: #805012;
-  --color-info: #275f97;
-  --color-info-subtle: #edf4fc;
-  --color-info-border: #b7d0eb;
-  --color-info-text: #244f79;
+  --color-danger: #b63132;
+  --color-danger-hover: #a12628;
+  --color-danger-active: #8d1a1e;
+  --color-danger-subtle: var(--danger-soft);
+  --color-danger-muted: #ffdad6;
+  --color-danger-border: #edaaa4;
+  --color-danger-text: var(--danger);
+  --color-success: #0b7643;
+  --color-success-subtle: var(--success-soft);
+  --color-success-muted: #cbefd6;
+  --color-success-border: #94cda7;
+  --color-success-text: var(--success);
+  --color-warning: #905211;
+  --color-warning-subtle: var(--warning-soft);
+  --color-warning-muted: #f7e6c3;
+  --color-warning-border: #dcb87a;
+  --color-warning-text: var(--warning);
+  --color-info: #2266a4;
+  --color-info-subtle: #e8f3ff;
+  --color-info-border: #acc7e4;
+  --color-info-text: #1d5b92;
   --color-highlight: #fae8a6;
   --color-highlight-foreground: #644517;
-  --color-overlay: #18261e;
+  --color-overlay: #0f1216;
 
   /* User-selected content colors are distinct from brand and status roles. */
   --color-label-grey: #7c877f;
@@ -78,10 +79,10 @@
   --radius-lg: 0.5rem;
   --radius-xl: 0.75rem;
   --radius-2xl: 1rem;
-  --shadow-sm: 0 1px 2px rgb(32 40 34 / 0.04);
-  --shadow-md: 0 3px 10px -3px rgb(32 40 34 / 0.12);
-  --shadow-lg: 0 12px 32px -8px rgb(32 40 34 / 0.18), 0 2px 6px rgb(32 40 34 / 0.04);
-  --shadow-xl: 0 24px 60px -16px rgb(32 40 34 / 0.25);
+  --shadow-sm: 0 1px 2px rgb(15 18 24 / 0.04);
+  --shadow-md: 0 3px 10px -3px rgb(15 18 24 / 0.12);
+  --shadow-lg: 0 12px 32px -8px rgb(15 18 24 / 0.18), 0 2px 6px rgb(15 18 24 / 0.04);
+  --shadow-xl: 0 24px 60px -16px rgb(15 18 24 / 0.25);
   --text-caption: 0.75rem;
   --text-caption--line-height: 1rem;
   --text-label: 0.8125rem;
@@ -93,47 +94,28 @@
   --text-page: 1.5rem;
   --text-page--line-height: 2rem;
   --ease-ui: cubic-bezier(0.2, 0, 0, 1);
+  --duration-panel: 220ms;
 }
+
 
 /* Keep status fills and content colors stable; adapt surfaces, text and controls. */
 html[data-theme='dark'] {
-  --color-background: #111714;
-  --color-board-canvas: #151f27;
-  --color-surface: #19221c;
-  --color-subtle: #202c24;
-  --color-muted: #2d3c31;
-  --color-foreground: #e8eee9;
-  --color-secondary-foreground: #c0cec3;
-  --color-muted-foreground: #9daf9f;
-  --color-disabled-foreground: #7f9284;
-  --color-border: #35483b;
-  --color-border-subtle: #2a392f;
-  --color-input: #708878;
-  --color-border-hover: #a8bead;
-  --color-primary: #86cba5;
-  --color-primary-hover: #a0dbb9;
-  --color-primary-active: #b6e5cb;
-  --color-primary-foreground: #14261b;
-  --color-primary-subtle: #203a2b;
-  --color-primary-muted: #2c513c;
-  --color-primary-border: #50765d;
-  --color-primary-text: #b0e2c4;
-  --color-ring: #94d7b3;
-  --color-danger-subtle: #3b2322;
-  --color-danger-muted: #502b29;
-  --color-danger-border: #85504b;
-  --color-danger-text: #ffb4ac;
-  --color-success-subtle: #21382a;
-  --color-success-muted: #2b4935;
-  --color-success-border: #4b7155;
-  --color-success-text: #accfb6;
-  --color-warning-subtle: #3b3020;
-  --color-warning-muted: #514126;
-  --color-warning-border: #856c3b;
-  --color-warning-text: #f3d29a;
-  --color-info-subtle: #203347;
-  --color-info-border: #476b91;
-  --color-info-text: #b5d4f4;
+  --color-board-canvas: #111315;
+  --color-muted: #282c30;
+  --color-disabled-foreground: #71757a;
+  --color-border-hover: #94999e;
+  --color-primary-active: #8feeed;
+  --color-primary-muted: #064141;
+  --color-primary-border: #216a6a;
+  --color-danger-muted: #542523;
+  --color-danger-border: #944a46;
+  --color-success-muted: #183e27;
+  --color-success-border: #346b49;
+  --color-warning-muted: #48340e;
+  --color-warning-border: #7b5e29;
+  --color-info-subtle: #1c2d3f;
+  --color-info-border: #3e6084;
+  --color-info-text: #a5ccf4;
   --color-highlight: #56451b;
   --color-highlight-foreground: #ffe9a7;
   --color-overlay: #000000;

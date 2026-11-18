@@ -13,21 +13,42 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 Before changing UI, read [the design system](docs/DESIGN_SYSTEM.md).
 For navigation changes also read [sidebar responsibilities](docs/NAVIGATION.md).
 
-- `src/styles/tokens.css` owns colors, type sizes, radii and shadows.
+- `src/styles/tokens.css` owns Agency's semantic tokens, type sizes, radii and shadows. Colour roles
+  set to `var(--…)` alias Quiet Pro (`@carl0010/quiet-pro`, vendored in `vendor/`); change those in
+  `Carl0010/design-system`, then `npm run quiet-pro:update -- <tag-or-commit>`.
 - `src/app/globals.css` owns global focus, controls, motion and touch-target behavior.
-- `src/components/ui.tsx` owns shared controls, badges, panels, headings and empty states.
+- `src/components/ui.tsx` owns shared controls, badges, panels, headings and empty states. It re-exports
+  Quiet Pro's Combobox, MultiCombobox, Checkbox, RadioGroup, Switch and Kbd; don't fork them here.
 - `src/components/icon.tsx` owns decorative outline icons and the brand mark.
 - `src/lib/content-colors.ts` owns mappings for user-selected labels, projects and avatars.
 - Use semantic color utilities. `design-system/semantic-colors` is an ESLint error.
 - Keep business logic, API behavior and audience boundaries separate from visual changes.
-- The 72px module rail owns Projects, Inbox and Workspace selection. The 256px
+- The 56px icon module rail owns Projects, Inbox and Workspace selection. The 256px
   contextual sidebar owns the selected module's links, project menus and account controls.
   The top app bar owns centered global search, sidebar visibility and a labelled theme switch.
   Page headers own local actions. Do not duplicate a project rail or member tabs.
+- Projects are visible through team shares or direct grants. Sidebar groups use
+  `teamIds`; Starred reads the full `?starred=true` collection from the API. Keep
+  saved icons and personal stars server-backed. Workspace settings own Teams.
+- Only `project.access === 'admin'` exposes sharing and guest mutations. Team
+  management follows `myRole` plus workspace owner/admin access. People pickers
+  use scoped roster queries: a card's assignee and mention pickers read
+  `/cards/:id/assignable` and `/cards/:id/mentionable`, board groups and filters
+  the project's reads. Never assign from the whole workspace list.
+- A card can be in several projects. Draw its reference from the tile's own `key`,
+  never the board's project, and send `?project=` on card requests from a project
+  screen (`src/lib/cards.ts`). See "Cards in several projects" in BOARD_VIEWS.md.
+- Use Shared (`kind: 'shared'`, `surface=shared`), `fromGuest`, and guest. Never
+  send the removed `clientName` field. `/chat` and `/team` URLs remain stable.
+- Handle project `404 not_found` as no access. Access-change events clear stale
+  project content; reconnects refetch while preserving unrelated drafts. New
+  grants require fresh reads; the API only guarantees narrowing events.
 - Member card details use a non-modal right drawer. Keep desktop board controls
   active; do not add a blocking backdrop, focus trap or document scroll lock.
 - Board presentations follow [docs/BOARD_VIEWS.md](docs/BOARD_VIEWS.md). Keep view/filter
   state in the URL and server ordering unchanged; reuse the shared list header and composers.
+  Keep view tabs left, search/filters right, and filters in the anchored popover.
+  Project headers show their saved icon and name without card/list-count descriptions.
 - Use `useConfirm` from `components/confirmation.tsx` for confirmations. Browser
   confirm/alert/prompt calls are lint errors; preserve API authorization and error handling.
 - A new token needs a purpose and documented foreground/background pairing. Run the contrast tests.
@@ -36,7 +57,12 @@ For navigation changes also read [sidebar responsibilities](docs/NAVIGATION.md).
 - When a requested feature lacks API support, add a Markdown handoff under `docs/handoffs/`
   with current capabilities, proposed contracts, acceptance criteria and implementation status.
   Implement supported UI independently; do not fake missing server state in local storage.
-- Do not add component-library dependencies or duplicate button/input variants for a single screen.
+- Quiet Pro is the only component package. Do not add other component libraries or duplicate
+  button/input variants for a single screen.
+- Use shared skeletons from `components/skeleton.tsx` for initial content queries.
+  Preserve existing content during background refreshes; keep progress labels for operations.
+- Use the shared `Select` for select fields; `.ui-select` owns field/menu styling.
+  Keep native select props and option text. Call sites own width/layout, not appearance.
 - Preserve the generated Next.js instructions above.
 
 ## Working in this repository

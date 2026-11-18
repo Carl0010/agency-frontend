@@ -91,7 +91,7 @@ describe('AC2 — the /portal layout tree imports no workspace nav, search, sett
   });
 
   it('the guard itself works: the workspace layout does reach the palette and the nav', () => {
-    const ws = closure([join(SRC, 'app', 'w', '[slug]', 'layout.tsx')]);
+    const ws = closure([join(SRC, 'app', 'w', '[workspaceId]', 'layout.tsx')]);
     const wsFiles = [...ws.keys()].map((f) => relative(SRC, f));
     expect(wsFiles).toContain('components/search/command-palette.tsx');
     expect(wsFiles).toContain('components/notifications.tsx');

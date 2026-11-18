@@ -1,6 +1,6 @@
 import { expect, type Browser, type BrowserContextOptions, type Page } from '@playwright/test';
 
-export const list = (page: Page, name: string) => page.getByRole('region', { name: `List ${name}` });
+export const list = (page: Page, name: string) => page.getByRole('region', { name: `List ${name}`, exact: true }).or(page.getByRole('rowgroup', { name: `List ${name}`, exact: true }));
 
 export interface Account {
   email: string;
@@ -28,7 +28,6 @@ export async function signupToBoard(browser: Browser, options: BrowserContextOpt
   await page.getByRole('button', { name: 'Continue' }).click();
 
   await page.getByLabel('Project name').fill('Acme site rebuild');
-  await page.getByLabel('Client name').fill('Acme');
   await page.getByRole('button', { name: 'Create project' }).click();
   // Steps 3–4 (Slice 4): no invites, start with the empty default board.
   await page.getByRole('heading', { name: 'Invite your team' }).waitFor();
