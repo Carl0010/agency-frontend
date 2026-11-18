@@ -1,52 +1,53 @@
-/* Agency UI foundations (Quiet Pro). Change values here; components consume semantic roles.
-   Palette rationale and usage: docs/DESIGN_SYSTEM.md. Theme overrides share the same semantic roles. */
+/* Agency UI foundations. The palette comes from Quiet Pro (@carl0010/quiet-pro, loaded in globals.css):
+   a token set to var(--…) follows Quiet Pro in both themes; a hex value is Agency's own role
+   (board canvas, fills, info, highlight, content colours). Rationale: docs/DESIGN_SYSTEM.md. */
 @theme {
   --font-sans: var(--font-geist), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, 'SF Mono', Menlo, monospace;
 
-  --color-background: #f9fafb;
+  --color-background: var(--bg);
   --color-board-canvas: #eef0f3;
-  --color-surface: #ffffff;
-  --color-subtle: #f2f3f5;
+  --color-surface: var(--surface-2);
+  --color-subtle: var(--surface-3);
   --color-muted: #e8eaec;
-  --color-foreground: #15171a;
-  --color-secondary-foreground: #44484d;
-  --color-muted-foreground: #5c6167;
+  --color-foreground: var(--text);
+  --color-secondary-foreground: var(--text-muted);
+  --color-muted-foreground: var(--text-subtle);
   --color-disabled-foreground: #82878c;
   --color-inverse: #1d1f23;
   --color-inverse-foreground: #ffffff;
-  --color-border: #d7d9dc;
-  --color-border-subtle: #e6e8ea;
-  --color-input: #81878d;
+  --color-border: var(--border);
+  --color-border-subtle: var(--border-subtle);
+  --color-input: var(--border-strong);
   --color-border-hover: #5f646a;
 
-  --color-primary: #00767d;
-  --color-primary-hover: #00656b;
+  --color-primary: var(--accent);
+  --color-primary-hover: var(--accent-hover);
   --color-primary-active: #00555b;
-  --color-primary-foreground: #ffffff;
-  --color-primary-subtle: #def6f5;
+  --color-primary-foreground: var(--on-accent);
+  --color-primary-subtle: var(--accent-soft);
   --color-primary-muted: #c7eded;
   --color-primary-border: #90caca;
-  --color-primary-text: #00646a;
-  --color-ring: #00767d;
+  --color-primary-text: var(--accent-text);
+  --color-ring: var(--accent);
 
   --color-danger: #b63132;
   --color-danger-hover: #a12628;
   --color-danger-active: #8d1a1e;
-  --color-danger-subtle: #ffedeb;
+  --color-danger-subtle: var(--danger-soft);
   --color-danger-muted: #ffdad6;
   --color-danger-border: #edaaa4;
-  --color-danger-text: #a82d2e;
+  --color-danger-text: var(--danger);
   --color-success: #0b7643;
-  --color-success-subtle: #e3f8e9;
+  --color-success-subtle: var(--success-soft);
   --color-success-muted: #cbefd6;
   --color-success-border: #94cda7;
-  --color-success-text: #036639;
+  --color-success-text: var(--success);
   --color-warning: #905211;
-  --color-warning-subtle: #fef2d9;
-  --color-warning-muted: #f7e2b8;
+  --color-warning-subtle: var(--warning-soft);
+  --color-warning-muted: #f7e6c3;
   --color-warning-border: #dcb87a;
-  --color-warning-text: #834b14;
+  --color-warning-text: var(--warning);
   --color-info: #2266a4;
   --color-info-subtle: #e8f3ff;
   --color-info-border: #acc7e4;
@@ -95,52 +96,31 @@
   --ease-ui: cubic-bezier(0.2, 0, 0, 1);
 }
 
-/* Native select chevron, drawn in muted-foreground for each theme. */
-:root { --select-chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%235c6167' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E"); }
+/* Native select chevron in Quiet Pro text-subtle (muted-foreground) for each theme. */
+:root { --select-chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23646970' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E"); }
 
 /* Keep status fills and content colors stable; adapt surfaces, text and controls. */
 html[data-theme='dark'] {
-  --color-background: #0a0c0f;
   --color-board-canvas: #111315;
-  --color-surface: #171a1d;
-  --color-subtle: #1f2225;
   --color-muted: #282c30;
-  --color-foreground: #f2f3f5;
-  --color-secondary-foreground: #c8cbce;
-  --color-muted-foreground: #a1a5aa;
   --color-disabled-foreground: #71757a;
-  --color-border: #2d3135;
-  --color-border-subtle: #202327;
-  --color-input: #6b7177;
   --color-border-hover: #94999e;
-  --color-primary: #40d2d2;
-  --color-primary-hover: #69e4e4;
   --color-primary-active: #8feeed;
-  --color-primary-foreground: #031a1a;
-  --color-primary-subtle: #073232;
   --color-primary-muted: #064141;
   --color-primary-border: #216a6a;
-  --color-primary-text: #73dfdf;
-  --color-ring: #40d2d2;
-  --color-danger-subtle: #3e1e1c;
   --color-danger-muted: #542523;
   --color-danger-border: #944a46;
-  --color-danger-text: #fba8a0;
-  --color-success-subtle: #152f1f;
   --color-success-muted: #183e27;
   --color-success-border: #346b49;
-  --color-success-text: #8bdda8;
-  --color-warning-subtle: #37290f;
   --color-warning-muted: #48340e;
   --color-warning-border: #7b5e29;
-  --color-warning-text: #f7c97b;
   --color-info-subtle: #1c2d3f;
   --color-info-border: #3e6084;
   --color-info-text: #a5ccf4;
   --color-highlight: #56451b;
   --color-highlight-foreground: #ffe9a7;
   --color-overlay: #000000;
-  --select-chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23a1a5aa' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  --select-chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238e9398' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
   --shadow-md: 0 3px 10px -3px rgb(0 0 0 / 0.3);
   --shadow-lg: 0 12px 32px -8px rgb(0 0 0 / 0.45);
   --shadow-xl: 0 24px 60px -16px rgb(0 0 0 / 0.55);
