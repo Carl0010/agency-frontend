@@ -1,9 +1,31 @@
 # Agency design system
 
-Accepted direction, 2026-10-15: a calm, precise workspace for teams.
-Use warm gray surfaces, deep green actions, legible compact typography, and
+Accepted direction, 2026-11-18: **Quiet Pro**, a calm, dense, keyboard-first workspace
+for teams. Cool near-neutral surfaces, one teal accent, Geist type, and
 clear boundaries between navigation, work content and guest communication.
-The palette is Agency's own; it does not copy a product's branding.
+Dark mode is designed first and light mode is equally supported. The palette is
+Agency's own; it does not copy a product's branding.
+
+Quiet Pro is its own package, `@carl0010/quiet-pro`, from the private repository
+`Carl0010/design-system`. That repository holds the tokens (OKLCH, both themes), the
+shared React pickers and toggles, the brand book and the docs website. Agency installs it
+from `vendor/` (an `npm pack` file, so CI and deploys need no access to that repository) and
+updates it with `npm run quiet-pro:update -- <tag-or-commit>`.
+
+This file is the source of truth for how Quiet Pro applies in this repository:
+
+- **Palette.** In `src/styles/tokens.css`, a semantic token set to `var(--…)` follows Quiet Pro
+  in both themes (`--color-primary: var(--accent)`). A hex value is an Agency-only role: board
+  canvas, `muted`, fills with white text, info, highlight, and content colours.
+- **Layers.** `globals.css` loads Quiet Pro's tokens in the lowest CSS layer, so Agency's own
+  radius, shadow and font scale win where names collide, and its component styles in the
+  `components` layer, below Tailwind utilities.
+- **Density.** Quiet Pro controls are fitted to Agency's 42px fields, 6px field radius and 44px
+  touch targets in `globals.css`.
+- **Contrast.** `design-system.spec.ts` resolves `var(--…)` through the package's tokens and
+  checks every pair in both themes. Run it after any token or package change.
+
+Superseded direction, 2026-10-15: warm gray surfaces and deep green actions.
 
 ## Research and decisions
 
@@ -17,7 +39,7 @@ The palette is Agency's own; it does not copy a product's branding.
 These are selected first-party design references, not a ranking of products.
 We adopt their methods of hierarchy and consistency rather than combine their
 logos, component libraries or exact palettes. In particular, Shopify's admin
-uses its own color meanings; Agency retains green as its brand accent and
+uses its own color meanings; Agency uses teal as its brand accent and
 uses explicit status labels to distinguish brand actions from success states.
 
 ## Sources of truth
@@ -27,38 +49,41 @@ uses explicit status labels to distinguish brand actions from success states.
 | Palette, type scale, radii, elevation | `src/styles/tokens.css` |
 | Global baseline, focus, touch targets, motion | `src/app/globals.css` |
 | Buttons, fields, badges, panels, page headers, empty states | `src/components/ui.tsx` |
+| Combobox, MultiCombobox, Checkbox, RadioGroup, Switch, Kbd | `@carl0010/quiet-pro`, re-exported from `src/components/ui.tsx` |
+| Quiet Pro palette, pickers and docs | `Carl0010/design-system`, vendored in `vendor/` |
 | Outline icons and brand mark | `src/components/icon.tsx` |
 | Content label/project/avatar mappings | `src/lib/content-colors.ts` |
 | Automated enforcement | `design-system-eslint.mjs` |
 | Contrast regression checks | `src/lib/design-system.spec.ts` |
 
 The stylesheet is imported once by the root layout, so every route uses the
-same foundations. New components must consume these tokens. This checkout
-uses the existing React primitives, not shadcn/ui or Base UI; do not add a second
-component library to fix an individual screen.
+same foundations. New components must consume these tokens. Shared controls come
+from `ui.tsx`, which uses Agency's own primitives plus Quiet Pro; do not add another
+component library (shadcn/ui, Base UI, MUI…) to fix an individual screen. A control that
+several products need belongs in Quiet Pro, not here.
 
 ## Color roles
 
-| Role / utility | Value | Use |
+| Role / utility | Source (light / dark) | Use |
 | --- | --- | --- |
-| `bg-background` | `#F7F8F5` | App canvas and quiet navigation rail |
-| `bg-board-canvas` | `#FAFBF9` light / `#18201B` dark | A lighter shade of the warm sidebar palette; pair with foreground/secondary/muted text |
-| `bg-surface` | `#FFFFFF` | Cards, forms, dialogs, main headers |
-| `bg-subtle` | `#F0F2EE` | Board lanes, code, secondary control hover |
-| `bg-muted` | `#E7EBE5` | Neutral selected/pressed surfaces |
-| `text-foreground` | `#202822` | Titles, content, primary values |
-| `text-secondary-foreground` | `#46534A` | Supporting labels and navigation |
-| `text-muted-foreground` | `#626F65` | Metadata, descriptions, placeholders |
-| `border-border` | `#DBE1D9` | Noninteractive surfaces and dividers |
-| `border-input` | `#859287` | Form controls that need a visible boundary |
-| `bg-primary`, `text-primary` | `#196747` | Main actions, links, focus |
-| `hover:bg-primary-hover` | `#145539` | Primary hover |
-| `active:bg-primary-active` | `#10452F` | Primary pressed |
-| `bg-primary-subtle` / `text-primary-text` | `#EDF5EE` / `#174E36` | Selected navigation, low-emphasis brand accents |
-| `bg-danger` / `text-danger-text` | `#B43737` / `#942E2E` | Destructive actions / errors |
-| `text-warning-text` | `#805012` | Due soon, trial ending, action needed |
-| `text-success-text` | `#235C3B` | Completed work and positive status |
-| `text-info-text` | `#244F79` | Informational messages |
+| `bg-background` | Quiet Pro `--bg` | App canvas and quiet navigation rail |
+| `bg-board-canvas` | Agency `#FCFDFE` / `#111315` | Board work area: lighter than the sidebar in light mode, one step up in dark; pair with foreground/secondary/muted text |
+| `bg-surface` | Quiet Pro `--surface-2` | Cards, forms, dialogs, popovers, main headers |
+| `bg-subtle` | Quiet Pro `--surface-3` | Board lanes, code, hover rows and options |
+| `bg-muted` | Agency `#E8EAEC` / `#282C30` | Neutral selected/pressed surfaces, chips |
+| `text-foreground` | Quiet Pro `--text` | Titles, content, primary values |
+| `text-secondary-foreground` | Quiet Pro `--text-muted` | Supporting labels and navigation |
+| `text-muted-foreground` | Quiet Pro `--text-subtle` | Metadata, descriptions, placeholders |
+| `border-border` | Quiet Pro `--border` | Noninteractive surfaces and dividers |
+| `border-input` | Quiet Pro `--border-strong` | Form controls that need a visible boundary |
+| `bg-primary`, `text-primary` | Quiet Pro `--accent` | Main actions, links, focus, checked controls |
+| `hover:bg-primary-hover` | Quiet Pro `--accent-hover` | Primary hover |
+| `active:bg-primary-active` | Agency `#00555B` / `#8FEEED` | Primary pressed |
+| `bg-primary-subtle` / `text-primary-text` | Quiet Pro `--accent-soft` / `--accent-text` | Selected navigation, low-emphasis brand accents |
+| `bg-danger` / `text-danger-text` | Agency `#B63132` (fill, both themes) / Quiet Pro `--danger` | Destructive actions / errors |
+| `text-warning-text` | Quiet Pro `--warning` | Due soon, trial ending, action needed |
+| `text-success-text` | Quiet Pro `--success` | Completed work and positive status |
+| `text-info-text` | Agency `#1D5B92` / `#A5CCF4` | Informational messages |
 
 Status roles have matching `*-subtle`, `*-muted` where needed, and `*-border`
 tokens. Never use an accent as a substitute for a status. Unread counts use
@@ -72,13 +97,13 @@ must remain identifiable and unavailable to activation.
 
 The base pairs are checked with WCAG relative luminance calculations:
 
-| Pair | Contrast |
-| --- | --- |
-| Main text on canvas | 14.19:1 |
-| Muted text on white | 5.28:1 |
-| Muted text on subtle surface | 4.68:1 |
-| White text on primary | 6.84:1 |
-| Input outline on white | 3.25:1 |
+| Pair | Light | Dark |
+| --- | --- | --- |
+| Main text on canvas | 17.16:1 | 17.66:1 |
+| Muted text on surface | 5.50:1 | 5.63:1 |
+| Muted text on subtle surface | 4.69:1 | 5.14:1 |
+| Primary foreground on primary | 5.22:1 | 9.75:1 |
+| Input outline on surface | 3.64:1 | 3.18:1 |
 
 These checks validate the defined opaque token pairs. They do not certify every
 page, opacity combination or user-supplied image. Keep text at least 4.5:1 and
@@ -211,12 +236,29 @@ including metadata bounds and access to list headings and bottom actions.
 </Field>
 <Badge tone="warning">Due soon</Badge>
 <PageHeader title="Projects" description="Work shared with you and your teams." />
+<Combobox aria-label="Project" value={projectId} onChange={setProjectId}
+  options={projects.map((p) => ({ value: p.id, label: p.name }))} placeholder="All projects" />
+<MultiCombobox aria-label="Labels" values={labelIds} onChange={setLabelIds} options={labelOptions} />
+<RadioGroup legend="Due" name="due" value={due} onChange={setDue} options={dueOptions} />
+<Switch label="Compact rows" checked={compact} onChange={setCompact} />
 ```
 
 - Shared `Button` supports primary, secondary, ghost and danger plus default,
   small and icon sizes. An icon-only button requires an accessible label.
 - Use `Input`, `Textarea` and `Select` for new forms. Mark invalid controls with
   `aria-invalid`, associate error text with `aria-describedby`, and show API failures.
+- Choose a picker by list size: `RadioGroup` for 2–5 visible choices, `Select` (native)
+  for a short fixed list, `Combobox` when people would rather type than scroll
+  (projects, people, anything that grows), `MultiCombobox` for several values such as
+  labels or assignees. Never hand-style a raw `<select>`.
+- `Combobox` and `MultiCombobox` follow the ARIA 1.2 combobox pattern: arrow keys move,
+  Enter picks, Escape closes (and clears a single value when already closed), Backspace
+  in an empty multi field removes the last chip. Filtering is accent- and case-insensitive
+  and ranks prefix matches first (unit-tested in the Quiet Pro repository). Pass `name` to
+  submit with a form; pass `aria-label` when there's no visible label. `onCreate` offers "Create …" for new text; the caller creates the
+  item through the API and then selects it.
+- `Checkbox` is for values saved with a form; `Switch` is for settings that apply
+  immediately. `Kbd` shows shortcuts in menus and tooltips.
 - Use `Panel`, `PageHeader`, `EmptyState` and `Badge` instead of rebuilding their
   spacing, color and typography for each feature.
 - Use `ui-nav-link` and `ui-tab` with `aria-current`/`aria-selected`. Selection

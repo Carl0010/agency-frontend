@@ -10,7 +10,7 @@ import { ArrivalChip } from '@/components/arrival';
 import { ReplanAction } from '@/components/arrival-actions';
 import { Markdown } from '@/components/markdown';
 import { useToast } from '@/components/toast';
-import { Avatar, Button, LABEL_BG, Select } from '@/components/ui';
+import { Avatar, Button, Input, LABEL_BG, Select } from '@/components/ui';
 import { api, errorMessage } from '@/lib/api';
 import { MentionScopeContext } from '@/lib/mention-scope';
 import { applyTile, useProjectRealtime, useRoom } from '@/lib/realtime';
@@ -284,7 +284,7 @@ function Labels({ card, onToggle }: { card: Detail; onToggle: (labelId: string, 
               ))}
             </ul>
             <form onSubmit={(e) => void create(e)} className="flex gap-1 border-t border-border-subtle pt-2">
-              <input name="name" required maxLength={60} placeholder="New label" aria-label="New label name" className="min-w-0 flex-1 rounded border border-input px-1 text-sm" />
+              <Input name="name" required maxLength={60} placeholder="New label" aria-label="New label name" className="min-w-0 flex-1" />
               <Select name="color" aria-label="Label colour" defaultValue="blue" className="w-auto">
                 {LABEL_COLORS.map((col) => (
                   <option key={col} value={col}>
@@ -292,9 +292,9 @@ function Labels({ card, onToggle }: { card: Detail; onToggle: (labelId: string, 
                   </option>
                 ))}
               </Select>
-              <button type="submit" className="rounded bg-primary px-2 text-sm text-primary-foreground">
+              <Button type="submit" size="sm">
                 Add
-              </button>
+              </Button>
             </form>
           </div>
         )}

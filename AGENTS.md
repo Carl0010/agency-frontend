@@ -13,9 +13,12 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 Before changing UI, read [the design system](docs/DESIGN_SYSTEM.md).
 For navigation changes also read [sidebar responsibilities](docs/NAVIGATION.md).
 
-- `src/styles/tokens.css` owns colors, type sizes, radii and shadows.
+- `src/styles/tokens.css` owns Agency's semantic tokens, type sizes, radii and shadows. Colour roles
+  set to `var(--…)` alias Quiet Pro (`@carl0010/quiet-pro`, vendored in `vendor/`); change those in
+  `Carl0010/design-system`, then `npm run quiet-pro:update -- <tag-or-commit>`.
 - `src/app/globals.css` owns global focus, controls, motion and touch-target behavior.
-- `src/components/ui.tsx` owns shared controls, badges, panels, headings and empty states.
+- `src/components/ui.tsx` owns shared controls, badges, panels, headings and empty states. It re-exports
+  Quiet Pro's Combobox, MultiCombobox, Checkbox, RadioGroup, Switch and Kbd; don't fork them here.
 - `src/components/icon.tsx` owns decorative outline icons and the brand mark.
 - `src/lib/content-colors.ts` owns mappings for user-selected labels, projects and avatars.
 - Use semantic color utilities. `design-system/semantic-colors` is an ESLint error.
@@ -54,7 +57,8 @@ For navigation changes also read [sidebar responsibilities](docs/NAVIGATION.md).
 - When a requested feature lacks API support, add a Markdown handoff under `docs/handoffs/`
   with current capabilities, proposed contracts, acceptance criteria and implementation status.
   Implement supported UI independently; do not fake missing server state in local storage.
-- Do not add component-library dependencies or duplicate button/input variants for a single screen.
+- Quiet Pro is the only component package. Do not add other component libraries or duplicate
+  button/input variants for a single screen.
 - Use shared skeletons from `components/skeleton.tsx` for initial content queries.
   Preserve existing content during background refreshes; keep progress labels for operations.
 - Use the shared `Select` for select fields; `.ui-select` owns field/menu styling.
