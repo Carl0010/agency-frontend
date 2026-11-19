@@ -1,6 +1,6 @@
 # Vendored packages
 
-Current: carl0010-quiet-pro-0.2.0.tgz from main (commit 2624cab)
+Current: carl0010-quiet-pro-0.5.0.tgz from 07a7c66 (commit 07a7c66)
 
 Quiet Pro, Agency's design system, lives in the private repository `Carl0010/design-system`
 (docs site, tokens and components). It is vendored here as an `npm pack` file so that installs,
