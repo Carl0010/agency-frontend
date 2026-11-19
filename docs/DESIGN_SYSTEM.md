@@ -247,10 +247,10 @@ including metadata bounds and access to list headings and bottom actions.
   small and icon sizes. An icon-only button requires an accessible label.
 - Use `Input`, `Textarea` and `Select` for new forms. Mark invalid controls with
   `aria-invalid`, associate error text with `aria-describedby`, and show API failures.
-- Choose a picker by list size: `RadioGroup` for 2–5 visible choices, `Select` (native)
-  for a short fixed list, `Combobox` when people would rather type than scroll
-  (projects, people, anything that grows), `MultiCombobox` for several values such as
-  labels or assignees. Never hand-style a raw `<select>`.
+- Choose a picker by list size: `RadioGroup` for 2–5 visible choices, `Select` for a
+  fixed list, `Combobox` when people would rather type than scroll (countries, timezones,
+  anything long or growing), `MultiCombobox` for several values such as labels or
+  assignees. Never hand-style a raw `<select>`.
 - `Combobox` and `MultiCombobox` follow the ARIA 1.2 combobox pattern: arrow keys move,
   Enter picks, Escape closes (and clears a single value when already closed), Backspace
   in an empty multi field removes the last chip. Filtering is accent- and case-insensitive
@@ -306,29 +306,34 @@ content pane width, including when a card drawer is open.
 
 ## Select fields
 
-Use `Select` from `components/ui.tsx` for every select, including toolbar filters,
-settings, onboarding, imports, the card drawer and the guest portal. Call sites
-own width and layout only; `.ui-select` in `app/globals.css` owns the field and
-menu appearance. Keep ordinary option text and native select props (`name`,
-`required`, `disabled`, `value`, `defaultValue`, `onChange`) so forms, validation,
-type-ahead and keyboard selection remain native.
+Use Quiet Pro's `Select` (re-exported from `components/ui.tsx`) for every select,
+including toolbar filters, settings, onboarding, imports, the card drawer and the
+guest portal. Pass `options` (`value`, `label`, and optionally `icon` or
+`description`); `onChange` receives the chosen value. Call sites own width and
+layout only (`className` sizes the field); Quiet Pro owns the field and menu, and
+`app/globals.css` only adapts its density and radius to Agency. Shared choices
+(guest access, project access, team and workspace roles) live in
+`lib/access-options.ts`.
 
-Fields use compact medium-weight labels, a bordered surface, a quiet chevron and
-the shared focus ring. Supporting browsers use `appearance: base-select` for a
-rounded floating picker with a border/shadow, padded option rows, warm neutral
-hover states and green selected rows with a trailing checkmark. Menus have a
-176px minimum width, grow to fit the trigger/content, stay viewport-bounded and
-scroll for long collections. Options are at least 36px tall, or 44px on mobile.
-Use existing semantic tokens for both themes; no independent dropdown palette.
+The field is a button following the ARIA 1.2 select-only combobox pattern; the menu
+is a listbox in the browser's top layer, so drawers, dialogs and popovers never clip
+it. Arrow keys, Home/End and PageUp/PageDown move, typing jumps to a matching
+option, Enter/Space/Tab pick, Escape closes and keeps focus on the field. The chosen
+option shows an accent tick; option icons (colour dots for labels and project
+status) also show in the field. Options are 44px tall on mobile.
 
-This is progressive enhancement: browsers without customizable select support
-retain the styled field and their native menu. Do not add button/selectedcontent
-markup or replace the select with a scripted listbox just for styling. See
-[MDN's customizable select guide](https://developer.mozilla.org/en-US/docs/Learn_web_development/Extensions/Forms/Customizable_select)
-and [Chrome's native select styling documentation](https://developer.chrome.com/blog/a-customizable-select).
-`e2e/select-fields.spec.ts` covers the themed menu, native keyboard selection,
-Escape/focus return, form values, nested filter popovers/share dialogs and mobile
-option size/bounds. Previews are indexed in `docs/previews/README.md`.
+In forms, `name` puts the value in `FormData` and `required` blocks submitting until
+something is chosen, with the browser's message at the field; a form reset restores
+`defaultValue`. Both work through an invisible native select that Quiet Pro lays over
+the field. Long lists (countries, timezones) use `Combobox` instead, so people can
+type to filter.
+
+This replaces the earlier native `<select>` with `appearance: base-select`, which
+only Chromium-based browsers styled; Firefox and Safari showed the plain platform
+menu. `e2e/select-fields.spec.ts` covers the themed menu in both themes, keyboard
+and typeahead, nested filter popovers and share dialogs, mobile option size and
+bounds, form values and required fields. Previews are indexed in
+`docs/previews/README.md`.
 
 ## Confirmation dialogs
 
