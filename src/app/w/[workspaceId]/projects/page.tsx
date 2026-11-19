@@ -42,7 +42,7 @@ export default function ProjectsPage() {
       <Link href={`/w/${ws.id}/import`} className="ui-button tap text-secondary-foreground hover:bg-subtle"><Icon name="import" />Import from Trello</Link><Button onClick={() => setCreating(true)}><Icon name="plus" />New project</Button>
     </>} />
     <div className="mb-5 flex flex-wrap items-end gap-4">
-    <label className="block w-full max-w-xs space-y-1 text-label"><span>Team</span><Select aria-label="Filter projects by team" value={team} onChange={(event) => go({ team: event.target.value })}><option value="">All available projects</option>{(teams.data?.data ?? []).map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</Select></label>
+    <label className="block w-full max-w-xs space-y-1 text-label"><span>Team</span><Select aria-label="Filter projects by team" value={team} onChange={(value) => go({ team: value })} options={[{ value: '', label: 'All available projects' }, ...(teams.data?.data ?? []).map((item) => ({ value: item.id, label: item.name }))]} /></label>
     <div role="group" aria-label="Filter projects by status" className="inline-flex rounded-lg border border-border bg-subtle p-0.5">{STATUS_FILTERS.map((filter) => <button key={filter.value} type="button" aria-pressed={status === filter.value} onClick={() => go({ status: filter.value })}
       className={`tap rounded-md px-3 py-1.5 text-label font-medium ${status === filter.value ? 'bg-surface text-foreground shadow-sm' : 'text-secondary-foreground hover:text-foreground'}`}>{filter.label}</button>)}</div>
     </div>

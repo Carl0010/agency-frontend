@@ -2,7 +2,7 @@
 
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRef, useState, type FormEvent } from 'react';
-import { Button, Input, Select } from '@/components/ui';
+import { Button, Combobox, Input } from '@/components/ui';
 import { useToast } from '@/components/toast';
 import { api, errorMessage } from '@/lib/api';
 import { useArrivalSettings, type ArrivalSettings, type Calendar, type CalendarCountry } from '@/lib/arrival';
@@ -46,6 +46,7 @@ export function WorkingDays({ workspaceId, canEdit }: { workspaceId: string; can
   async function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
+    if (!form.get('country')) { toast('Choose a country.'); return; }
     setSaving(true);
     try {
       const saved = await api.put<Calendar>(`/workspaces/${workspaceId}/calendar`, { country: form.get('country'), timezone: form.get('timezone') });
@@ -59,8 +60,11 @@ export function WorkingDays({ workspaceId, canEdit }: { workspaceId: string; can
   return <section className="mt-6 rounded-lg border border-border bg-surface p-4" aria-labelledby="working-days-heading">
     <h2 id="working-days-heading" className="font-semibold">Working days</h2>
     {calendar.isPending || countries.isPending ? <p>Loading working days…</p> : calendar.error || countries.error ? <p role="alert" className="text-danger-text">{errorMessage(calendar.error || countries.error)}</p> : <form key={`${calendar.data.country}:${calendar.data.timezone}`} onSubmit={(e) => void save(e)} className="mt-3 space-y-3">
-      <label className="block text-label">Country<Select name="country" required defaultValue={calendar.data.country ?? ''} disabled={!canEdit || saving} onChange={(e) => setCountry(e.target.value)} className="mt-1 w-full"><option value="" disabled>Choose a country</option>{countries.data.data.map((item) => <option key={item.code} value={item.code}>{item.name}</option>)}</Select></label>
-      <label className="block text-label">Timezone<Select name="timezone" defaultValue={initialZone} disabled={!canEdit || saving} className="mt-1 w-full">{[...new Set([initialZone, 'UTC', ...zones])].map((zone) => <option key={zone} value={zone}>{zone}</option>)}</Select></label>
+      {/* Long lists: type to filter. */}
+      <Combobox label="Country" name="country" placeholder="Choose a country" clearable={false} defaultValue={calendar.data.country} disabled={!canEdit || saving}
+        onChange={(value) => setCountry(value ?? '')} options={countries.data.data.map((item) => ({ value: item.code, label: item.name }))} />
+      <Combobox label="Timezone" name="timezone" placeholder="Choose a timezone" clearable={false} defaultValue={initialZone} disabled={!canEdit || saving}
+        options={[...new Set([initialZone, 'UTC', ...zones])].map((zone) => ({ value: zone, label: zone }))} />
       <p className="text-label text-secondary-foreground">Weekend: {(selected?.weekendDays ?? calendar.data.weekendDays).map((day) => weekdays[day - 1]).join(', ')}</p>
       <p className="text-label text-muted-foreground">{calendar.data.publicHolidays ? 'Weekends and public holidays of the chosen country don’t count as working days.' : calendar.data.country ? 'Public holidays are not included for this calendar.' : 'Saturday and Sunday don’t count as working days until a calendar is chosen.'}</p>
       {canEdit ? <Button type="submit" disabled={saving}>{saving ? 'Saving…' : 'Save working days'}</Button> : null}

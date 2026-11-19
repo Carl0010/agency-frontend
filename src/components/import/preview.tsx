@@ -101,16 +101,10 @@ export function ImportPreviewScreen({
                   <Select
                     aria-label={`Match ${m.name}`}
                     value={chosen}
-                    onChange={(e) => setChoices({ ...choices, [m.externalId]: e.target.value })}
-                    className="w-auto"
-                  >
-                    <option value="">Leave unassigned</option>
-                    {assignable.map((a) => (
-                      <option key={a.userId} value={a.userId}>
-                        {a.name}
-                      </option>
-                    ))}
-                  </Select>
+                    onChange={(userId) => setChoices({ ...choices, [m.externalId]: userId })}
+                    className="w-48"
+                    options={[{ value: '', label: 'Leave unassigned' }, ...assignable.map((a) => ({ value: a.userId, label: a.name }))]}
+                  />
                 </li>
               );
             })}
@@ -141,17 +135,12 @@ export function ImportPreviewScreen({
             <Select
               aria-label="Existing project"
               required
-              value={projectId}
-              onChange={(e) => setProjectId(e.target.value)}
+              value={projectId || null}
+              onChange={setProjectId}
               className="w-full"
-            >
-              <option value="">Choose a project…</option>
-              {openProjects.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name}
-                </option>
-              ))}
-            </Select>
+              placeholder="Choose a project…"
+              options={openProjects.map((p) => ({ value: p.id, label: p.name }))}
+            />
           ) : null}
           <p className="text-xs text-muted-foreground">Importing the same board again updates what it brought in; it never duplicates cards or moves ones you have moved.</p>
         </div>

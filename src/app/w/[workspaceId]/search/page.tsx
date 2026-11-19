@@ -79,14 +79,8 @@ function SearchScreen() {
         <Button type="submit">Search</Button>
       </form>
       <div className="mb-4 flex flex-wrap items-center gap-2 text-sm" aria-label="Filters">
-        <Select aria-label="Type" value={typeFilter[0] ?? ''} onChange={(e) => set({ type: e.target.value || null })} className="w-auto">
-          <option value="">All types</option>
-          {TYPES.map((t) => (
-            <option key={t} value={t}>
-              {TYPE_LABEL[t]}
-            </option>
-          ))}
-        </Select>
+        <Select aria-label="Type" value={typeFilter[0] ?? ''} onChange={(type) => set({ type: type || null })} className="w-40"
+          options={[{ value: '', label: 'All types' }, ...TYPES.map((t) => ({ value: t, label: TYPE_LABEL[t] }))]} />
         <Combobox
           aria-label="Project"
           placeholder="All projects"

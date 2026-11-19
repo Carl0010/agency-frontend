@@ -16,6 +16,7 @@ import { useTeams } from '@/lib/teams';
 import type { Member, Page, TeamDetail } from '@/lib/types';
 import { useWorkspace } from '@/lib/workspace';
 import { useWriteAvailability } from '@/components/billing/billing-notices';
+import { GUEST_ACCESS, TEAM_ROLES } from '@/lib/access-options';
 
 function useTeamWrite(teamId?: string) {
   const qc = useQueryClient();
@@ -76,9 +77,9 @@ export function TeamScreen({ teamId }: { teamId: string }) {
         return <li key={member.userId} className="flex flex-col gap-2 py-3 sm:flex-row sm:items-center sm:gap-3" data-testid="team-member-row">
           <div className="flex min-w-0 flex-1 items-center gap-3" data-testid="team-member-identity"><Avatar person={{ id: member.userId, ...member }} size={28} /><div className="min-w-0 flex-1"><p className="break-words text-label font-medium">{member.name}{self ? ' (you)' : ''}</p><p className="text-caption text-muted-foreground">{member.guest ? 'Guest' : member.role === 'admin' ? 'Team admin' : 'Team member'}{member.status === 'invited' ? ' · invited' : ''}{lastAdmin ? ' · Last admin' : ''}</p></div></div>
           <div className="flex flex-wrap items-center gap-2 sm:shrink-0" data-testid="team-member-controls">
-          {canManage && !archived && !lastAdmin ? <Select aria-label={`${member.guest ? 'Guest access' : 'Team role'} for ${member.name}`} value={member.guest ? member.access ?? 'comment' : member.role} disabled={act.isPending} className="w-auto" onChange={(event) => {
-            const value = event.target.value; act.mutate(() => api.put(`/teams/${teamId}/members/${member.userId}`, member.guest ? { access: value } : { role: value }));
-          }}>{member.guest ? <><option value="comment">Can comment</option><option value="read">Can view</option></> : <><option value="member">Team member</option><option value="admin">Team admin</option></>}</Select> : member.guest ? <Badge>{member.access === 'comment' ? 'Can comment' : 'Can view'}</Badge> : null}
+          {canManage && !archived && !lastAdmin ? <Select aria-label={`${member.guest ? 'Guest access' : 'Team role'} for ${member.name}`} value={member.guest ? member.access ?? 'comment' : member.role} disabled={act.isPending} className="w-36"
+            options={member.guest ? GUEST_ACCESS : TEAM_ROLES}
+            onChange={(value) => act.mutate(() => api.put(`/teams/${teamId}/members/${member.userId}`, member.guest ? { access: value } : { role: value }))} /> : member.guest ? <Badge>{member.access === 'comment' ? 'Can comment' : 'Can view'}</Badge> : null}
           {!readOnly && !archived && !lastAdmin && (canManage || self) ? <Button variant="ghost" disabled={act.isPending} aria-label={`${self ? 'Leave team' : `Remove ${member.name}`}`} onClick={async () => {
             if (await confirm({ title: self ? 'Leave team?' : 'Remove person from team?', description: 'Access through this team will end. Other project grants and shared teams remain. A guest loses workspace membership if this was their last team or project.', confirmLabel: self ? 'Leave team' : 'Remove person' })) act.mutate(() => api.del(`/teams/${teamId}/members/${member.userId}`));
           }}>{self ? 'Leave' : 'Remove'}</Button> : null}
@@ -91,8 +92,9 @@ export function TeamScreen({ teamId }: { teamId: string }) {
         event.preventDefault(); const data = new FormData(event.currentTarget);
         act.mutate(() => api.put(`/teams/${teamId}/members/${personId}`, selected?.role === 'guest' ? { access: data.get('access') } : { role: data.get('role') }), { onSuccess: () => setPersonId('') });
       }}><h2 className="font-semibold">Add workspace person</h2><div className="flex flex-wrap gap-2">
-        <Select aria-label="Person to add" value={personId} required onChange={(event) => setPersonId(event.target.value)} className="min-w-0 basis-full sm:flex-1 sm:basis-auto"><option value="" disabled>Choose person</option>{available.map((member) => <option key={member.userId} value={member.userId}>{member.name}{member.role === 'guest' ? ' (guest)' : ''}{member.status === 'invited' ? ' (invited)' : ''}</option>)}</Select>
-        {selected?.role === 'guest' ? <Select name="access" aria-label="New team guest access" defaultValue="comment" className="w-auto"><option value="comment">Can comment</option><option value="read">Can view</option></Select> : <Select name="role" aria-label="New team role" defaultValue="member" className="w-auto"><option value="member">Team member</option><option value="admin">Team admin</option></Select>}
+        <Select aria-label="Person to add" value={personId || null} required placeholder="Choose person" onChange={setPersonId} className="min-w-0 basis-full sm:flex-1 sm:basis-auto"
+          options={available.map((member) => ({ value: member.userId, label: `${member.name}${member.role === 'guest' ? ' (guest)' : ''}${member.status === 'invited' ? ' (invited)' : ''}` }))} />
+        {selected?.role === 'guest' ? <Select key="access" name="access" aria-label="New team guest access" defaultValue="comment" className="w-36" options={GUEST_ACCESS} /> : <Select key="role" name="role" aria-label="New team role" defaultValue="member" className="w-36" options={TEAM_ROLES} />}
         <Button type="submit" disabled={act.isPending || !selected}>Add person</Button></div>
       </form>
       <form className="ui-panel space-y-3 p-4" onSubmit={(event) => {
@@ -100,7 +102,7 @@ export function TeamScreen({ teamId }: { teamId: string }) {
         act.mutate(() => api.post(`/teams/${teamId}/guests`, { email: formText(data, 'email'), access: data.get('access') }), { onSuccess: () => form.reset() });
       }}><h2 className="font-semibold">Invite a guest to this team</h2><p className="text-label text-muted-foreground">Guests see every project shared with this team at the selected access level. They never use seats or become team admins.</p>
         <Field label="Guest email"><Input name="email" type="email" required maxLength={254} placeholder="guest@example.com" /></Field>
-        <div className="flex flex-wrap gap-2"><Select name="access" aria-label="Team guest access" defaultValue="comment" className="w-auto"><option value="comment">Can comment</option><option value="read">Can view</option></Select><Button type="submit" disabled={act.isPending || invitesBlocked}>Invite guest to team</Button></div>
+        <div className="flex flex-wrap gap-2"><Select name="access" aria-label="Team guest access" defaultValue="comment" className="w-36" options={GUEST_ACCESS} /><Button type="submit" disabled={act.isPending || invitesBlocked}>Invite guest to team</Button></div>
       </form>
     </> : null}
   </main>;

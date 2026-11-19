@@ -14,6 +14,7 @@ import { formText } from '@/lib/form';
 import { rememberWorkspace } from '@/lib/landing';
 import { useSession } from '@/lib/session';
 import type { Page, Project, Seats, TemplateSummary, Workspace } from '@/lib/types';
+import { WORKSPACE_ROLES } from '@/lib/access-options';
 
 type Step = 1 | 2 | 3 | 4;
 const LABELS = ['Workspace', 'First project', 'Invite your team', 'Bring your work over'] as const;
@@ -326,12 +327,10 @@ function InviteStep({ ws, header, footer, onDone, onSkip }: StepProps & { onDone
                 aria-label={`Teammate ${i + 1} role`}
                 value={row.role}
                 disabled={row.sent}
-                onChange={(e) => update(row.key, { role: e.target.value as InviteRow['role'] })}
-                className="w-auto"
-              >
-                <option value="member">Member</option>
-                <option value="admin">Admin</option>
-              </Select>
+                onChange={(role) => update(row.key, { role: role as InviteRow['role'] })}
+                className="w-32"
+                options={WORKSPACE_ROLES}
+              />
             </div>
             {row.sent ? <p className="text-xs text-success-text">Invite sent.</p> : null}
             {row.error ? (

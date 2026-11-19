@@ -16,6 +16,7 @@ import { TeamPicker } from '@/components/teams/team-picker';
 import { useTeams } from '@/lib/teams';
 import { PROJECT_ICONS, ProjectIcon } from './project-icon';
 import { useWriteAvailability } from '@/components/billing/billing-notices';
+import { StatusDot } from './project-status';
 
 /** Project name and color editor. */
 export function ProjectEditor({ project, onClose, onSaved }: {
@@ -68,7 +69,7 @@ export function ProjectEditor({ project, onClose, onSaved }: {
       <header className="flex items-center justify-between gap-3"><h2 className="text-body-lg font-semibold">{project ? 'Edit project' : 'New project'}</h2><Button variant="ghost" size="icon" aria-label="Close project editor" disabled={save.isPending} onClick={onClose}><Icon name="close" /></Button></header>
       <FormError message={validation ?? (save.error ? errorMessage(save.error) : null)} />
       <Field label="Project name"><Input autoFocus name="name" required maxLength={120} defaultValue={project?.name} /></Field>
-      <Field label="Status"><Select name="status" defaultValue={projectStatus(project?.status).value}>{PROJECT_STATUSES.map((status) => <option key={status.value} value={status.value}>{status.label}</option>)}</Select></Field>
+      <Field label="Status"><Select name="status" defaultValue={projectStatus(project?.status).value} options={PROJECT_STATUSES.map((status) => ({ value: status.value, label: status.label, icon: <StatusDot tone={status.tone} /> }))} /></Field>
       <div className="flex items-center gap-3 rounded-lg border border-border bg-background p-3"><ProjectIcon project={{ color, icon }} /><span className="text-label text-muted-foreground">Project icon preview</span></div>
       <fieldset><legend className="mb-2 text-label font-medium">Project icon</legend><div className="grid grid-cols-4 gap-2">
         {PROJECT_ICONS.map((name) => <label key={name} className={`tap relative flex cursor-pointer flex-col items-center gap-1 rounded-lg border p-2 text-caption ${icon === name ? 'border-ring bg-primary-subtle text-primary-text' : 'border-border hover:bg-subtle'}`}>

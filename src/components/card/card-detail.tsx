@@ -285,13 +285,12 @@ function Labels({ card, onToggle }: { card: Detail; onToggle: (labelId: string, 
             </ul>
             <form onSubmit={(e) => void create(e)} className="flex gap-1 border-t border-border-subtle pt-2">
               <Input name="name" required maxLength={60} placeholder="New label" aria-label="New label name" className="min-w-0 flex-1" />
-              <Select name="color" aria-label="Label colour" defaultValue="blue" className="w-auto">
-                {LABEL_COLORS.map((col) => (
-                  <option key={col} value={col}>
-                    {col}
-                  </option>
-                ))}
-              </Select>
+              <Select name="color" aria-label="Label colour" defaultValue="blue" className="w-32"
+                options={LABEL_COLORS.map((col) => ({
+                  value: col,
+                  label: col.charAt(0).toUpperCase() + col.slice(1),
+                  icon: <span className={`h-2.5 w-2.5 rounded-full ${LABEL_BG[col] ?? 'bg-disabled-foreground'}`} />,
+                }))} />
               <Button type="submit" size="sm">
                 Add
               </Button>
@@ -413,15 +412,10 @@ function MoveToList({ card, onMove }: { card: Detail; onMove: (listId: string) =
       <Select
         value={card.listId}
         aria-label="Move to list"
-        onChange={(e) => void onMove(e.target.value)}
+        onChange={(listId) => void onMove(listId)}
         className="w-full"
-      >
-        {(board.data?.lists ?? [{ id: card.listId, name: card.listName }]).map((l) => (
-          <option key={l.id} value={l.id}>
-            {l.name}
-          </option>
-        ))}
-      </Select>
+        options={(board.data?.lists ?? [{ id: card.listId, name: card.listName }]).map((l) => ({ value: l.id, label: l.name }))}
+      />
     </label>
   );
 }

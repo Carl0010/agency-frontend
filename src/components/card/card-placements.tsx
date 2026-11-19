@@ -193,17 +193,15 @@ function PlaceCardDialog({ card, mode, onClose }: { card: CardDetail; mode: 'add
             : 'The card moves to the other project, which becomes its home and gives it a new number. Links to the card keep working.'}
         </p>
         <Field label="Project">
-          <Select value={projectId} required disabled={pending || projects.isPending} onChange={(event) => { setProjectId(event.target.value); setListId(''); setError(null); }} className="w-full">
-            <option value="">{projects.isPending ? 'Loading projects…' : choices.length ? 'Choose a project' : 'No other projects'}</option>
-            {choices.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
-          </Select>
+          <Select value={projectId || null} required disabled={pending || projects.isPending} onChange={(value) => { setProjectId(value); setListId(''); setError(null); }} className="w-full"
+            placeholder={projects.isPending ? 'Loading projects…' : choices.length ? 'Choose a project' : 'No other projects'}
+            options={choices.map((p) => ({ value: p.id, label: p.name }))} />
         </Field>
         {project ? (
           <Field label="List">
-            <Select value={chosenList?.id ?? ''} required disabled={pending || board.isPending} onChange={(event) => setListId(event.target.value)} className="w-full">
-              {board.isPending ? <option value="">Loading lists…</option> : null}
-              {lists.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
-            </Select>
+            <Select value={chosenList?.id ?? null} required disabled={pending || board.isPending} onChange={setListId} className="w-full"
+              placeholder={board.isPending ? 'Loading lists…' : 'Choose a list'}
+              options={lists.map((l) => ({ value: l.id, label: l.name }))} />
           </Field>
         ) : null}
         <FormError message={error ?? (projects.error ? errorMessage(projects.error) : board.error ? errorMessage(board.error) : null)} />

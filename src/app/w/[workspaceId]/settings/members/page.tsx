@@ -15,6 +15,7 @@ import type { Member, Page, Seats } from '@/lib/types';
 import { useWorkspace } from '@/lib/workspace';
 import { TeamPicker } from '@/components/teams/team-picker';
 import { useTeams } from '@/lib/teams';
+import { WORKSPACE_ROLES } from '@/lib/access-options';
 
 /** Members, roles and the seat meter (AC5, AC7, AC8). Seat numbers come from the API, never computed here. */
 export default function MembersPage() {
@@ -87,10 +88,7 @@ export default function MembersPage() {
           <FormError message={inviteError} />
           <div className="mt-2 grid gap-2 sm:grid-cols-[1fr_auto_auto]">
             <Input name="email" type="email" placeholder="name@agency.com" aria-label="Email" required />
-            <Select name="role" aria-label="Role" defaultValue="member" className="w-auto">
-              <option value="member">Member</option>
-              <option value="admin">Admin</option>
-            </Select>
+            <Select name="role" aria-label="Role" defaultValue="member" className="sm:w-32" options={WORKSPACE_ROLES} />
             <Button type="submit" disabled={inviting || teams.isPending || Boolean(teams.error)}>Send invite</Button>
           </div>
           <div className="mt-4"><TeamPicker workspaceId={ws.id} disabled={inviting} /></div>
@@ -138,12 +136,10 @@ export default function MembersPage() {
                   <Select
                     aria-label={`Role for ${m.name}`}
                     value={m.role}
-                    onChange={(e) => act.mutate(() => api.patch(`/workspaces/${ws.id}/members/${m.userId}`, { role: e.target.value }))}
-                    className="w-auto"
-                  >
-                    <option value="member">Member</option>
-                    <option value="admin">Admin</option>
-                  </Select>
+                    onChange={(role) => act.mutate(() => api.patch(`/workspaces/${ws.id}/members/${m.userId}`, { role }))}
+                    className="w-32"
+                    options={WORKSPACE_ROLES}
+                  />
                 ) : (
                   <span className="text-sm capitalize text-secondary-foreground">{m.role}</span>
                 )}

@@ -21,7 +21,7 @@ export function readTrelloReturn(hash: string): TrelloReturn {
   return null;
 }
 
-/** `''` in a mapping `<select>` means "leave unassigned". */
+/** `''` in a mapping Select means "leave unassigned". */
 export type MemberChoices = Record<string, string>;
 
 export function initialChoices(members: ImportMemberMatch[]): MemberChoices {

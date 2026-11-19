@@ -9,9 +9,10 @@ import { useConfirm } from '@/components/confirmation';
 import { FormError } from '@/components/auth-card';
 import { Avatar, Button, Input, Select } from '@/components/ui';
 import { api, errorMessage } from '@/lib/api';
-import type { GuestAccess, Page, ProjectGuest } from '@/lib/types';
+import type { Page, ProjectGuest } from '@/lib/types';
 import { useWorkspace } from '@/lib/workspace';
 import { useWriteAvailability } from '@/components/billing/billing-notices';
+import { GUEST_ACCESS } from '@/lib/access-options';
 
 /** Direct guest grants; team-based guests are managed in Teams. Member tree only. */
 export function GuestPanel({ projectId, canManage }: { projectId: string; canManage: boolean }) {
@@ -34,7 +35,7 @@ export function GuestPanel({ projectId, canManage }: { projectId: string; canMan
       act.mutate(() => api.post(`/projects/${projectId}/guests`, { email: formText(data, 'email'), access: data.get('access') }), { onSuccess: () => form.reset() });
     }}>
       <Input name="email" type="email" required maxLength={254} aria-label="Guest email" placeholder="guest@example.com" className="min-w-0 flex-1" />
-      <Select name="access" aria-label="Guest access" defaultValue="comment" className="w-auto"><option value="comment">Can comment</option><option value="read">Can view</option></Select>
+      <Select name="access" aria-label="Guest access" defaultValue="comment" className="w-36" options={GUEST_ACCESS} />
       <Button type="submit" disabled={act.isPending}>Invite guest</Button>
     </form> : null}
     <ul className="divide-y divide-border" aria-label="Direct project guests">
@@ -42,7 +43,7 @@ export function GuestPanel({ projectId, canManage }: { projectId: string; canMan
         <Avatar person={{ id: guest.userId, ...guest }} size={28} />
         <div className="min-w-0 flex-1"><p className="truncate text-label font-medium">{guest.name}</p><p className="truncate text-caption text-muted-foreground">{guest.email}{guest.status === 'invited' ? ' · invited' : ''}</p></div>
         {canManage && !readOnly ? <>
-          <Select aria-label={`Access for ${guest.name}`} value={guest.access} disabled={act.isPending} className="w-auto" onChange={(event) => { const value = event.target.value as GuestAccess; act.mutate(() => api.patch(`/projects/${projectId}/guests/${guest.userId}`, { access: value })); }}><option value="comment">Can comment</option><option value="read">Can view</option></Select>
+          <Select aria-label={`Access for ${guest.name}`} value={guest.access} disabled={act.isPending} className="w-36" options={GUEST_ACCESS} onChange={(access) => act.mutate(() => api.patch(`/projects/${projectId}/guests/${guest.userId}`, { access }))} />
           <Button variant="ghost" disabled={act.isPending} onClick={async () => {
             if (await confirm({ title: 'Revoke guest grant?', description: `${guest.name} will lose this direct grant. Access through a shared team is kept. Their comments and messages stay.`, confirmLabel: 'Revoke grant' })) act.mutate(() => api.del(`/projects/${projectId}/guests/${guest.userId}`));
           }}>Remove</Button>
