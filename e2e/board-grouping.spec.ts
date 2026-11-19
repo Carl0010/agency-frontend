@@ -1,6 +1,6 @@
 import { expect, test, type APIRequestContext, type Browser, type Locator, type Page } from '@playwright/test';
 import { accept, ownerApi } from './access-helpers';
-import { signupToBoard } from './helpers';
+import { signupToBoard, choose } from './helpers';
 import type { Board, CardTile, Member, Page as ApiPage, Project, User } from '../src/lib/types';
 
 const group = (page: Page, name: string) => page.getByRole('region', { name: `Group ${name}`, exact: true }).or(page.getByRole('rowgroup', { name: `Group ${name}`, exact: true }));
@@ -30,9 +30,9 @@ test('grouping composes with filters, presentation, reload and history', async (
   await card('Design homepage'); await card('Write guide'); await page.reload();
   await page.getByRole('searchbox', { name: 'Search by card name' }).fill('Design');
   await page.getByRole('button', { name: 'Filters', exact: true }).click();
-  await page.getByTestId('filter-panel').getByLabel('Due date').selectOption('none');
+  await choose(page.getByTestId('filter-panel').getByRole('combobox', { name: 'Due date' }), 'No due date');
   await page.getByTestId('filter-panel').getByRole('button', { name: 'Done', exact: true }).click();
-  await page.getByRole('combobox', { name: 'Group by', exact: true }).selectOption('due');
+  await choose(page.getByRole('combobox', { name: 'Group by', exact: true }), 'Due date');
   await expect(group(page, 'No due date').getByRole('link')).toHaveCount(1);
   await expect(page).toHaveURL(/group=due/);
   await expect(handle(group(page, 'No due date'), (await group(page, 'No due date').locator('[data-group-card-handle]').getAttribute('data-card-id'))!)).toBeDisabled();
@@ -41,14 +41,14 @@ test('grouping composes with filters, presentation, reload and history', async (
   await expect(group(page, 'No due date').getByRole('button', { name: /Edit name/ })).toHaveText('Design homepage');
   await page.reload();
   await expect(page.getByRole('searchbox')).toHaveValue('Design');
-  await expect(page.getByRole('combobox', { name: 'Group by' })).toHaveValue('due');
-  await page.getByRole('combobox', { name: 'Group by' }).selectOption('assignee');
+  await expect(page.getByRole('combobox', { name: 'Group by' })).toHaveText('Due date');
+  await choose(page.getByRole('combobox', { name: 'Group by' }), 'Assignee');
   await expect(group(page, 'Unassigned')).toContainText('Design homepage');
   await page.goBack();
-  await expect(page.getByRole('combobox', { name: 'Group by' })).toHaveValue('due');
+  await expect(page.getByRole('combobox', { name: 'Group by' })).toHaveText('Due date');
   await expect(page.getByRole('searchbox')).toHaveValue('Design');
   await page.goto(`${account.boardUrl}?group=unknown`);
-  await expect(page.getByRole('combobox', { name: 'Group by' })).toHaveValue('list');
+  await expect(page.getByRole('combobox', { name: 'Group by' })).toHaveText('List');
   await expect(page.getByTestId('board-lists')).toBeVisible();
   await page.context().close();
 });
@@ -175,13 +175,14 @@ test('guest due grouping is read-only, excludes assignees and survives returning
   await call('POST', `/projects/${project.id}/guests`, { email });
   const guest = await accept(browser, email, 'Grouping Guest', true);
   await expect(guest).toHaveURL(new RegExp(`/portal/${project.id}$`));
-  await guest.getByRole('combobox', { name: 'Group by' }).selectOption('due');
-  await expect(guest.getByRole('combobox').getByRole('option')).toHaveText(['List', 'Due date']);
+  await guest.getByRole('combobox', { name: 'Group by' }).click();
+  await expect(guest.getByRole('listbox').getByRole('option')).toHaveText(['List', 'Due date']);
+  await guest.getByRole('listbox').getByRole('option', { name: 'Due date', exact: true }).click();
   await guest.getByRole('tab', { name: 'No due date', exact: true }).click();
   await expect(guest.getByTestId('portal-card')).toBeVisible();
   await expect(guest.locator('[data-group-card-handle], [aria-roledescription="draggable"]')).toHaveCount(0);
   await guest.getByTestId('portal-card').click(); await guest.getByRole('link', { name: '← Board', exact: true }).click();
-  await expect(guest.getByRole('combobox', { name: 'Group by' })).toHaveValue('due');
+  await expect(guest.getByRole('combobox', { name: 'Group by' })).toHaveText('Due date');
   await guest.getByRole('tab', { name: 'No due date', exact: true }).click();
   await expect(guest.getByTestId('portal-card')).toContainText('Guest visible card');
   await guest.screenshot({ path: info.outputPath('group-guest-mobile.png'), fullPage: true, animations: 'disabled', style: 'nextjs-portal { visibility: hidden; }' });

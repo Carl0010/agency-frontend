@@ -1,6 +1,6 @@
 import { expect, test, type APIRequestContext, type Browser, type Page } from '@playwright/test';
 import { accept, ownerApi, skipTour } from './access-helpers';
-import { list, signupToBoard } from './helpers';
+import { list, signupToBoard, choose } from './helpers';
 import type { Board, CardTile, Page as ApiPage, Project } from '../src/lib/types';
 
 /**
@@ -42,9 +42,10 @@ async function world(browser: Browser, request: APIRequestContext) {
 async function addToProject(page: Page, verb: 'Add to project' | 'Move to project', projectName: string, listName: string) {
   await drawer(page).getByRole('button', { name: verb, exact: true }).click();
   const dialog = page.getByRole('dialog', { name: verb, exact: true });
-  await dialog.getByRole('combobox', { name: 'Project', exact: true }).selectOption({ label: projectName });
-  await expect(dialog.getByRole('combobox', { name: 'List', exact: true }).getByRole('option', { name: listName })).toHaveCount(1);
-  await dialog.getByRole('combobox', { name: 'List', exact: true }).selectOption({ label: listName });
+  await choose(dialog.getByRole('combobox', { name: 'Project', exact: true }), projectName);
+  await dialog.getByRole('combobox', { name: 'List', exact: true }).click();
+  await expect(page.getByRole('listbox').getByRole('option', { name: listName })).toHaveCount(1);
+  await page.getByRole('listbox').getByRole('option', { name: listName, exact: true }).click();
   await dialog.getByRole('button', { name: verb, exact: true }).click();
   return dialog;
 }
@@ -70,7 +71,7 @@ test('a card added to a second project shows on both boards with its home key, a
   await expect(drawer(owner).getByTestId('card-key')).toHaveText(ref);
 
   // A move on Launch leaves Website alone.
-  await drawer(owner).getByLabel('Move to list').selectOption({ label: launchBoard.lists[2]!.name });
+  await choose(drawer(owner).getByRole('combobox', { name: 'Move to list' }), launchBoard.lists[2]!.name);
   await expect(list(owner, launchBoard.lists[2]!.name).locator(`[data-card-id="${card.id}"]`)).toHaveCount(1);
   await owner.goto(webUrl);
   await expect(list(owner, 'To do').locator(`[data-card-id="${card.id}"]`)).toHaveCount(1);
@@ -223,8 +224,8 @@ test('placement controls in both themes and at mobile width', async ({ browser, 
   await owner.goto(`${webUrl}/c/${other.id}`);
   await drawer(owner).getByRole('button', { name: 'Add to project', exact: true }).click();
   const dialog = owner.getByRole('dialog', { name: 'Add to project', exact: true });
-  await dialog.getByRole('combobox', { name: 'Project', exact: true }).selectOption({ label: 'Q4 Launch' });
-  await dialog.getByRole('combobox', { name: 'List', exact: true }).selectOption({ label: launchBoard.lists[1]!.name });
+  await choose(dialog.getByRole('combobox', { name: 'Project', exact: true }), 'Q4 Launch');
+  await choose(dialog.getByRole('combobox', { name: 'List', exact: true }), launchBoard.lists[1]!.name);
   await owner.screenshot({ path: info.outputPath('placements-add-dark.png'), ...shot });
   await dialog.getByRole('button', { name: 'Add to project', exact: true }).click();
   const ask = owner.getByRole('alertdialog', { name: 'Guests will see this card' });

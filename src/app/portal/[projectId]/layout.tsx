@@ -76,17 +76,14 @@ export default function PortalProjectLayout({ children }: { children: ReactNode 
               <label className="flex items-center gap-1 text-sm text-secondary-foreground">
                 <span className="sr-only">Switch project</span>
                 <Select
-                  data-testid="portal-switcher"
-                  className="w-auto"
+                  className="w-56"
                   value={project.id}
-                  onChange={(e) => router.push(`/portal/${e.target.value}`)}
-                >
-                  {others.map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {others.some((o) => o.workspaceId !== p.workspaceId) ? `${p.workspaceName} — ${p.name}` : p.name}
-                    </option>
-                  ))}
-                </Select>
+                  onChange={(id) => router.push(`/portal/${id}`)}
+                  options={others.map((p) => ({
+                    value: p.id,
+                    label: others.some((o) => o.workspaceId !== p.workspaceId) ? `${p.workspaceName} — ${p.name}` : p.name,
+                  }))}
+                />
               </label>
             ) : null}
             <nav className="flex gap-1 text-sm" aria-label="Project sections">

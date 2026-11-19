@@ -1,7 +1,7 @@
 import { createHash, randomBytes } from 'node:crypto';
 import { expect, test, type APIRequestContext } from '@playwright/test';
 import { Client } from 'pg';
-import { signupToBoard, type Account } from './helpers';
+import { signupToBoard, type Account, choose } from './helpers';
 
 /**
  * Slice 3 smoke path, the board demo in miniature: a member shares a project
@@ -85,7 +85,7 @@ test('guest: invite from the guest panel, portal only, no Team channel, no assig
   await expect(panel).toContainText('Guests never use a seat');
   const guestEmail = `e2e-guest-${Date.now()}@example.test`;
   await panel.getByLabel('Guest email').fill(guestEmail);
-  await panel.getByLabel('Guest access', { exact: true }).selectOption('comment');
+  await choose(panel.getByRole('combobox', { name: 'Guest access', exact: true }), 'Can comment');
   await panel.getByRole('button', { name: 'Invite guest', exact: true }).click();
   await expect(panel.getByTestId('guest-row')).toContainText(`${guestEmail} · invited`);
 
@@ -119,7 +119,7 @@ test('guest: invite from the guest panel, portal only, no Team channel, no assig
   await expect(guest.getByText('Margin on this one is thin')).toHaveCount(0);
 
   // AC13: no switcher with a single grant; the unshared project is not found.
-  await expect(guest.getByTestId('portal-switcher')).toHaveCount(0);
+  await expect(guest.getByRole('combobox', { name: 'Switch project' })).toHaveCount(0);
   await expect(guest.locator('body')).not.toContainText('Other client retainer');
 
   // AC3: the workspace tree redirects a guest back to the portal…

@@ -61,8 +61,9 @@ For navigation changes also read [sidebar responsibilities](docs/NAVIGATION.md).
   button/input variants for a single screen.
 - Use shared skeletons from `components/skeleton.tsx` for initial content queries.
   Preserve existing content during background refreshes; keep progress labels for operations.
-- Use the shared `Select` for select fields; `.ui-select` owns field/menu styling.
-  Keep native select props and option text. Call sites own width/layout, not appearance.
+- Use Quiet Pro's `Select` (re-exported from `components/ui.tsx`) for select fields: pass
+  `options`, take the value from `onChange(value)`, and use `name`/`required` in forms. Long
+  lists (countries, timezones, people) use `Combobox`. Call sites own width/layout, not appearance.
 - Preserve the generated Next.js instructions above.
 
 ## Working in this repository

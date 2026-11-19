@@ -1,6 +1,6 @@
 'use client';
 
-import type { ButtonHTMLAttributes, InputHTMLAttributes, TextareaHTMLAttributes, SelectHTMLAttributes, HTMLAttributes, ReactNode, Ref } from 'react';
+import type { ButtonHTMLAttributes, InputHTMLAttributes, TextareaHTMLAttributes, HTMLAttributes, ReactNode, Ref } from 'react';
 import { AVATAR_COLORS } from '@/lib/content-colors';
 import { Icon, type IconName } from './icon';
 export { LABEL_BG } from '@/lib/content-colors';
@@ -32,19 +32,15 @@ export function Textarea({ className = '', ...props }: TextareaHTMLAttributes<HT
   return <textarea className={`ui-input min-h-24 resize-y ${className}`} {...props} />;
 }
 
-/** Native select for short, fixed lists (up to ~10 options). For long or searchable lists use Combobox. */
-export function Select({ className = '', ...props }: SelectHTMLAttributes<HTMLSelectElement> & { ref?: Ref<HTMLSelectElement> }) {
-  return <select className={`ui-select tap ${className}`} {...props} />;
-}
-
 /**
  * Pickers, toggles and shortcut keys come from Quiet Pro, Agency's design system package
- * (@carl0010/quiet-pro). Choose by list size: RadioGroup for 2–5 visible choices, Select (above)
- * for a short fixed list, Combobox when people would rather type, MultiCombobox for several values.
+ * (@carl0010/quiet-pro). Choose by list size: RadioGroup for 2–5 visible choices, Select for a fixed
+ * list (a styled menu with typeahead; `name` and `required` work in forms), Combobox when people would
+ * rather type, MultiCombobox for several values.
  */
 export {
-  Checkbox, Combobox, Kbd, MultiCombobox, RadioGroup, Switch,
-  type CheckboxProps, type ComboboxProps, type KbdProps, type ListOption, type MultiComboboxProps, type RadioGroupProps, type SwitchProps,
+  Checkbox, Combobox, Kbd, MultiCombobox, RadioGroup, Select, Switch,
+  type CheckboxProps, type ComboboxProps, type KbdProps, type ListOption, type MultiComboboxProps, type RadioGroupProps, type SelectProps, type SwitchProps,
 } from '@carl0010/quiet-pro';
 
 export function Panel({ className = '', ...props }: HTMLAttributes<HTMLDivElement>) {

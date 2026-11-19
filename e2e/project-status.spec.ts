@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { ownerApi } from './access-helpers';
-import { signupToBoard } from './helpers';
+import { signupToBoard, choose } from './helpers';
 
 const pill = (page: Page) => page.getByTestId('board-project-header').getByTestId('project-status');
 
@@ -14,9 +14,9 @@ test('project status: create, change from the header by keyboard, filters, sideb
   await expect(pill(page)).toHaveText('In progress');
   await sidebar.getByRole('button', { name: 'Add project', exact: true }).click();
   const create = page.getByRole('dialog', { name: 'New project', exact: true });
-  await expect(create.getByLabel('Status')).toHaveValue('in_progress');
+  await expect(create.getByRole('combobox', { name: 'Status', exact: true })).toHaveText('In progress');
   await create.getByLabel('Project name').fill('Spring campaign');
-  await create.getByLabel('Status').selectOption('planned');
+  await choose(create.getByRole('combobox', { name: 'Status', exact: true }), 'Planned');
   await create.getByRole('button', { name: 'Create project', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Spring campaign', exact: true })).toBeVisible();
   await expect(pill(page)).toHaveText('Planned');

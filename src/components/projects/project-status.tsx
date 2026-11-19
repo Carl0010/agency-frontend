@@ -28,6 +28,11 @@ function PillBody({ status }: { status: string | undefined }) {
 const PILL = 'inline-flex shrink-0 items-center gap-1.5 rounded-full px-2 py-0.5 text-caption font-medium whitespace-nowrap';
 
 /** Read-only status: a dot and the label, never colour alone. */
+/** The status colour dot used by the pill, the status menu and status pickers. */
+export function StatusDot({ tone }: { tone: StatusTone }) {
+  return <span aria-hidden="true" className={`size-2 shrink-0 rounded-full ${TONES[tone].dot}`} />;
+}
+
 export function ProjectStatusPill({ project, className = '' }: { project: Pick<Project, 'status' | 'statusChangedAt'>; className?: string }) {
   const since = statusSince(project.statusChangedAt);
   return <span data-testid="project-status" data-status={projectStatus(project.status).value} title={since ?? undefined} className={`${PILL} ${TONES[projectStatus(project.status).tone].pill} ${className}`}><PillBody status={project.status} /></span>;

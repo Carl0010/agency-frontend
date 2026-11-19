@@ -15,6 +15,7 @@ import { api, errorMessage } from '@/lib/api';
 import { useTeams } from '@/lib/teams';
 import type { Member, Page, Project, ProjectAccess } from '@/lib/types';
 import { useWorkspace } from '@/lib/workspace';
+import { PROJECT_ACCESS } from '@/lib/access-options';
 
 export function ProjectSharing({ project, onClose }: { project: Project; onClose: () => void }) {
   const ws = useWorkspace(); const qc = useQueryClient(); const confirm = useConfirm();
@@ -45,20 +46,20 @@ export function ProjectSharing({ project, onClose }: { project: Project; onClose
         }}>Unshare</Button></li>)}</ul>
         {!access.data.teams.length ? <p className="text-label text-muted-foreground">No teams shared.</p> : null}
         <form className="flex gap-2" onSubmit={(event) => { event.preventDefault(); const form = new FormData(event.currentTarget); act.mutate(() => api.put<ProjectAccess>(`/projects/${project.id}/teams/${formText(form, 'team')}`)); }}>
-          <Select name="team" aria-label="Team to share" required defaultValue="" disabled={teams.isPending || Boolean(teams.error)}><option value="" disabled>Choose team</option>{availableTeams.map((team) => <option key={team.id} value={team.id}>{team.name}</option>)}</Select><Button type="submit" disabled={act.isPending || readOnly || !availableTeams.length}>Share team</Button>
+          <Select name="team" aria-label="Team to share" required placeholder={availableTeams.length ? 'Choose team' : 'No other teams to share'} disabled={teams.isPending || Boolean(teams.error) || !availableTeams.length} className="min-w-0 flex-1" options={availableTeams.map((team) => ({ value: team.id, label: team.name }))} /><Button type="submit" disabled={act.isPending || readOnly || !availableTeams.length}>Share team</Button>
         </form>
       </section>
       <section className="space-y-3 border-t border-border pt-4" aria-label="Direct project members"><h3 className="font-semibold">People</h3>
         <ul className="divide-y divide-border">{access.data.members.map((member) => <li key={member.userId} className="flex flex-wrap items-center gap-2 py-2">
           <Avatar person={{ id: member.userId, ...member }} size={28} /><span className="min-w-0 flex-1 truncate text-label">{member.name}</span>
-          <Select aria-label={`Project access for ${member.name}`} value={member.access} disabled={act.isPending || readOnly} className="w-auto" onChange={(event) => { const value = event.target.value; act.mutate(() => api.put<ProjectAccess>(`/projects/${project.id}/members/${member.userId}`, { access: value })); }}><option value="edit">Can edit</option><option value="admin">Project admin</option></Select>
+          <Select aria-label={`Project access for ${member.name}`} value={member.access} disabled={act.isPending || readOnly} className="w-36" options={PROJECT_ACCESS} onChange={(value) => act.mutate(() => api.put<ProjectAccess>(`/projects/${project.id}/members/${member.userId}`, { access: value }))} />
           <Button variant="ghost" disabled={act.isPending || readOnly} aria-label={`Remove direct access for ${member.name}`} onClick={async () => {
             if (await confirm({ title: 'Remove direct access?', description: `${member.name} keeps access through any shared teams.`, confirmLabel: 'Remove access' })) act.mutate(() => api.del<ProjectAccess>(`/projects/${project.id}/members/${member.userId}`));
           }}>Remove</Button>
         </li>)}</ul>
         <form className="flex flex-wrap gap-2" onSubmit={(event) => { event.preventDefault(); const form = new FormData(event.currentTarget); act.mutate(() => api.put<ProjectAccess>(`/projects/${project.id}/members/${formText(form, 'member')}`, { access: form.get('access') })); }}>
-          <Select name="member" aria-label="Person to share with" required defaultValue="" className="min-w-0 flex-1" disabled={roster.isPending || Boolean(roster.error)}><option value="" disabled>Choose person</option>{availableMembers.map((member) => <option key={member.userId} value={member.userId}>{member.name}{member.status === 'invited' ? ' (invited)' : ''}</option>)}</Select>
-          <Select name="access" aria-label="New project access" defaultValue="edit" className="w-auto"><option value="edit">Can edit</option><option value="admin">Project admin</option></Select><Button type="submit" disabled={act.isPending || readOnly || !availableMembers.length}>Share with person</Button>
+          <Select name="member" aria-label="Person to share with" required placeholder={availableMembers.length ? 'Choose person' : 'No one else to share with'} className="min-w-0 flex-1" disabled={roster.isPending || Boolean(roster.error) || !availableMembers.length} options={availableMembers.map((member) => ({ value: member.userId, label: `${member.name}${member.status === 'invited' ? ' (invited)' : ''}` }))} />
+          <Select name="access" aria-label="New project access" defaultValue="edit" className="w-36" options={PROJECT_ACCESS} /><Button type="submit" disabled={act.isPending || readOnly || !availableMembers.length}>Share with person</Button>
         </form>
       </section>
     </> : null}

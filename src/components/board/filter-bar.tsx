@@ -95,9 +95,8 @@ export function FilterBar({ filters, onChange, members, labels, leading }: {
           </div>
         </fieldset>
         <label className="block space-y-2 border-t border-border pt-3"><span className="flex items-center gap-2 text-label font-semibold"><Icon name="clock" />Due date</span>
-          <Select value={filters.due ?? ''} onChange={(event) => onChange((current) => ({ ...current, due: (event.target.value || null) as DueFilter | null }))} className="text-label">
-            <option value="">Any time</option><option value="overdue">Overdue</option><option value="week">Due this week</option><option value="none">No due date</option>
-          </Select>
+          <Select value={filters.due ?? ''} onChange={(due) => onChange((current) => ({ ...current, due: (due || null) as DueFilter | null }))}
+            options={[{ value: '', label: 'Any time' }, { value: 'overdue', label: 'Overdue' }, { value: 'week', label: 'Due this week' }, { value: 'none', label: 'No due date' }]} />
         </label>
       </div>
       <footer className="sticky bottom-0 flex items-center justify-between gap-2 border-t border-border bg-surface px-4 py-3">
