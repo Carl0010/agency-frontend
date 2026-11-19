@@ -1,7 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { expect, test } from '@playwright/test';
-import { list, signupToBoard } from './helpers';
+import { list, signupToBoard, choose } from './helpers';
 
 /**
  * Slice 3 import smoke path (§7.1): upload the committed fixture CSV, see the
@@ -38,7 +38,7 @@ test('import: CSV upload → preview + mapping → progress → summary and repo
   // Back to the wizard: map one Trello member to the owner, leave the others unassigned (AC24).
   await page.goto(`/w/${workspaceId}/import`);
   await page.getByLabel('Trello CSV export').setInputFiles(FIXTURE);
-  await page.getByLabel('Match Dana Scully').selectOption({ label: 'E2E Owner' });
+  await choose(page.getByRole('combobox', { name: 'Match Dana Scully' }), 'E2E Owner');
   await expect(page.getByLabel('New project name')).toHaveValue('Acme Website Relaunch');
   await page.getByRole('button', { name: 'Start import' }).click();
 

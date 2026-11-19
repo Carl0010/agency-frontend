@@ -1,6 +1,12 @@
-import { expect, type Browser, type BrowserContextOptions, type Page } from '@playwright/test';
+import { expect, type Browser, type BrowserContextOptions, type Locator, type Page } from '@playwright/test';
 
 export const list = (page: Page, name: string) => page.getByRole('region', { name: `List ${name}`, exact: true }).or(page.getByRole('rowgroup', { name: `List ${name}`, exact: true }));
+
+/** Picks an option in a Quiet Pro Select or Combobox: opens the field, then clicks the option in the open menu. */
+export async function choose(field: Locator, option: string) {
+  await field.click();
+  await field.page().getByRole('listbox').getByRole('option', { name: option, exact: true }).click();
+}
 
 export interface Account {
   email: string;

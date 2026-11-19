@@ -80,8 +80,10 @@ test('working days use the supported country list and save the calendar', async 
   const call = await ownerApi(request, account);
   await page.goto(`/w/${workspaceId}/settings/members`);
   const section = page.getByRole('region', { name: 'Working days' });
-  await section.getByLabel('Country').selectOption('IN');
-  await section.getByLabel('Timezone').selectOption('UTC');
+  await section.getByRole('combobox', { name: 'Country' }).fill('India');
+  await page.getByRole('listbox').getByRole('option', { name: 'India', exact: true }).click();
+  await section.getByRole('combobox', { name: 'Timezone' }).fill('UTC');
+  await page.getByRole('listbox').getByRole('option', { name: 'UTC', exact: true }).click();
   await section.getByRole('button', { name: 'Save working days' }).click();
   await expect.poll(async () => (await call<{ country: string | null }>('GET', `/workspaces/${workspaceId}/calendar`)).country).toBe('IN');
   await expect(section).toContainText('public holidays');

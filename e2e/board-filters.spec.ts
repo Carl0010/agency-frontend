@@ -1,5 +1,5 @@
 import { expect, test, type APIRequestContext } from '@playwright/test';
-import { list, signupToBoard, type Account } from './helpers';
+import { list, signupToBoard, type Account, choose } from './helpers';
 
 async function setup(request: APIRequestContext, account: Account) {
   const login = await request.post('/api/v1/auth/login', { data: { email: account.email, password: account.password } });
@@ -45,8 +45,8 @@ test('right-aligned filters open over the board, preserve focus and filter both 
   expect((await page.getByTestId('board-lists').boundingBox())!.y).toBe(before!.y);
   await panel.getByRole('button', { name: 'Assigned to E2E Owner' }).click();
   await panel.getByRole('button', { name: 'Client experience and accessibility', exact: true }).click();
-  const due = panel.getByLabel('Due date');
-  await due.focus(); await due.selectOption('week'); await expect(due).toBeFocused();
+  const due = panel.getByRole('combobox', { name: 'Due date' });
+  await choose(due, 'Due this week'); await expect(due).toBeFocused();
   await expect(page.getByTestId('card-tile')).toHaveCount(1);
   await expect(trigger).toHaveText('Filters3');
   expect((await page.getByTestId('board-lists').boundingBox())!.y).toBe(before!.y);
@@ -57,7 +57,7 @@ test('right-aligned filters open over the board, preserve focus and filter both 
   await page.screenshot({ path: info.outputPath('board-filters-dark.png'), fullPage: true, animations: 'disabled', style: 'nextjs-portal { visibility: hidden; }' });
   await panel.getByRole('button', { name: 'Done', exact: true }).click(); await expect(trigger).toBeFocused();
   await page.reload(); await expect(panel).toBeHidden(); await expect(page.getByTestId('card-tile')).toHaveCount(1);
-  await trigger.click(); await expect(panel.getByLabel('Due date')).toHaveValue('week');
+  await trigger.click(); await expect(panel.getByRole('combobox', { name: 'Due date' })).toHaveText('Due this week');
   await page.getByTestId('board-title').click(); await expect(panel).toBeHidden();
   await search.fill('Review');
   await trigger.click(); await panel.getByRole('button', { name: 'Reset filters', exact: true }).click();

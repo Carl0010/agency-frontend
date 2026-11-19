@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { signupToBoard } from './helpers';
+import { signupToBoard, choose } from './helpers';
 import { ownerApi, accept, skipTour } from './access-helpers';
 
 test('implicit workspace administrators are absent from direct grants and the sharing picker', async ({ browser, request }) => {
@@ -25,7 +25,8 @@ test('implicit workspace administrators are absent from direct grants and the sh
   const dialog = page.getByRole('dialog', { name: 'Share project', exact: true });
   await expect(dialog.getByText('No teams shared.')).toBeVisible();
   await expect(dialog.getByRole('region', { name: 'Direct project members' }).getByRole('listitem')).toHaveCount(0);
-  await expect(dialog.getByLabel('Person to share with').getByRole('option')).toHaveText(['Choose person']);
+  const person = dialog.getByRole('combobox', { name: 'Person to share with' });
+  await expect(person).toHaveText('No one else to share with'); await expect(person).toBeDisabled();
   await page.context().close(); await member.context().close();
 });
 
@@ -65,7 +66,7 @@ test('empty access, team sharing, scoped assignment, personal stars and live uns
   await owner.goto(account.boardUrl);
   await owner.getByRole('button', { name: 'Share', exact: true }).click();
   const share = owner.getByRole('dialog', { name: 'Share project', exact: true });
-  await share.getByLabel('Team to share', { exact: true }).selectOption(teamId);
+  await choose(share.getByRole('combobox', { name: 'Team to share', exact: true }), 'Delivery');
   await share.getByRole('button', { name: 'Share team', exact: true }).click();
   await expect(share.getByRole('button', { name: 'Unshare Delivery' })).toBeVisible();
   await share.getByRole('button', { name: 'Close Share project' }).click();
@@ -89,7 +90,7 @@ test('empty access, team sharing, scoped assignment, personal stars and live uns
   await inspector.getByRole('button', { name: 'Assign members', exact: true }).click();
   await expect(inspector.getByRole('checkbox', { name: /Delivery Member/ })).toHaveCount(0);
   await owner.goto(`/w/${workspaceId}/settings/teams/${teamId}`);
-  await owner.getByLabel('Person to add', { exact: true }).selectOption(userId);
+  await choose(owner.getByRole('combobox', { name: 'Person to add', exact: true }), 'Delivery Member');
   await owner.getByRole('button', { name: 'Add person', exact: true }).click();
   await expect(owner.getByTestId('team-member-row').filter({ hasText: 'Delivery Member' })).toBeVisible();
   // The realtime contract guarantees narrowing events, not notifications of new grants.
@@ -140,7 +141,7 @@ test('a team admin invites a guest with default comment access to exactly the sh
   await admin.getByRole('button', { name: 'Switch to dark mode', exact: true }).click();
   const email = `team-guest-${Date.now()}@example.test`;
   await admin.getByLabel('Guest email', { exact: true }).fill(email);
-  await expect(admin.getByLabel('Team guest access', { exact: true })).toHaveValue('comment');
+  await expect(admin.getByRole('combobox', { name: 'Team guest access', exact: true })).toHaveText('Can comment');
   await admin.getByRole('button', { name: 'Invite guest to team', exact: true }).click();
   await expect(admin.getByTestId('team-member-row').filter({ hasText: email.split('@')[0] })).toBeVisible();
   const guestRow = admin.getByTestId('team-member-row').filter({ hasText: email.split('@')[0] });
@@ -148,18 +149,15 @@ test('a team admin invites a guest with default comment access to exactly the sh
   const controls = await guestRow.getByTestId('team-member-controls').boundingBox();
   expect(controls!.y).toBeGreaterThanOrEqual(identity!.y + identity!.height);
   expect(await guestRow.locator('p').first().evaluate((node) => node.scrollWidth <= node.clientWidth)).toBe(true);
-  expect((await admin.getByLabel('Person to add', { exact: true }).boundingBox())!.width).toBeGreaterThan(250);
-  expect(await guestRow.getByRole('combobox').evaluate((node: HTMLSelectElement) => {
-    const style = getComputedStyle(node); const canvas = document.createElement('canvas');
-    const context = canvas.getContext('2d')!; context.font = style.font;
-    return context.measureText(node.selectedOptions[0]!.text).width + parseFloat(style.paddingLeft) + parseFloat(style.paddingRight) + 20 <= node.clientWidth;
-  })).toBe(true);
+  expect((await admin.getByRole('combobox', { name: 'Person to add', exact: true }).boundingBox())!.width).toBeGreaterThan(250);
+  // The chosen access fits its field without truncation.
+  expect(await guestRow.getByRole('combobox').locator('.qp-select-value').evaluate((node) => node.scrollWidth <= node.clientWidth)).toBe(true);
   await admin.screenshot({ path: info.outputPath('team-guests-mobile-dark.png'), fullPage: true, animations: 'disabled', style: 'nextjs-portal { visibility: hidden; }' });
   expect(await admin.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   const guest = await accept(browser, email, 'Partner Guest', true);
   await expect(guest).toHaveURL(new RegExp(`/portal/${projectId}$`));
   await expect(guest.getByTestId('guest-chip')).toContainText('Can comment');
-  await expect(guest.getByTestId('portal-switcher')).toHaveCount(0);
+  await expect(guest.getByRole('combobox', { name: 'Switch project' })).toHaveCount(0);
   await expect(guest.locator('body')).not.toContainText('Private financial review');
   await expect(guest.getByTestId('module-rail')).toHaveCount(0);
   await expect(guest.getByRole('navigation', { name: 'Project sections' }).getByRole('link')).toHaveText(['Board', 'Shared']);
@@ -175,7 +173,8 @@ test('team management preserves failed names, archives/restores, and enforces th
   await expect(page.getByRole('link', { name: /Studio.*Team admin/ })).toBeVisible();
   await page.getByLabel('Team name', { exact: true }).fill('Studio');
   await page.getByRole('button', { name: 'Create team', exact: true }).click();
-  await expect(page.getByRole('alert')).toBeVisible();
+  // Next.js's route announcer is also role="alert", always empty.
+  await expect(page.getByRole('alert').filter({ hasText: /\S/ })).toBeVisible();
   await expect(page.getByLabel('Team name', { exact: true })).toHaveValue('Studio');
   await page.getByRole('link', { name: /Studio.*Team admin/ }).click();
   await expect(page.getByRole('button', { name: 'Leave team', exact: true })).toHaveCount(0);
