@@ -1,5 +1,5 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
-import { list, signupToBoard } from './helpers';
+import { list, signupToBoard, darkTheme } from './helpers';
 
 async function order(page: Page) {
   return await page.getByTestId('list-column').evaluateAll((columns) => columns.map((column) => column.getAttribute('aria-label')));
@@ -32,7 +32,7 @@ test('board canvas is distinct from the sidebar in light and dark themes', async
   const canvas = page.getByTestId('board-canvas');
   const sidebar = page.getByRole('complementary', { name: 'Workspace sidebar' });
   for (const theme of ['light', 'dark']) {
-    if (theme === 'dark') await page.getByRole('button', { name: 'Switch to dark mode' }).click();
+    if (theme === 'dark') await darkTheme(page);
     const [workColor, navColor] = await Promise.all([canvas.evaluate((element) => getComputedStyle(element).backgroundColor), sidebar.evaluate((element) => getComputedStyle(element).backgroundColor)]);
     expect(workColor).not.toBe(navColor); expect(workColor).not.toBe('rgba(0, 0, 0, 0)');
     await page.screenshot({ path: info.outputPath(`board-canvas-${theme}.png`), fullPage: true, animations: 'disabled', style: 'nextjs-portal { visibility: hidden; }' });

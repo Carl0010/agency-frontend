@@ -61,12 +61,16 @@ export function setThemePreference(preference: ThemePreference) {
   window.dispatchEvent(new Event(KEY));
 }
 
-/** The theme on screen now. */
-export function useTheme(): Theme {
-  return useSyncExternalStore(subscribe, () => (document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light'), () => 'light');
-}
-
 /** The saved choice, including `system`. */
 export function useThemePreference(): ThemePreference {
   return useSyncExternalStore(subscribe, () => memory ?? stored(), () => 'system');
+}
+
+/**
+ * Mounted once in the root layout: keeps every page in step with other tabs and, under
+ * Match system, with the OS setting, whether or not Appearance is open.
+ */
+export function ThemeSync() {
+  useThemePreference();
+  return null;
 }

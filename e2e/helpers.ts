@@ -51,3 +51,9 @@ export async function signupToBoard(browser: Browser, options: BrowserContextOpt
   const boardId = new URL(boardUrl).pathname.split('/').pop() ?? '';
   return { page, account: { email, password, boardUrl, boardId } };
 }
+
+/** Dark mode for screenshots: Match system is the default theme, so follow an OS switch to dark. */
+export async function darkTheme(page: Page) {
+  await page.emulateMedia({ colorScheme: 'dark' });
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+}

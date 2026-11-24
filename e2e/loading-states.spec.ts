@@ -17,7 +17,8 @@ test('board and card skeletons reserve content, support themes and stop motion w
   await expect(boardLoading).toHaveAttribute('aria-busy', 'true');
   expect(await boardLoading.locator('.skeleton-shape').count()).toBeGreaterThan(30);
   await page.screenshot({ path: info.outputPath('loading-board-light.png'), style: 'nextjs-portal { visibility: hidden; }' });
-  await page.getByRole('button', { name: 'Switch to dark mode' }).click();
+  // Match system is the default, so the open page follows the OS switching to dark.
+  await page.emulateMedia({ colorScheme: 'dark' });
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
   await page.locator('body').evaluate(async () => {
     await Promise.allSettled(document.getAnimations().filter((animation) => animation instanceof CSSTransition).map((animation) => animation.finished));

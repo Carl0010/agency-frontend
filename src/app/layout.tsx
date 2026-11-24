@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import type { ReactNode } from 'react';
 import { THEME_INIT } from '@/lib/theme-init';
+import { ThemeSync } from '@/lib/theme';
 import { Providers } from './providers';
 import './globals.css';
 
@@ -16,6 +17,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html suppressHydrationWarning lang="en" className={`${geist.variable} ${geistMono.variable}`}>
       <head><script dangerouslySetInnerHTML={{ __html: THEME_INIT }} /></head>
       <body>
+        <ThemeSync />
         <Providers>{children}</Providers>
       </body>
     </html>

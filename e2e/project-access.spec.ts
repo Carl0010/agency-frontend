@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { signupToBoard, choose } from './helpers';
+import { signupToBoard, choose, darkTheme } from './helpers';
 import { ownerApi, accept, skipTour } from './access-helpers';
 
 test('implicit workspace administrators are absent from direct grants and the sharing picker', async ({ browser, request }) => {
@@ -138,7 +138,7 @@ test('a team admin invites a guest with default comment access to exactly the sh
   const roster = await call<{ data: { userId: string; email: string }[] }>('GET', `/workspaces/${project.workspaceId}/members`);
   await call('PUT', `/teams/${team.id}/members/${roster.data.find((person) => person.email === adminEmail)!.userId}`, { role: 'admin' });
   await admin.goto(`/w/${workspaceId}/settings/teams/${team.id}`); await skipTour(admin);
-  await admin.getByRole('button', { name: 'Switch to dark mode', exact: true }).click();
+  await darkTheme(admin);
   const email = `team-guest-${Date.now()}@example.test`;
   await admin.getByLabel('Guest email', { exact: true }).fill(email);
   await expect(admin.getByRole('combobox', { name: 'Team guest access', exact: true })).toHaveText('Can comment');

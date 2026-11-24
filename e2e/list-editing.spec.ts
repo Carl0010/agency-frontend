@@ -1,5 +1,5 @@
 import { expect, test, type APIRequestContext, type Browser, type Locator, type Page } from '@playwright/test';
-import { list, signupToBoard } from './helpers';
+import { list, signupToBoard, darkTheme } from './helpers';
 
 async function editableBoard(browser: Browser, request: APIRequestContext, mobile = false) {
   const { page, account } = await signupToBoard(browser, { viewport: mobile ? { width: 390, height: 844 } : { width: 1440, height: 1000 }, ...(mobile ? { isMobile: true, hasTouch: true } : {}), colorScheme: 'light' });
@@ -111,7 +111,7 @@ test('one compact table supports inline name, assignment and due-date editing wi
   await expect(due).toBeHidden(); await expect(dueTrigger.getByTestId('due-pill')).toHaveAttribute('data-state', 'done');
   await expect(page.getByTestId('toast')).toHaveCount(0);
   await page.screenshot({ path: info.outputPath('list-table-desktop.png'), fullPage: true, animations: 'disabled', style: 'nextjs-portal { visibility: hidden; }' });
-  await page.getByRole('button', { name: 'Switch to dark mode' }).click();
+  await darkTheme(page);
   await page.screenshot({ path: info.outputPath('list-table-dark.png'), fullPage: true, animations: 'disabled', style: 'nextjs-portal { visibility: hidden; }' });
   await task.getByRole('link').click();
   const drawer = page.getByTestId('card-drawer'); await expect(drawer.getByTestId('card-title')).toHaveText('Revised client brief');

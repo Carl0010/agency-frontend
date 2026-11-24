@@ -1,5 +1,5 @@
 import { expect, test, type APIRequestContext } from '@playwright/test';
-import { list, signupToBoard, type Account } from './helpers';
+import { list, signupToBoard, type Account, darkTheme } from './helpers';
 
 async function populate(request: APIRequestContext, account: Account) {
   const login = await request.post('/api/v1/auth/login', { data: { email: account.email, password: account.password } });
@@ -96,7 +96,7 @@ test('List view shares board filters, creation, ordering, list actions and the n
   await expect(page.getByRole('columnheader', { name: 'Assignees', exact: true }).first()).toBeVisible();
   await expect(rows.first().getByRole('cell').last().getByLabel('1 comment', { exact: true })).toBeVisible();
   await page.screenshot({ path: info.outputPath('list-view-desktop.png'), fullPage: true, animations: 'disabled', style: 'nextjs-portal { visibility: hidden; }' });
-  await page.getByRole('button', { name: 'Switch to dark mode' }).click();
+  await darkTheme(page);
   await page.screenshot({ path: info.outputPath('list-view-dark.png'), fullPage: true, animations: 'disabled', style: 'nextjs-portal { visibility: hidden; }' });
   await page.reload();
   await expect(page.getByTestId('board-list-view')).toBeVisible();
