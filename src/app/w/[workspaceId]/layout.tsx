@@ -1,6 +1,6 @@
 'use client';
 
-import { LoadingSkeleton } from '@/components/skeleton';
+import { AppLoader } from '@/components/skeleton';
 
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
@@ -50,7 +50,7 @@ export default function WorkspaceLayout({ children }: { children: ReactNode }) {
     }
   }, [ws.data, workspaceId, router]);
 
-  if (!user || ws.isPending) return <LoadingSkeleton variant="cards" className="p-4 sm:p-6" />;
+  if (!user || ws.isPending) return <AppLoader />;
   if (ws.error) {
     const missing = ws.error instanceof ApiError && ws.error.status === 404;
     return (
@@ -63,7 +63,7 @@ export default function WorkspaceLayout({ children }: { children: ReactNode }) {
     );
   }
 
-  if (ws.data.role === 'guest' || workspaceId !== ws.data.id) return <LoadingSkeleton variant="cards" className="p-4 sm:p-6" />;
+  if (ws.data.role === 'guest' || workspaceId !== ws.data.id) return <AppLoader />;
 
   return (
     <WorkspaceContext.Provider value={ws.data}>

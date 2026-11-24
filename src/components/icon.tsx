@@ -50,10 +50,10 @@ export function Icon({ name, className = 'size-4', ...props }: SVGProps<SVGSVGEl
   return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false" className={className} {...props}>{paths[name]}</svg>;
 }
 
-export function BrandMark({ className = 'size-7' }: { className?: string }) {
+export function BrandMark({ className = 'size-7 rounded-lg', glyphClassName = 'size-4' }: { className?: string; glyphClassName?: string }) {
   return (
-    <span aria-hidden="true" className={`inline-flex shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground ${className}`}>
-      <svg viewBox="0 0 24 24" fill="none" className="size-4"><path d="M4 17V7h4v10H4Zm6 0V4h4v13h-4Zm6 0V9h4v8h-4Z" fill="currentColor" /></svg>
+    <span aria-hidden="true" className={`inline-flex shrink-0 items-center justify-center bg-primary text-primary-foreground ${className}`}>
+      <svg viewBox="0 0 24 24" fill="none" className={glyphClassName}><path d="M4 17V7h4v10H4Zm6 0V4h4v13h-4Zm6 0V9h4v8h-4Z" fill="currentColor" /></svg>
     </span>
   );
 }

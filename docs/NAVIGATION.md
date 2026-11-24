@@ -13,9 +13,10 @@ The guest portal keeps its separate navigation and imports none of this shell.
 | Sidebar identity | Identify workspace and selected module | Workspace name and current module label |
 | App bar | Global actions and navigation visibility | Centered search palette trigger, hamburger, Agency home, labelled light/dark switch |
 | Projects sidebar | Browse shared work and project surfaces | Projects overview, import, team groups, Starred, create button, per-project menu, current project's Board/Shared/internal Team |
-| Inbox sidebar | Browse activity and configure delivery | All notifications and notification preferences |
-| Workspace sidebar | Manage people, preferences and subscription | Members, teams, notifications, owner-only billing |
-| Sidebar footer | Resume setup, understand trial status, account actions | Setup progress, trial link, user identity/role, log out |
+| Inbox sidebar | Browse activity and configure delivery | All notifications and a link to notification preferences (Your settings) |
+| Workspace sidebar | Manage people and subscription | Members, teams, owner-only billing |
+| Your settings sidebar | The person's own settings | Notifications, Appearance; Profile and Language shown as "Soon" ([handoff](handoffs/PERSONAL_SETTINGS.md)) |
+| Sidebar footer | Resume setup, understand trial status, account actions | Setup progress, trial link, and the account menu: user identity/role opening Your settings and Log out |
 | Project/page header | Describe and act on the current view | Project title, sharing, collaborators, archive; page-specific primary actions |
 | Content toolbars | Manipulate the current content | Kanban/List presentation, card filters, list selection, message/thread controls |
 | Persistent content banners | Show urgent state and recovery actions | Read-only/payment warnings and exports; push permission explanation |
@@ -31,10 +32,14 @@ destructive operations belong beside the content they affect.
 - **Projects** opens the projects overview. Project boards, cards, Shared channel,
   internal Team, import and global search results belong to this module.
 - **Inbox** opens workspace activity, retaining its live unread badge across
-  all member screens. The sidebar's notification preferences link moves into
-  the Workspace module because preferences live under workspace settings.
-- **Workspace** opens Members. The contextual sidebar contains Members, Teams,
-  Notifications and owner-only Billing; existing API permissions still apply.
+  all member screens. Its notification preferences link opens Your settings.
+- **Workspace** opens Members. The contextual sidebar contains Members, Teams and
+  owner-only Billing; existing API permissions still apply.
+- **Your settings** (`/me/*`) has no rail entry: it opens from the account menu (the
+  user row in the sidebar footer). Log out lives in that menu too, never in plain sight.
+  Notification preferences are personal, so they live here; `/settings/notifications`
+  redirects. Appearance sets Match system / Light / Dark for this browser. The guest
+  portal's header avatar opens the same menu with Log out only.
 
 Module selection comes from the current URL, including direct links, reloads
 and browser history. It is not a second copy of router state or server data.

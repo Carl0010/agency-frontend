@@ -13,13 +13,11 @@ import { usePathname, useRouter } from 'next/navigation';
 import { Icon, type IconName } from '@/components/icon';
 import { SetupChip } from '@/components/onboarding/setup-chip';
 import { TrialPill } from '@/components/billing/billing-notices';
-import { Avatar, Button } from '@/components/ui';
-import { useToast } from '@/components/toast';
-import { errorMessage } from '@/lib/api';
-import { useSession } from '@/lib/session';
+import { Button } from '@/components/ui';
 import type { Channel, Project, Team } from '@/lib/types';
 import { useWorkspace } from '@/lib/workspace';
-import { MODULE_LABELS, type WorkspaceModule } from './workspace-modules';
+import { AccountMenu } from '@/components/account-menu';
+import { MODULE_LABELS, PERSONAL_SETTINGS_PATH, type WorkspaceModule } from './workspace-modules';
 
 function UnreadDot({ label }: { label: string }) {
   return <span role="img" aria-label={label} data-testid="unread-dot" className="inline-block size-2 shrink-0 rounded-full bg-primary" />;
@@ -45,26 +43,23 @@ export function WorkspaceSidebar({ data, projectId, activeModule, onNavigate, on
 }) {
   const ws = useWorkspace();
   const [creating, setCreating] = useState(false);
-  const { user, signOut } = useSession();
   const router = useRouter();
   const pathname = usePathname();
-  const toast = useToast();
   const base = `/w/${ws.id}`;
   const settings: { path: string; label: string; icon: IconName }[] = [
     { path: '/settings/members', label: 'Members', icon: 'people' },
     { path: '/settings/teams', label: 'Teams', icon: 'people' },
-    { path: '/settings/notifications', label: 'Notifications', icon: 'settings' },
     // Billing remains the owner's surface (§8.6).
     ...(ws.role === 'owner' ? [{ path: '/settings/billing', label: 'Billing', icon: 'credit-card' as const }] : []),
   ];
 
-  async function logout() {
-    try {
-      await signOut();
-      onNavigate?.();
-      router.replace('/login');
-    } catch (error) { toast(errorMessage(error)); }
-  }
+  // Your settings: the person's own choices. Profile and Language wait on the API (docs/handoffs/PERSONAL_SETTINGS.md).
+  const personal: { path?: string; label: string; icon: IconName }[] = [
+    { label: 'Profile', icon: 'person' },
+    { path: '/me/notifications', label: 'Notifications', icon: 'bell' },
+    { path: '/me/appearance', label: 'Appearance', icon: 'sun' },
+    { label: 'Language', icon: 'globe' },
+  ];
 
   return (
     <div className="flex h-full min-h-0 min-w-0 flex-col" data-testid="workspace-sidebar">
@@ -106,8 +101,14 @@ export function WorkspaceSidebar({ data, projectId, activeModule, onNavigate, on
         {activeModule === 'inbox' ? <nav aria-label="Inbox navigation" className="space-y-1">
           <p className="mb-2 px-2.5 text-caption font-medium text-muted-foreground">Activity</p>
           <Link href={`${base}/inbox`} onClick={onNavigate} aria-current="page" className="ui-nav-link tap"><Icon name="inbox" />All notifications</Link>
-          <Link href={`${base}/settings/notifications`} onClick={onNavigate} className="ui-nav-link tap"><Icon name="settings" />Notification preferences</Link>
+          <Link href={base + PERSONAL_SETTINGS_PATH} onClick={onNavigate} className="ui-nav-link tap"><Icon name="settings" />Notification preferences</Link>
           <p className="px-2.5 pt-4 text-caption leading-5 text-muted-foreground">Mentions, assignments and project updates for this workspace.</p>
+        </nav> : null}
+        {activeModule === 'personal' ? <nav aria-label="Your settings" className="space-y-1">
+          <p className="mb-2 px-2.5 text-caption font-medium text-muted-foreground">Your settings</p>
+          {personal.map((item) => item.path
+            ? <Link key={item.label} href={base + item.path} onClick={onNavigate} aria-current={pathname.startsWith(base + item.path) ? 'page' : undefined} className="ui-nav-link tap"><Icon name={item.icon} />{item.label}</Link>
+            : <span key={item.label} aria-disabled="true" className="ui-nav-link cursor-default text-muted-foreground hover:bg-transparent"><Icon name={item.icon} />{item.label}<span className="ml-auto rounded-full bg-subtle px-2 py-0.5 text-caption">Soon</span></span>)}
         </nav> : null}
       </div>
 
@@ -119,11 +120,7 @@ export function WorkspaceSidebar({ data, projectId, activeModule, onNavigate, on
       <div className="shrink-0 space-y-2 border-t border-border p-3">
         <SetupChip ws={ws} onNavigate={onNavigate} />
         <TrialPill ws={ws} onNavigate={onNavigate} />
-        {user ? <div className="flex items-center gap-2.5 rounded-md px-1 py-1">
-          <Avatar person={{ ...user, active: true }} size={30} />
-          <div className="min-w-0 flex-1"><p className="truncate text-label font-medium">{user.name}</p><p className="text-caption capitalize text-muted-foreground">{ws.role}</p></div>
-          <Button variant="ghost" size="icon" aria-label="Log out" title="Log out" onClick={() => void logout()}><Icon name="logout" /></Button>
-        </div> : null}
+        <AccountMenu subtitle={ws.role} settingsHref={base + PERSONAL_SETTINGS_PATH} onNavigate={onNavigate} />
       </div>
     </div>
   );

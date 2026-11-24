@@ -59,7 +59,8 @@ For navigation changes also read [sidebar responsibilities](docs/NAVIGATION.md).
   Implement supported UI independently; do not fake missing server state in local storage.
 - Quiet Pro is the only component package. Do not add other component libraries or duplicate
   button/input variants for a single screen.
-- Use shared skeletons from `components/skeleton.tsx` for initial content queries.
+- Use shared skeletons from `components/skeleton.tsx` for initial content queries, and its
+  `AppLoader` only for full-screen boot and redirects before a layout exists.
   Preserve existing content during background refreshes; keep progress labels for operations.
 - Use Quiet Pro's `Select` (re-exported from `components/ui.tsx`) for select fields: pass
   `options`, take the value from `onChange(value)`, and use `name`/`required` in forms. Long

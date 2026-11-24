@@ -65,7 +65,7 @@ export default function InboxPage() {
         <h1 className="text-xl font-semibold">Inbox</h1>
         {unread ? <span className="rounded-full bg-primary-subtle px-2 text-xs font-medium text-primary-text">{unread} unread</span> : null}
         <div className="ml-auto flex gap-2">
-          <Link href={`/w/${ws.id}/settings/notifications`} className="tap flex items-center px-2 text-sm text-secondary-foreground hover:underline">
+          <Link href={`/w/${ws.id}/me/notifications`} className="tap flex items-center px-2 text-sm text-secondary-foreground hover:underline">
             Preferences
           </Link>
           <Button variant="secondary" disabled={!unread} onClick={() => void markRead({ before: new Date().toISOString() })}>

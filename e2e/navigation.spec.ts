@@ -124,3 +124,42 @@ test('mobile drawer traps focus, closes on navigation/Escape/backdrop, and hands
   await expect(page.getByRole('complementary', { name: 'Workspace sidebar' })).toBeVisible();
   await page.context().close();
 });
+
+test('log out and Your settings live in the account menu', async ({ browser }) => {
+  const { page, account } = await signupToBoard(browser, { viewport: { width: 1440, height: 1000 } });
+  const workspaceId = new URL(account.boardUrl).pathname.split('/')[2];
+  const sidebar = page.getByRole('complementary', { name: 'Workspace sidebar' });
+  await expect(page.getByRole('button', { name: 'Log out' })).toHaveCount(0);
+
+  const trigger = sidebar.getByTestId('account-menu');
+  await trigger.click();
+  const menu = page.getByRole('menu', { name: /^Signed in as / });
+  await expect(menu.getByRole('menuitem', { name: 'Your settings' })).toBeFocused();
+  await page.keyboard.press('Escape');
+  await expect(menu).toBeHidden();
+  await expect(trigger).toBeFocused();
+
+  await trigger.click();
+  await menu.getByRole('menuitem', { name: 'Your settings' }).click();
+  await expect(page).toHaveURL(`/w/${workspaceId}/me/notifications`);
+  const nav = sidebar.getByRole('navigation', { name: 'Your settings' });
+  await expect(nav.getByRole('link', { name: 'Notifications' })).toHaveAttribute('aria-current', 'page');
+  await expect(nav.getByText('Profile')).toHaveAttribute('aria-disabled', 'true');
+  await expect(page.getByTestId('preferences-grid')).toBeVisible();
+
+  await nav.getByRole('link', { name: 'Appearance' }).click();
+  await page.getByRole('radio', { name: 'Dark', exact: true }).check();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+  await page.reload();
+  await expect(page.getByRole('radio', { name: 'Dark', exact: true })).toBeChecked();
+  await page.getByRole('radio', { name: /Match system/ }).check();
+
+  // The old workspace-settings URL still reaches the page.
+  await page.goto(`/w/${workspaceId}/settings/notifications`);
+  await expect(page).toHaveURL(`/w/${workspaceId}/me/notifications`);
+
+  await sidebar.getByTestId('account-menu').click();
+  await menu.getByRole('menuitem', { name: 'Log out' }).click();
+  await expect(page).toHaveURL(/\/login/);
+  await page.context().close();
+});

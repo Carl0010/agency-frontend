@@ -6,11 +6,11 @@ import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useParams, usePathname, useRouter } from 'next/navigation';
 import type { ReactNode } from 'react';
-import { Avatar, Button, GuestChip, Select } from '@/components/ui';
+import { AccountMenu } from '@/components/account-menu';
+import { Button, GuestChip, Select } from '@/components/ui';
 import { ProjectIcon } from '@/components/projects/project-icon';
 import { api, errorMessage } from '@/lib/api';
 import { PortalContext, portalProjectsKey } from '@/lib/portal';
-import { useSession } from '@/lib/session';
 import type { Page, PortalProject, Workspace } from '@/lib/types';
 import { WorkspaceContext } from '@/lib/workspace';
 
@@ -23,7 +23,6 @@ export default function PortalProjectLayout({ children }: { children: ReactNode 
   const { projectId } = useParams<{ projectId: string }>();
   const pathname = usePathname();
   const router = useRouter();
-  const { user, signOut } = useSession();
   const projects = useQuery({ queryKey: portalProjectsKey, queryFn: () => api.get<Page<PortalProject>>('/portal/projects') });
   const project = projects.data?.data.find((p) => p.id === projectId.toLowerCase());
   // The guest's own, redacted view of the workspace (no plan, no setup state).
@@ -99,10 +98,7 @@ export default function PortalProjectLayout({ children }: { children: ReactNode 
               ))}
             </nav>
             <div className="ml-auto flex items-center gap-2">
-              {user ? <Avatar person={{ ...user, active: true }} size={28} /> : null}
-              <button type="button" className="tap px-2 text-sm text-secondary-foreground hover:text-foreground" onClick={() => void signOut().then(() => router.replace('/login'))}>
-                Log out
-              </button>
+              <AccountMenu variant="avatar" />
             </div>
           </header>
           <div className="min-h-0 flex-1">{children}</div>
