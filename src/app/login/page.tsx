@@ -9,6 +9,7 @@ import { errorMessage, request } from '@/lib/api';
 import { landingPath, safeNext } from '@/lib/landing';
 import { useSession } from '@/lib/session';
 import type { AuthResponse } from '@/lib/types';
+import { GoogleAuthButton } from '@/components/google-auth-button';
 
 const OAUTH_ERRORS: Record<string, string> = {
   google_state: 'Google sign-in expired. Please try again.',
@@ -62,11 +63,9 @@ function LoginForm() {
         <Button type="submit" className="w-full" disabled={busy}>
           {busy ? 'Logging in…' : 'Log in'}
         </Button>
-        <div className="flex justify-between text-sm">
+        <GoogleAuthButton label="Sign in with Google" next={next} />
+        <div className="text-sm">
           <Link className="text-primary" href="/forgot">Forgot password?</Link>
-          <a className="text-primary" href={`/api/v1/auth/google${next ? `?next=${encodeURIComponent(next)}` : ''}`}>
-            Continue with Google
-          </a>
         </div>
       </form>
     </AuthCard>

@@ -9,6 +9,7 @@ import { errorMessage, request } from '@/lib/api';
 import { rememberWorkspace } from '@/lib/landing';
 import { useSession } from '@/lib/session';
 import type { AuthResponse } from '@/lib/types';
+import { GoogleAuthButton } from '@/components/google-auth-button';
 
 export default function SignupPage() {
   const router = useRouter();
@@ -63,9 +64,7 @@ export default function SignupPage() {
         <Button type="submit" className="w-full" disabled={busy}>
           {busy ? 'Creating account…' : 'Create account'}
         </Button>
-        <a className="tap block rounded-md border border-input py-2 text-center text-sm font-medium hover:bg-background" href="/api/v1/auth/google">
-          Sign up with Google
-        </a>
+        <GoogleAuthButton label="Sign up with Google" />
       </form>
     </AuthCard>
   );
