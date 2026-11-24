@@ -108,6 +108,17 @@
 .workspace-sidebar-panel[data-open='false'] { width: 0; }
 .workspace-sidebar-panel[data-open='false'] > .workspace-sidebar-content { transform: translateX(-12px); opacity: 0; }
 
+/* Desktop: the app bar and module rail share one surface (an L); the panel inside rounds its
+   top-left corner. The edge is an overlay, not a border, so it adds no width to the layout. */
+@media (min-width: 64rem) {
+  .workspace-frame { position: relative; overflow: clip; border-top-left-radius: var(--radius-xl); }
+  .workspace-frame::after {
+    content: ''; position: absolute; inset: 0; z-index: 1; pointer-events: none;
+    border-top: 1px solid var(--color-border); border-left: 1px solid var(--color-border);
+    border-top-left-radius: inherit;
+  }
+}
+
 /* Leave native focus/scroll lifecycle to dialog; keep its top-layer rendering
    alive just long enough to slide out. Older browsers close immediately. */
 .navigation-drawer {

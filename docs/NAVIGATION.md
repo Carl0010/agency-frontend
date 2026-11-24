@@ -45,6 +45,10 @@ and browser history. It is not a second copy of router state or server data.
   remaining height below the app bar. The content begins after 312px of navigation.
   The hamburger collapses/reopens the 256px sidebar while retaining the module rail;
   the content gains that space. This visibility persists during member-route navigation.
+- At 1024px and above, the app bar and the rail share one surface with no border between
+  them, an L-shaped frame. The sidebar and content sit inside it as one panel whose top-left
+  corner is rounded (`.workspace-frame`); that edge is an overlay, so it adds no width. The
+  hamburger is a 44px target centred on the rail's icon column.
 - Each navigation area's middle scrolls independently. Workspace identity and
   account/status footer remain accessible. Long names truncate.
 - Below 1024px, **Open navigation** opens one native modal drawer up to 320px
