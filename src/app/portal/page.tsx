@@ -1,6 +1,6 @@
 'use client';
 
-import { LoadingSkeleton } from '@/components/skeleton';
+import { AppLoader } from '@/components/skeleton';
 
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
@@ -18,7 +18,7 @@ export default function PortalIndex() {
   useEffect(() => {
     if (first) router.replace(`/portal/${first.id}`);
   }, [first, router]);
-  if (projects.isPending || first) return <LoadingSkeleton variant="cards" label="Loading workspace" className="p-4 sm:p-6" />;
+  if (projects.isPending || first) return <AppLoader />;
   return (
     <main className="mx-auto max-w-md p-8 text-center">
       <h1 className="text-lg font-semibold">Nothing has been shared with you yet</h1>

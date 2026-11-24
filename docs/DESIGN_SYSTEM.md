@@ -357,6 +357,12 @@ messages. Use the layout closest to the incoming content and reserve its space.
 Keep useful already-loaded content visible during background refetches; skeletons
 are for initial pending queries. Do not add artificial delays to show them.
 
+App boot and redirects (signed-in root, workspace and portal layouts before the session or
+workspace resolves) have no layout to hold a skeleton, so they show `AppLoader`: the brand
+mark in a spinning ring with "Agency" below, centred on the screen. It fades in after 250ms
+so fast loads never flash it, and the ring breathes instead of spinning under reduced motion.
+Never use it inside a page; content inside the shell keeps its skeleton.
+
 Use semantic `muted`, `subtle`, `surface` and `border` tokens in both themes. A
 single polite status announces the region's loading label; decorative shapes are
 hidden from assistive technology and expose no pretend inputs or buttons. The

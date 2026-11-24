@@ -182,3 +182,11 @@ html[data-theme='dark'] { color-scheme: dark; }
 .skeleton-shape { animation: skeleton-breathe 1.8s ease-in-out infinite; }
 @keyframes skeleton-breathe { 0%, 100% { opacity: .55; } 50% { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .skeleton-shape { animation: none; } }
+
+/* App boot loader: fade in late so fast loads never flash it; the ring spins, or breathes
+   when motion is reduced. */
+.app-loader { animation: app-loader-in 200ms var(--ease-ui) 250ms both; }
+.app-loader-ring { animation: app-loader-spin 1s linear infinite; }
+@keyframes app-loader-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes app-loader-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .app-loader-ring { animation: skeleton-breathe 1.8s ease-in-out infinite; } }

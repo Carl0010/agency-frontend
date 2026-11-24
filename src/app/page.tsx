@@ -1,6 +1,6 @@
 'use client';
 
-import { LoadingSkeleton } from '@/components/skeleton';
+import { AppLoader } from '@/components/skeleton';
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -16,7 +16,7 @@ export default function Home() {
     if (user) void landingPath().then((p) => router.replace(p));
   }, [user, router]);
 
-  if (user !== null) return <LoadingSkeleton variant="cards" label="Loading workspace" className="p-4 sm:p-6" />;
+  if (user !== null) return <AppLoader />;
   return (
     <main className="mx-auto flex min-h-full max-w-2xl flex-col items-center justify-center gap-6 px-6 text-center">
       <h1 className="text-4xl font-bold tracking-tight">Teamwork, one place.</h1>

@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { BrandMark } from '@/components/icon';
 
 /** Decorative shapes share semantic surfaces in both themes. */
 export function Skeleton({ className = '' }: { className?: string }) {
@@ -27,6 +28,25 @@ export function LoadingSkeleton({ variant = 'rows', label = 'Loading content', c
       </div>)}
     </div>
   </LoadingRegion>;
+}
+
+/**
+ * Full-screen loader for app boot and redirects, before any layout exists to hold a skeleton:
+ * the brand mark inside a spinning ring, with the product name below. It fades in after a short
+ * delay so quick loads never flash it. Content inside a page keeps using the skeletons above.
+ */
+export function AppLoader({ label = 'Loading Agency' }: { label?: string }) {
+  return <div role="status" aria-busy="true" className="app-loader flex min-h-dvh flex-col items-center justify-center gap-5 p-6" data-testid="app-loader">
+    <span className="sr-only">{label}</span>
+    <div aria-hidden="true" className="relative grid size-32 place-items-center">
+      <svg viewBox="0 0 128 128" className="app-loader-ring absolute inset-0 size-full" fill="none">
+        <circle cx="64" cy="64" r="60" strokeWidth="4" className="stroke-muted" />
+        <circle cx="64" cy="64" r="60" strokeWidth="4" strokeLinecap="round" pathLength="100" strokeDasharray="28 72" className="stroke-primary" />
+      </svg>
+      <BrandMark className="size-20 rounded-3xl" glyphClassName="size-11" />
+    </div>
+    <span aria-hidden="true" className="text-page font-semibold tracking-tight">Agency</span>
+  </div>;
 }
 
 export function CardSkeleton() {

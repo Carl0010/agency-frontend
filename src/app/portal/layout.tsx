@@ -1,6 +1,6 @@
 'use client';
 
-import { LoadingSkeleton } from '@/components/skeleton';
+import { AppLoader } from '@/components/skeleton';
 
 import { useQueryClient } from '@tanstack/react-query';
 import { usePathname, useRouter } from 'next/navigation';
@@ -31,6 +31,6 @@ export default function PortalRoot({ children }: { children: ReactNode }) {
     void refreshSession().then(() => qc.invalidateQueries());
   });
 
-  if (!user) return <LoadingSkeleton variant="cards" label="Loading workspace" className="p-4 sm:p-6" />;
+  if (!user) return <AppLoader />;
   return <div className="h-full">{children}</div>;
 }
