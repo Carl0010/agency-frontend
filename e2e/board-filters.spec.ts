@@ -1,5 +1,5 @@
 import { expect, test, type APIRequestContext } from '@playwright/test';
-import { list, signupToBoard, type Account, choose } from './helpers';
+import { list, signupToBoard, type Account, choose, darkTheme } from './helpers';
 
 async function setup(request: APIRequestContext, account: Account) {
   const login = await request.post('/api/v1/auth/login', { data: { email: account.email, password: account.password } });
@@ -52,7 +52,7 @@ test('right-aligned filters open over the board, preserve focus and filter both 
   expect((await page.getByTestId('board-lists').boundingBox())!.y).toBe(before!.y);
   await page.screenshot({ path: info.outputPath('board-filters-light.png'), fullPage: true, animations: 'disabled', style: 'nextjs-portal { visibility: hidden; }' });
   await page.keyboard.press('Escape'); await expect(panel).toBeHidden(); await expect(trigger).toBeFocused();
-  await page.getByRole('button', { name: 'Switch to dark mode' }).click();
+  await darkTheme(page);
   await trigger.click(); await expect(panel.getByRole('button', { name: 'Assigned to E2E Owner' })).toHaveAttribute('aria-pressed', 'true');
   await page.screenshot({ path: info.outputPath('board-filters-dark.png'), fullPage: true, animations: 'disabled', style: 'nextjs-portal { visibility: hidden; }' });
   await panel.getByRole('button', { name: 'Done', exact: true }).click(); await expect(trigger).toBeFocused();

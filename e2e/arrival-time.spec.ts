@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { Client } from 'pg';
 import { accept, ownerApi } from './access-helpers';
-import { list, signupToBoard } from './helpers';
+import { list, signupToBoard, darkTheme } from './helpers';
 import type { Board, CardTile, Page } from '../src/lib/types';
 import type { BoardArrivals, ProjectArrival } from '../src/lib/arrival';
 import type { Replan } from '../src/lib/arrival';
@@ -47,7 +47,7 @@ test('arrival settings, estimates, confidence and guest visibility follow API ac
   const conflict = await second.json() as { error: { details: { reason: string } } };
   expect(conflict.error.details.reason).toBe('already_answered');
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.getByRole('button', { name: 'Switch to dark mode' }).click();
+  await darkTheme(page);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await page.screenshot({ path: info.outputPath('arrival-mobile-dark.png'), animations: 'disabled', style: 'nextjs-portal { visibility: hidden; }' });
 

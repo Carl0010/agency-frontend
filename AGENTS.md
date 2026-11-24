@@ -25,7 +25,8 @@ For navigation changes also read [sidebar responsibilities](docs/NAVIGATION.md).
 - Keep business logic, API behavior and audience boundaries separate from visual changes.
 - The 56px icon module rail owns Projects, Inbox and Workspace selection. The 256px
   contextual sidebar owns the selected module's links, project menus and account controls.
-  The top app bar owns centered global search, sidebar visibility and a labelled theme switch.
+  The top app bar owns centered global search and sidebar visibility. The theme is chosen in
+  Your settings → Appearance only.
   Page headers own local actions. Do not duplicate a project rail or member tabs.
 - Projects are visible through team shares or direct grants. Sidebar groups use
   `teamIds`; Starred reads the full `?starred=true` collection from the API. Keep

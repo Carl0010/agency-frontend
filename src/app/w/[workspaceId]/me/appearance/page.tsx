@@ -3,7 +3,7 @@
 import { PageHeader, RadioGroup } from '@/components/ui';
 import { setThemePreference, useThemePreference, type ThemePreference } from '@/lib/theme';
 
-/** Theme choice for this browser; the app bar switch flips between light and dark. */
+/** The only theme control: Match system, Light or Dark, kept in this browser. */
 export default function AppearancePage() {
   const preference = useThemePreference();
   return (

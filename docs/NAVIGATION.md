@@ -11,7 +11,7 @@ The guest portal keeps its separate navigation and imports none of this shell.
 | --- | --- | --- |
 | Module rail | Switch high-level areas | Projects, Inbox with live unread count, Workspace |
 | Sidebar identity | Identify workspace and selected module | Workspace name and current module label |
-| App bar | Global actions and navigation visibility | Centered search palette trigger, hamburger, Agency home, labelled light/dark switch |
+| App bar | Global actions and navigation visibility | Centered 44px search palette trigger, hamburger, Agency home. No theme switch |
 | Projects sidebar | Browse shared work and project surfaces | Projects overview, import, team groups, Starred, create button, per-project menu, current project's Board/Shared/internal Team |
 | Inbox sidebar | Browse activity and configure delivery | All notifications and a link to notification preferences (Your settings) |
 | Workspace sidebar | Manage people and subscription | Members, teams, owner-only billing |
@@ -209,7 +209,8 @@ access-change cache handling and the difference between new grants and revocatio
 
 ## Themes
 
-The app bar displays Dark mode or Light mode as the action's target. Before-paint
+The theme is chosen only in Your settings → Appearance (Match system, Light, Dark;
+`src/lib/theme.ts`); the app bar has no switch. Before-paint
 initialization uses the saved preference, otherwise the OS preference. Explicit
 choices persist across navigation/reloads and synchronize across tabs. Storage
 failure still allows switching for the current page. Shared tokens theme all

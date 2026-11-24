@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { list, signupToBoard } from './helpers';
+import { list, signupToBoard, darkTheme } from './helpers';
 
 async function archiveDialog(page: Page) {
   await list(page, 'To do').getByRole('button', { name: 'List actions for To do' }).click();
@@ -26,7 +26,7 @@ test('app confirmation owns focus and dismissal and sends no mutation until acce
   await page.keyboard.press('Escape'); await expect(modal).toHaveCount(0);
   await expect(list(page, 'To do').getByRole('button', { name: 'List actions for To do' })).toBeFocused();
   expect(deletes).toHaveLength(0);
-  await page.getByRole('button', { name: 'Switch to dark mode' }).click();
+  await darkTheme(page);
   modal = await archiveDialog(page);
   await page.screenshot({ path: info.outputPath('confirmation-dark.png'), fullPage: true, animations: 'disabled', style: 'nextjs-portal { visibility: hidden; }' });
   await modal.getByRole('button', { name: 'Cancel', exact: true }).click(); await expect(modal).toHaveCount(0);

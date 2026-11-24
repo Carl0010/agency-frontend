@@ -1,6 +1,6 @@
 import { expect, test, type APIRequestContext, type Browser, type Locator, type Page } from '@playwright/test';
 import { accept, ownerApi } from './access-helpers';
-import { signupToBoard, choose } from './helpers';
+import { signupToBoard, choose, darkTheme } from './helpers';
 import type { Board, CardTile, Member, Page as ApiPage, Project, User } from '../src/lib/types';
 
 const group = (page: Page, name: string) => page.getByRole('region', { name: `Group ${name}`, exact: true }).or(page.getByRole('rowgroup', { name: `Group ${name}`, exact: true }));
@@ -139,7 +139,7 @@ test('due drags set Today, ask for Later, cancel and retry without changing list
   await expect(page.getByTestId('toast')).toHaveCount(0);
   await page.getByRole('button', { name: 'Kanban', exact: true }).click();
   await expect(page.getByRole('table')).toHaveCount(0);
-  await page.getByRole('button', { name: 'Switch to dark mode' }).click();
+  await darkTheme(page);
   await handle(group(page, 'Later'), c.id).scrollIntoViewIfNeeded();
   await page.screenshot({ path: info.outputPath('group-due-dark.png'), fullPage: true, animations: 'disabled', style: 'nextjs-portal { visibility: hidden; }' });
   await keyboardDrop(page, handle(group(page, 'Later'), c.id), 'ArrowRight', 'none');

@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { ownerApi } from './access-helpers';
-import { choose, signupToBoard } from './helpers';
+import { choose, signupToBoard, darkTheme } from './helpers';
 
 test('select menus use the theme, the keyboard and typeahead, and work inside popovers, dialogs and forms', async ({ browser }, info) => {
   const { page, account } = await signupToBoard(browser, { viewport: { width: 1440, height: 1000 } });
@@ -21,7 +21,7 @@ test('select menus use the theme, the keyboard and typeahead, and work inside po
   await expect(select).toHaveText('Assignee'); await expect(page).toHaveURL(/group=assignee/);
   await choose(select, 'List'); await expect(page).not.toHaveURL(/group=/);
 
-  await page.getByRole('button', { name: 'Switch to dark mode' }).click();
+  await darkTheme(page);
   await select.click(); await expect(menu.getByRole('option', { name: 'Due date', exact: true })).toBeVisible();
   await page.screenshot({ path: info.outputPath('select-menu-dark.png'), fullPage: true, animations: 'disabled', style: 'nextjs-portal { visibility: hidden; }' });
   await page.keyboard.press('Escape');
