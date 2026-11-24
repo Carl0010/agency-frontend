@@ -17,7 +17,6 @@ import { useWorkspace } from '@/lib/workspace';
 import { useAccessSync } from '@/lib/access-sync';
 import { useTeams } from '@/lib/teams';
 import { ModuleRail } from './module-rail';
-import { ThemeToggle } from './theme-toggle';
 import { workspaceModule } from './workspace-modules';
 import { NavigationDrawer } from './navigation-drawer';
 import { WorkspaceSidebar, type SidebarData } from './workspace-sidebar';
@@ -61,12 +60,14 @@ export function WorkspaceShell({ children }: { children: ReactNode }) {
           <Button variant="ghost" size="icon" className="hidden lg:-ml-3.5 lg:inline-flex lg:size-11" aria-label={sidebarVisible ? 'Close sidebar' : 'Open sidebar'} aria-expanded={sidebarVisible} aria-controls="desktop-sidebar" onClick={() => setSidebarVisible((visible) => !visible)}><Icon name="menu" className="size-5" /></Button>
           <Link href={`/w/${ws.id}/projects`} aria-label="Agency home" className="hidden min-w-0 items-center gap-2.5 rounded-md sm:flex"><BrandMark /><span className="truncate text-body font-semibold">Agency</span></Link>
         </div>
-        <button type="button" aria-label="Search workspace" onClick={search} className="tap flex min-h-9 min-w-0 items-center gap-2 rounded-lg border border-border bg-background px-3 text-label text-muted-foreground hover:border-input hover:bg-subtle">
+        <button type="button" aria-label="Search workspace" onClick={search} className="tap flex min-h-11 min-w-0 items-center gap-2.5 rounded-lg border border-border bg-background px-3 text-label text-muted-foreground hover:border-input hover:bg-subtle">
           <Icon name="search" /><span className="truncate">Search<span className="hidden sm:inline"> cards, comments and messages</span></span><kbd className="ml-auto hidden shrink-0 rounded border border-border bg-surface px-1.5 text-caption sm:inline">⌘ / Ctrl K</kbd>
         </button>
-        <div className="justify-self-end"><ThemeToggle /></div>
+        {/* Keeps search centred; the theme lives in Your settings → Appearance. */}
+        <div aria-hidden="true" />
       </header>
-      <div className="flex min-h-0 min-w-0 flex-1">
+      {/* The row shares the L's surface so the panel's rounded corner shows it, not the page background. */}
+      <div className="flex min-h-0 min-w-0 flex-1 lg:bg-surface">
         <aside aria-label="Module rail" className="hidden w-14 shrink-0 bg-surface lg:block">
           <ModuleRail activeModule={activeModule} />
         </aside>
