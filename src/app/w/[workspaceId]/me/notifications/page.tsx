@@ -4,6 +4,7 @@ import { LoadingSkeleton } from '@/components/skeleton';
 
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/components/toast';
+import { PageHeader } from '@/components/ui';
 import { api, errorMessage } from '@/lib/api';
 import type { NotificationPreference } from '@/lib/types';
 import { useWorkspace } from '@/lib/workspace';
@@ -38,14 +39,10 @@ export default function NotificationSettingsPage() {
   }
 
   return (
-    <main className="mx-auto max-w-2xl p-4">
-      <h1 className="mb-1 text-xl font-semibold">Notifications</h1>
-      <p className="mb-4 text-sm text-secondary-foreground">
-        Choose how you hear about activity in {ws.name}. Your inbox always shows everything; message and comment emails only go out if
-        you have not read them within 10 minutes.
-      </p>
+    <main className="mx-auto max-w-2xl p-4 sm:p-6">
+      <PageHeader title="Notifications" description={`Choose how you hear about activity in ${ws.name}. Your inbox always shows everything; message and comment emails only go out if you have not read them within 10 minutes.`} />
       {prefs.isPending ? (
-        <LoadingSkeleton variant="form" className="p-4 sm:p-6" />
+        <LoadingSkeleton variant="form" />
       ) : prefs.error ? (
         <p className="text-secondary-foreground">{errorMessage(prefs.error)}</p>
       ) : (
