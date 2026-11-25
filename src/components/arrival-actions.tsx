@@ -2,6 +2,7 @@
 
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
+import { Icon } from '@/components/icon';
 import { Button } from '@/components/ui';
 import { useToast } from '@/components/toast';
 import { api, ApiError, errorMessage } from '@/lib/api';
@@ -28,10 +29,12 @@ export function ConfidencePrompt({ projectId }: { projectId: string }) {
   const { askNow, answeredThisWeek, aggregate } = query.data;
   const summary = confidenceSummary(query.data);
   if (!askNow && !answeredThisWeek && !aggregate) return null;
-  return <section className="flex flex-wrap items-center gap-2 border-b border-border bg-surface px-4 py-2 text-label" aria-label="Project confidence">
-    {askNow ? <><span>Will this project be finished on time? Your answer is anonymous.</span>{(['yes', 'unsure', 'no'] as const).map((value) => <Button key={value} size="sm" variant="secondary" disabled={saving} onClick={() => void answer(value)}>{value.charAt(0).toUpperCase() + value.slice(1)}</Button>)}</> : null}
-    {summary ? <span>{summary}</span> : null}
-    <Button size="sm" variant="ghost" onClick={() => setDismissed(true)} aria-label="Dismiss project confidence">Dismiss</Button>
+  // One slim line under the toolbar: the weekly question (anonymous), or this week's result.
+  return <section className="flex shrink-0 items-center gap-2 border-b border-border bg-surface px-3 py-1 text-caption text-secondary-foreground sm:px-4" aria-label="Project confidence">
+    {askNow ? <><span className="min-w-0 flex-1 truncate sm:flex-none" title="Your answer is anonymous.">On track to finish on time?<span className="hidden sm:inline"> Anonymous.</span></span>
+      <span className="flex shrink-0 gap-1">{(['yes', 'unsure', 'no'] as const).map((value) => <Button key={value} size="sm" variant="secondary" className="min-h-7 px-2 text-caption" disabled={saving} onClick={() => void answer(value)}>{value.charAt(0).toUpperCase() + value.slice(1)}</Button>)}</span></> : null}
+    {summary ? <span className="min-w-0 flex-1 truncate">{summary}</span> : null}
+    <Button size="icon" variant="ghost" className="ml-auto size-7 shrink-0" onClick={() => setDismissed(true)} aria-label="Dismiss project confidence"><Icon name="close" className="size-3.5" /></Button>
   </section>;
 }
 

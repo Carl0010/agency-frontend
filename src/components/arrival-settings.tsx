@@ -2,12 +2,16 @@
 
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRef, useState, type FormEvent } from 'react';
-import { Button, Combobox, Input } from '@/components/ui';
+import { Button, Checkbox, Combobox, Input } from '@/components/ui';
 import { useToast } from '@/components/toast';
 import { api, errorMessage } from '@/lib/api';
 import { useArrivalSettings, type ArrivalSettings, type Calendar, type CalendarCountry } from '@/lib/arrival';
 
-export function ProjectArrivalSettings({ projectId, canEdit }: { projectId: string; canEdit: boolean }) {
+/**
+ * Arrival settings for one project: the target date, and whether guests see each card's estimate.
+ * Shown in a dialog from the project's ⋯ menu.
+ */
+export function ArrivalSettingsForm({ projectId, canEdit }: { projectId: string; canEdit: boolean }) {
   const settings = useArrivalSettings(projectId);
   const qc = useQueryClient();
   const toast = useToast();
@@ -23,16 +27,15 @@ export function ProjectArrivalSettings({ projectId, canEdit }: { projectId: stri
       toast('Arrival settings saved.', 'info');
     } catch (error) { toast(errorMessage(error)); } finally { setSaving(false); }
   }
-  return <details className="relative text-label"><summary className="ui-button tap cursor-pointer rounded-md px-2 text-secondary-foreground hover:bg-subtle">Arrival settings</summary>
-    <div className="absolute right-0 z-20 mt-1 w-72 max-w-[90vw] rounded-lg border border-border bg-surface p-4 shadow-lg">
-      {settings.isPending ? <p>Loading arrival settings…</p> : settings.error ? <p role="alert" className="text-danger-text">{errorMessage(settings.error)}</p> : <form key={`${settings.data.targetDate}:${settings.data.guestCardArrivals}`} onSubmit={(e) => void save(e)} className="space-y-3">
-        <label className="block">Target date<Input ref={target} type="date" name="targetDate" defaultValue={settings.data.targetDate ?? ''} disabled={!canEdit || saving} className="mt-1 w-full" /></label>
-        {canEdit ? <Button variant="ghost" size="sm" disabled={saving} onClick={() => { if (target.current) target.current.value = ''; }}>Clear target date</Button> : null}
-        <label className="flex gap-2"><input type="checkbox" name="guestCardArrivals" defaultChecked={settings.data.guestCardArrivals} disabled={!canEdit || saving} />Show clients each card&apos;s arrival time</label>
-        {canEdit ? <Button type="submit" disabled={saving}>{saving ? 'Saving…' : 'Save settings'}</Button> : null}
-      </form>}
-    </div>
-  </details>;
+  return <div className="space-y-4 text-label">
+    <p className="text-secondary-foreground">Agency estimates when each card will be done from how quickly your team finishes cards. Set a target date to see whether the project is on track. Turn estimates on for the board under Filters → Show arrival estimates.</p>
+    {settings.isPending ? <p>Loading arrival settings…</p> : settings.error ? <p role="alert" className="text-danger-text">{errorMessage(settings.error)}</p> : <form key={`${settings.data.targetDate}:${settings.data.guestCardArrivals}`} onSubmit={(e) => void save(e)} className="space-y-3">
+      <label className="block">Target date<Input ref={target} type="date" name="targetDate" defaultValue={settings.data.targetDate ?? ''} disabled={!canEdit || saving} className="mt-1 w-full" /></label>
+      {canEdit ? <Button variant="ghost" size="sm" disabled={saving} onClick={() => { if (target.current) target.current.value = ''; }}>Clear target date</Button> : null}
+      <Checkbox name="guestCardArrivals" defaultChecked={settings.data.guestCardArrivals} disabled={!canEdit || saving} label="Show clients each card's arrival time" />
+      {canEdit ? <Button type="submit" disabled={saving}>{saving ? 'Saving…' : 'Save settings'}</Button> : null}
+    </form>}
+  </div>;
 }
 
 const weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
