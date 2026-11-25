@@ -8,8 +8,8 @@ below. The guest portal remains separate.
 
 ## Grouping
 
-The compact **Group by** switch offers List (default), Assignee and Due date in
-both Kanban and List. `?group=list|assignee|due` composes with presentation, search
+**Group by** sits at the top of the board's **View and filters** panel (the guest portal keeps
+its inline switch). It offers List (default), Assignee and Due date in both Kanban and List. `?group=list|assignee|due` composes with presentation, search
 and structured filters, survives reload/history and travels into the card drawer.
 Unknown values fall back to List. Switching grouping never changes stored lists,
 positions or cards and never requires another board read.
@@ -49,18 +49,45 @@ positions or cards and never requires another board read.
   controls. Returning from a portal card preserves due grouping. The portal
   imports no member board or workspace navigation.
 
+## What the board shows by default
+
+The board shows the work and little else; deeper information is one step away.
+
+- **Header**: one row with the project's saved icon, name and status, then member
+  avatars (large screens), Share and a ⋯ **Project options** menu holding Archived
+  cards and Arrival settings (each opens a dialog). No card/list counts or
+  client-description metadata. On a phone the status shows as its coloured dot and
+  Share as its icon.
+- **Toolbar**: one row. The Kanban/List switch stays left (icons only on a phone);
+  card search and **Filters** stay right. On a phone search is an icon that expands
+  over the row; Escape clears it. The field keeps its own value and the URL catches
+  up, so fast typing never drops characters.
+- **Tiles**: labels as colour bars (named on hover and for screen readers; List and
+  the card details show the names), the title, then one quiet line that appears only
+  when something is set: due date, checklist, comments, files, Also in N, people.
+  The card reference is in the tile's accessible name and the card details, not
+  printed on the tile.
+- **Arrival estimates are opt-in.** Tiles, rows, the project arrival line and
+  Re-plan appear only with `?arrival=on`, set by the **Show arrival estimates**
+  switch in View and filters. The card details always show a card's estimate. Guests
+  see estimates whenever the project shares them (Arrival settings → Show clients).
+  The weekly confidence question is one slim, dismissible line.
+- **Card details**: a ⋯ **Card actions** menu (Add to project, Move to project, Copy
+  link, Archive) beside the reference, and a two-column property list: List,
+  Assignees, Labels, Due, Projects. Empty assignees and labels show a quiet "+ Add".
+
 ## Switching and navigation
 
 A labelled Kanban/List control stays left in a compact toolbar, with search and
-filter controls aligned right. The header shows the project's saved icon/color
-and name, without card/list counts or client-description metadata. The default is
+filter controls aligned right. The default is
 Kanban; `?view=list` selects List. Changing the presentation preserves filters
 and unrelated URL parameters, without scrolling the document. Filters keep the
 view parameter. Reload, shareable URLs and browser history restore the selected
 presentation. Unknown view values safely render Kanban.
 
 The card search placeholder is **Search by card name**. Filters open a native
-anchored popover, with member names/avatars, label choices, due date, selected
+anchored popover titled **View and filters**: view options first (Group by, Show arrival
+estimates), then member names/avatars, label choices, due date, selected
 counts and Reset/Done actions. Selection updates the same URL filters immediately.
 The panel is non-modal and never expands the header or shifts board content.
 It clamps to the viewport, repositions on resize/scroll and keeps long option
@@ -82,11 +109,14 @@ list header height. Clicking it creates a `New list` through the API, scrolls to
 selects its inline name field. Enter or blur saves the name; Escape keeps the
 already-created list with its saved name. There is no Add/Cancel mini-form.
 Creation failure adds no column and leaves the tile available for retry; rename
-failure retains the entered name for retry. The existing
-one-list mobile Kanban layout is retained. Add card remains a separate tile
+failure retains the entered name for retry. Add card remains a separate tile
 below each list panel. Kanban columns size to their content, capped by available
-board height so long lists scroll internally. Empty dashed outlines have a 200px
+board height so long lists scroll internally. Empty dashed outlines have a 96px
 minimum height; empty columns wrap that area instead of stretching to the viewport.
+
+On a phone (below 640px) Kanban columns sit side by side and snap as you swipe:
+each column is 85% of the screen wide (at most 320px), so the next one peeks in at
+the edge. There is no list picker. Grouped Kanban and Add list use the same widths.
 
 Kanban lists drag from the whole header (including its title, count and padding),
 with no separate grip. The title remains the keyboard activator: Space lifts,
@@ -117,9 +147,11 @@ retain their existing semantic roles.
 - At a content width of at least 768px, metadata has labelled table columns.
   Below that width, metadata wraps underneath each card title. Container queries
   also adapt the rows when the desktop card drawer narrows the board pane.
-- Mobile List shows all groups in one vertical scroll area. It does not use the
-  mobile Kanban list picker. List/card creation is available within this view.
-- Labels keep readable names beside their colored dots; no color-only statuses.
+- Mobile List shows all groups in one vertical scroll area. List/card creation is
+  available within this view. Under each title, narrow rows show what is set plus
+  quiet person and clock icons that open the assignee and due-date editors.
+- List rows keep readable label names beside their coloured dots (Kanban tiles use
+  named colour bars, see above); no colour-only statuses.
   Both themes use existing semantic tokens and 44px mobile touch targets.
 - Shared filters apply across groups. Empty lists and groups with no matching
   cards have distinct messages. Hover/focus reveals explicit list/card drag
@@ -189,7 +221,11 @@ cover non-UTC midnight and daylight saving boundaries.
 filter selection/reset, keyboard focus and dismissal, reload, both views, mobile
 resize/overflow and saved project icons with unknown-identifier fallback.
 
-`e2e/board-list-view.spec.ts` covers compact toolbar/header height, the 200px empty area,
+`e2e/board-declutter.spec.ts` covers the phone's swipeable columns and one-row toolbar,
+expanding search that keeps every keystroke, opt-in arrival estimates, the Project
+options dialogs and the Card actions menu.
+
+`e2e/board-list-view.spec.ts` covers compact toolbar/header height, the 96px empty area,
 exact Add list dimensions, immediate creation, focused naming, failed creation/rename
 and retry, URL restoration, shared filtering/order, row drawer interactions,
 collapse/rename/archive, mobile creation, light/dark previews and overflow.
