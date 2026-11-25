@@ -9,6 +9,7 @@ import { ArrivalChip } from '@/components/arrival';
 import { ReplanAction } from '@/components/arrival-actions';
 import { DuePill } from '@/components/due-pill';
 import { Avatar, LABEL_BG } from '@/components/ui';
+import { useShowArrivals } from '@/lib/board-display';
 import { cardRef } from '@/lib/cards';
 import type { CardTile as Tile } from '@/lib/types';
 
@@ -20,52 +21,60 @@ export function AlsoInProjects({ card }: { card: Pick<Tile, 'placementCount'> })
   return <span data-testid="card-also-in" title={label} aria-label={label} className="inline-flex shrink-0 items-center gap-1 rounded-sm bg-subtle px-1.5 py-0.5 text-caption font-medium text-secondary-foreground"><Icon name="board" className="size-3.5" />+{others}</span>;
 }
 
+/**
+ * A card on the board: labels as colour bars, the title, then one quiet line that appears only when
+ * there is something to say (due date, checklist, comments, files, other projects, people). The
+ * reference (WEBS-1) and the arrival estimate live in the card's details; estimates show here only
+ * when the board asks for them.
+ */
 export function CardTileView({ card, now, dragging, guest = false }: { card: Tile; now: Date; dragging?: boolean; guest?: boolean }) {
+  // Guests receive estimates only when the project shares them, so the setting decides for them.
+  const showArrivals = useShowArrivals() || guest;
   const shown = card.assignees.slice(0, 3);
   const extra = card.assignees.length - shown.length;
-  const hasFacts = card.dueAt || card.checklistTotal || card.commentCount || card.attachmentCount || card.hasDescription;
+  const others = (card.placementCount ?? 1) - 1;
+  const hasMeta = card.dueAt || card.checklistTotal || card.commentCount || card.attachmentCount || card.assignees.length || (!guest && others > 0);
   return (
     <div
-      className={`rounded-lg border border-border bg-surface p-4 shadow-sm transition-shadow ${dragging ? 'rotate-1 shadow-xl ring-2 ring-ring' : 'hover:border-primary-border hover:shadow-md'}`}
+      className={`rounded-lg border border-border bg-surface px-3 py-2.5 shadow-sm transition-shadow ${dragging ? 'rotate-1 shadow-xl ring-2 ring-ring' : 'hover:border-primary-border hover:shadow-md'}`}
     >
       {card.labels.length ? (
-        <div className="mb-3 flex flex-wrap gap-1.5">
+        <div className="mb-1.5 flex flex-wrap gap-1" role="list" aria-label="Labels">
           {card.labels.map((label) => (
-            <span key={label.id} title={label.name} className="inline-flex min-w-0 max-w-full items-center gap-1.5 rounded bg-subtle px-2 py-0.5 text-caption font-medium text-secondary-foreground">
-              <span aria-hidden="true" className={`size-1.5 shrink-0 rounded-full ${LABEL_BG[label.color] ?? 'bg-label-grey'}`} />
-              <span className="truncate">{label.name}</span>
+            <span key={label.id} role="listitem" title={label.name} data-testid="card-tile-label" className={`h-1.5 w-8 rounded-full ${LABEL_BG[label.color] ?? 'bg-label-grey'}`}>
+              <span className="sr-only">{label.name}</span>
             </span>
           ))}
         </div>
       ) : null}
-      <p title={card.title} data-testid="card-tile-title" className="line-clamp-3 break-words text-body-lg font-medium leading-6 text-foreground">{card.title}</p>
-      <ArrivalChip boardId={card.boardId} cardId={card.id} guest={guest} />
-      {hasFacts ? (
-        <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 text-caption text-muted-foreground">
-          <DuePill dueAt={card.dueAt} dueCompletedAt={card.dueCompletedAt} now={now} />
-          {card.hasDescription ? <span title="Has description" aria-label="Has description"><Icon name="description" className="size-3.5" /></span> : null}
-          {card.checklistTotal ? (
-            <span
-              data-testid="checklist-badge"
-              className={`inline-flex items-center gap-1.5 ${card.checklistDone === card.checklistTotal ? 'font-medium text-success-text' : ''}`}
-              title="Checklist items"
-            >
-              <Icon name="checklist" className="size-3.5" /> {card.checklistDone}/{card.checklistTotal}
+      <p title={card.title} data-testid="card-tile-title" className="line-clamp-3 break-words text-body font-medium leading-5 text-foreground">{card.title}</p>
+      {showArrivals ? <ArrivalChip boardId={card.boardId} cardId={card.id} guest={guest} /> : null}
+      {hasMeta ? (
+        <div className="mt-2 flex min-h-6 items-center gap-x-2.5 gap-y-1 text-caption text-muted-foreground">
+          <span className="flex min-w-0 flex-1 flex-wrap items-center gap-x-2.5 gap-y-1">
+            <DuePill dueAt={card.dueAt} dueCompletedAt={card.dueCompletedAt} now={now} />
+            {card.checklistTotal ? (
+              <span
+                data-testid="checklist-badge"
+                className={`inline-flex items-center gap-1 ${card.checklistDone === card.checklistTotal ? 'font-medium text-success-text' : ''}`}
+                title="Checklist items"
+                aria-label={`${card.checklistDone} of ${card.checklistTotal} checklist items done`}
+              >
+                <Icon name="checklist" className="size-3.5" />{card.checklistDone}/{card.checklistTotal}
+              </span>
+            ) : null}
+            {card.commentCount ? <span data-testid="comment-count" title="Comments" aria-label={`${card.commentCount} comments`} className="inline-flex items-center gap-1"><Icon name="comment" className="size-3.5" />{card.commentCount}</span> : null}
+            {card.attachmentCount ? <span title="Attachments" aria-label={`${card.attachmentCount} attachments`} className="inline-flex items-center gap-1"><Icon name="attachment" className="size-3.5" />{card.attachmentCount}</span> : null}
+            {!guest ? <AlsoInProjects card={card} /> : null}
+          </span>
+          {card.assignees.length ? (
+            <span className="flex shrink-0 items-center -space-x-1.5" aria-label={`Assigned to ${card.assignees.map((person) => person.name).join(', ')}`}>
+              {shown.map((person) => <Avatar key={person.id} person={person} size={22} />)}
+              {extra > 0 ? <span className="inline-flex h-[22px] items-center rounded-full bg-muted px-1.5 text-caption font-semibold text-secondary-foreground ring-2 ring-surface">+{extra}</span> : null}
             </span>
           ) : null}
-          {card.commentCount ? <span data-testid="comment-count" title="Comments" className="inline-flex items-center gap-1.5"><Icon name="comment" className="size-3.5" /> {card.commentCount}</span> : null}
-          {card.attachmentCount ? <span title="Attachments" className="inline-flex items-center gap-1.5"><Icon name="attachment" className="size-3.5" /> {card.attachmentCount}</span> : null}
         </div>
       ) : null}
-      <div className="mt-3 flex min-h-6 items-center justify-between gap-3 border-t border-border-subtle pt-3">
-        <span className="flex min-w-0 items-center gap-2"><span className="truncate font-mono text-caption text-muted-foreground" data-testid="card-tile-key">{cardRef(card)}</span><AlsoInProjects card={card} /></span>
-        {card.assignees.length ? (
-          <span className="flex shrink-0 items-center -space-x-1.5">
-            {shown.map((person) => <Avatar key={person.id} person={person} size={24} />)}
-            {extra > 0 ? <span className="inline-flex h-6 items-center rounded-full bg-muted px-1.5 text-caption font-semibold text-secondary-foreground ring-2 ring-surface">+{extra}</span> : null}
-          </span>
-        ) : null}
-      </div>
     </div>
   );
 }
@@ -73,6 +82,7 @@ export function CardTileView({ card, now, dragging, guest = false }: { card: Til
 /** A tile that can be dragged with mouse, touch (long-press) or keyboard (Space). Enter or click opens it. */
 export function SortableCard({ card, now, href, disabled }: { card: Tile; now: Date; href: string; disabled?: boolean }) {
   const router = useRouter();
+  const showArrivals = useShowArrivals();
   const selected = usePathname().endsWith(`/c/${card.id}`);
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: card.id,
@@ -114,7 +124,7 @@ export function SortableCard({ card, now, href, disabled }: { card: Tile; now: D
     >
       <CardTileView card={card} now={now} />
     </div>
-    <ReplanAction boardId={card.boardId} projectId={card.projectId} cardId={card.id} title={card.title} />
+    {showArrivals ? <ReplanAction boardId={card.boardId} projectId={card.projectId} cardId={card.id} title={card.title} /> : null}
     </div>
   );
 }

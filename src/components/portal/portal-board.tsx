@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 import { CardTileView } from '@/components/board/card-tile';
+import { cardRef } from '@/lib/cards';
 import { ProjectArrivalLine } from '@/components/arrival';
 import { useBoardArrivals } from '@/lib/arrival';
 import { api, errorMessage } from '@/lib/api';
@@ -74,7 +75,7 @@ export function PortalBoard({ project }: { project: PortalProject }) {
             <ol className="min-h-0 space-y-2 overflow-y-auto">
               {l.cards.map((c) => (
                 <li key={c.id}>
-                  <Link href={`/portal/${project.id}/c/${c.id}${grouping === 'due' ? '?group=due' : ''}`} data-testid="portal-card" className="block rounded-md focus-visible:outline-2 focus-visible:outline-ring">
+                  <Link href={`/portal/${project.id}/c/${c.id}${grouping === 'due' ? '?group=due' : ''}`} aria-label={`${cardRef(tile(c))}: ${c.title}`} data-testid="portal-card" className="block rounded-md focus-visible:outline-2 focus-visible:outline-ring">
                     <CardTileView card={tile(c)} now={now} guest />
                   </Link>
                 </li>

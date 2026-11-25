@@ -13,14 +13,15 @@ import { toLocalInput } from '@/lib/time';
 import type { CardTile } from '@/lib/types';
 
 /** People come from the card's own read: a card in several projects can be assigned to anyone who sees one of them. */
-export function RowAssignees({ card, cardKey }: { card: CardTile; cardKey: string }) {
+/** `compact` draws an empty value as a quiet icon, for narrow rows. */
+export function RowAssignees({ card, cardKey, compact = false }: { card: CardTile; cardKey: string; compact?: boolean }) {
   const mutation = useRowSave(card);
   const [opened, setOpened] = useState(false);
   const people = useCardPeople(card.id, 'assignable', card.projectId, opened);
   const members = people.data?.data ?? [];
   return <RowPopover label={`Assign members for ${cardKey}`} title={`Assignees for ${cardKey}`} onOpen={() => { mutation.reset(); setOpened(true); }} trigger={card.assignees.length ? <span role="group" aria-label="Assignees" className="inline-flex min-w-0 items-center gap-1.5" title={card.assignees.map((person) => person.name).join(', ')}>
     <span className="inline-flex -space-x-1.5">{card.assignees.slice(0, 2).map((person) => <Avatar key={person.id} person={person} size={22} />)}</span><span className="truncate">{card.assignees.length === 1 ? card.assignees[0]!.name : `${card.assignees.length} members`}</span>
-  </span> : <span className="text-muted-foreground">Unassigned</span>}>
+  </span> : compact ? <span className="inline-flex min-w-6 justify-center text-muted-foreground"><Icon name="person" className="size-4" /><span className="sr-only">Unassigned</span></span> : <span className="text-muted-foreground">Unassigned</span>}>
     {(close) => <>
       <div className="max-h-60 space-y-1 overflow-y-auto p-2">
         {people.isPending ? <p className="p-2 text-label text-muted-foreground">Loading people…</p> : people.error ? <div role="alert" className="space-y-2 p-2 text-label text-danger-text"><p>{errorMessage(people.error)}</p><Button variant="secondary" size="sm" onClick={() => void people.refetch()}>Retry people</Button></div> : members.length ? members.map((member) => {
@@ -37,11 +38,11 @@ export function RowAssignees({ card, cardKey }: { card: CardTile; cardKey: strin
   </RowPopover>;
 }
 
-export function RowDue({ card, cardKey, now }: { card: CardTile; cardKey: string; now: Date }) {
+export function RowDue({ card, cardKey, now, compact = false }: { card: CardTile; cardKey: string; now: Date; compact?: boolean }) {
   const [draft, setDraft] = useState('');
   const [done, setDone] = useState(false);
   const mutation = useRowSave(card);
-  return <RowPopover label={`Edit due date for ${cardKey}`} title={`Due date for ${cardKey}`} onOpen={() => { setDraft(toLocalInput(card.dueAt)); setDone(Boolean(card.dueCompletedAt)); mutation.reset(); }} trigger={card.dueAt ? <DuePill dueAt={card.dueAt} dueCompletedAt={card.dueCompletedAt} now={now} /> : <span className="text-muted-foreground">No due date</span>}>
+  return <RowPopover label={`Edit due date for ${cardKey}`} title={`Due date for ${cardKey}`} onOpen={() => { setDraft(toLocalInput(card.dueAt)); setDone(Boolean(card.dueCompletedAt)); mutation.reset(); }} trigger={card.dueAt ? <DuePill dueAt={card.dueAt} dueCompletedAt={card.dueCompletedAt} now={now} /> : compact ? <span className="inline-flex min-w-6 justify-center text-muted-foreground"><Icon name="clock" className="size-4" /><span className="sr-only">No due date</span></span> : <span className="text-muted-foreground">No due date</span>}>
     {(close) => <form className="space-y-3 p-3" onSubmit={(event) => {
       event.preventDefault();
       const dueAt = draft ? new Date(draft).toISOString() : null;
