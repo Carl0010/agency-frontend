@@ -68,8 +68,10 @@ export function PushExplainer() {
 
   if (!show || !user) return null;
   return (
-    <div role="region" aria-label="Enable notifications" data-testid="push-explainer" className="flex flex-wrap items-center gap-2 border-b border-primary-border bg-primary-subtle px-3 py-2 text-sm text-primary-text">
-      <span className="min-w-0 flex-1">Get a desktop notification when someone mentions you or assigns you a card — even when this tab is closed.</span>
+    // One slim row: the message, Turn on, and a close button.
+    <div role="region" aria-label="Enable notifications" data-testid="push-explainer" className="flex items-center gap-2 border-b border-primary-border bg-primary-subtle px-3 py-1.5 text-label text-primary-text sm:px-4">
+      <Icon name="bell" className="size-4 shrink-0" />
+      <span className="min-w-0 flex-1" title="Notifications arrive even when Agency is closed.">Get notified when you’re mentioned or assigned a card.</span>
       <button
         type="button"
         disabled={busy}
@@ -82,9 +84,9 @@ export function PushExplainer() {
               setShow(false);
             });
         }}
-        className="tap rounded-md bg-primary px-3 text-sm font-medium text-primary-foreground"
+        className="tap shrink-0 rounded-md bg-primary px-3 py-1 text-label font-medium text-primary-foreground"
       >
-        Enable notifications
+        Turn on
       </button>
       <button
         type="button"
@@ -92,9 +94,11 @@ export function PushExplainer() {
           dismissExplainer(user.id);
           setShow(false);
         }}
-        className="tap rounded-md px-2 text-sm text-primary-text hover:bg-primary-muted"
+        aria-label="Not now"
+        title="Not now"
+        className="tap inline-grid shrink-0 place-items-center rounded-md p-1 text-primary-text hover:bg-primary-muted"
       >
-        Not now
+        <Icon name="close" className="size-4" />
       </button>
     </div>
   );

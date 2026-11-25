@@ -125,7 +125,7 @@ test('push permission is only requested from the explainer, on a second session 
   const explainer = second.getByTestId('push-explainer');
   await expect(explainer).toBeVisible();
   expect(await permissionRequests(second)).toBe(0);
-  await explainer.getByRole('button', { name: 'Enable notifications' }).click();
+  await explainer.getByRole('button', { name: 'Turn on' }).click();
   await expect(explainer).toHaveCount(0);
   expect(await permissionRequests(second)).toBe(1);
 });
