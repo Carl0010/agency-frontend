@@ -128,7 +128,7 @@ export function PlacementActions({ card }: { card: CardDetail }) {
  * moving transfers it: placed there, made home, and taken off the old home. The API asks before guests
  * of the target project would newly see the card (`409 guests_will_see`).
  */
-function PlaceCardDialog({ card, mode, onClose }: { card: CardDetail; mode: 'add' | 'move'; onClose: () => void }) {
+export function PlaceCardDialog({ card, mode, onClose }: { card: CardDetail; mode: 'add' | 'move'; onClose: () => void }) {
   const ws = useWorkspace();
   const qc = useQueryClient();
   const toast = useToast();
