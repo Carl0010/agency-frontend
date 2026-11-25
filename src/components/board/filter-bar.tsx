@@ -1,6 +1,6 @@
 'use client';
 
-import { useId, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
+import { useEffect, useId, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { Icon } from '@/components/icon';
 import { Avatar, Button, Input, LABEL_BG, Select } from '@/components/ui';
 import { EMPTY_FILTERS, isFiltering, type BoardFilters, type DueFilter } from '@/lib/filters';
@@ -8,15 +8,29 @@ import type { Label, Member } from '@/lib/types';
 
 const toggle = (xs: string[], x: string) => (xs.includes(x) ? xs.filter((y) => y !== x) : [...xs, x]);
 
-export function FilterBar({ filters, onChange, members, labels, leading }: {
+/**
+ * The board's one toolbar row: `leading` (the view switch), card search, and a Filters panel that
+ * also holds the view options (`options`: group by, what tiles show). On a phone, search is an icon
+ * that expands over the row, so the board starts right under it.
+ */
+export function FilterBar({ filters, onChange, members, labels, leading, options }: {
   filters: BoardFilters; onChange: (update: (current: BoardFilters) => BoardFilters) => void;
-  members: Member[]; labels: Label[]; leading?: ReactNode;
+  members: Member[]; labels: Label[]; leading?: ReactNode; options?: ReactNode;
 }) {
   const id = useId();
   const trigger = useRef<HTMLButtonElement>(null);
   const popover = useRef<HTMLDivElement>(null);
   const close = useRef<HTMLButtonElement>(null);
   const [open, setOpen] = useState(false);
+  const [searching, setSearching] = useState(false);
+  const searchInput = useRef<HTMLInputElement>(null);
+  // The field owns what is typed: the URL catches up a beat later, and reading it back would drop keystrokes.
+  const [query, setQuery] = useState(filters.q);
+  useEffect(() => {
+    if (document.activeElement !== searchInput.current) setQuery(filters.q);
+  }, [filters.q]);
+  const search = (q: string) => { setQuery(q); onChange((current) => ({ ...current, q })); };
+  const searchShown = searching || Boolean(query);
   const [position, setPosition] = useState<CSSProperties>({ top: 0, left: 0 });
   const active = isFiltering(filters);
   const count = filters.assignees.length + filters.labels.length + (filters.due ? 1 : 0);
@@ -49,29 +63,36 @@ export function FilterBar({ filters, onChange, members, labels, leading }: {
     return () => { observer.disconnect(); window.removeEventListener('resize', place); document.removeEventListener('scroll', place, true); };
   }, [open, filters, members, labels]);
   useLayoutEffect(() => { if (open) close.current?.focus({ preventScroll: true }); }, [open]);
+  useLayoutEffect(() => { if (searching) searchInput.current?.focus({ preventScroll: true }); }, [searching]);
 
-  return <div data-testid="board-toolbar" className="shrink-0 border-b border-border bg-surface px-4 py-2">
-    <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
-      {leading}
-      <div data-testid="board-filter-controls" className="ml-auto flex w-full min-w-0 items-center justify-end gap-2 sm:w-auto sm:flex-1">
-        <div className="relative min-w-0 flex-1 sm:max-w-64">
+  return <div data-testid="board-toolbar" className="shrink-0 border-b border-border bg-surface px-3 py-1.5 sm:px-4 sm:py-2">
+    <div className="flex items-center gap-2 sm:gap-4">
+      {leading ? <div className={`shrink-0 ${searchShown ? 'hidden sm:block' : ''}`}>{leading}</div> : null}
+      <div data-testid="board-filter-controls" className="ml-auto flex min-w-0 flex-1 items-center justify-end gap-2">
+        <div className={`relative min-w-0 flex-1 sm:block sm:max-w-64 ${searchShown ? 'block' : 'hidden'}`}>
           <Icon name="search" className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-          <Input type="search" aria-label="Search by card name" placeholder="Search by card name" value={filters.q} onChange={(event) => onChange((current) => ({ ...current, q: event.target.value }))} className="py-1.5 pl-9 text-label" />
+          <Input ref={searchInput} type="search" aria-label="Search by card name" placeholder="Search by card name" value={query}
+            onChange={(event) => search(event.target.value)}
+            onBlur={() => setSearching(false)}
+            onKeyDown={(event) => { if (event.key === 'Escape' && query) { event.preventDefault(); search(''); } }}
+            className="py-1.5 pl-9 text-label" />
         </div>
-        <Button ref={trigger} variant="ghost" popoverTarget={id} aria-label="Filters" aria-expanded={open} aria-haspopup="dialog" className={`border border-border ${count ? 'bg-primary-muted text-primary-text' : ''}`}>
-          <Icon name="settings" />Filters{count ? <span className="inline-flex min-w-5 items-center justify-center rounded bg-primary-subtle px-1 text-caption text-primary-text">{count}</span> : null}
+        {!searchShown ? <Button variant="ghost" size="icon" aria-label="Search cards" className="sm:hidden" onClick={() => setSearching(true)}><Icon name="search" /></Button> : null}
+        <Button ref={trigger} variant="ghost" popoverTarget={id} aria-label="Filters" aria-expanded={open} aria-haspopup="dialog" className={`shrink-0 border border-border px-2.5 ${count ? 'bg-primary-muted text-primary-text' : ''}`}>
+          <Icon name="settings" /><span className="sr-only sm:not-sr-only">Filters</span>{count ? <span className="inline-flex min-w-5 items-center justify-center rounded bg-primary-subtle px-1 text-caption text-primary-text">{count}</span> : null}
         </Button>
-        {active ? <Button variant="ghost" aria-label="Clear" className="px-2" onClick={() => onChange(() => EMPTY_FILTERS)}>Clear</Button> : null}
+        {active ? <Button variant="ghost" aria-label="Clear" className="shrink-0 px-2" onClick={() => { setQuery(''); onChange(() => EMPTY_FILTERS); }}>Clear</Button> : null}
       </div>
     </div>
     <div ref={popover} id={id} popover="auto" role="dialog" aria-modal="false" aria-labelledby={`${id}-title`} aria-describedby={`${id}-hint`} data-testid="filter-panel"
       onToggle={(event) => setOpen(event.newState === 'open')}
       style={position} className="fixed inset-auto m-0 w-96 max-w-[calc(100vw-1.5rem)] overflow-y-auto overscroll-contain rounded-xl border border-border bg-surface p-0 text-foreground shadow-lg">
       <header className="flex items-start gap-3 border-b border-border px-4 py-3">
-        <div className="min-w-0 flex-1"><h2 id={`${id}-title`} className="text-body font-semibold">Board filters</h2><p id={`${id}-hint`} className="mt-0.5 text-caption text-muted-foreground">{active ? 'Filters are on — clear them to drag cards in Kanban.' : 'Narrow your view. Filters apply as you select.'}</p></div>
+        <div className="min-w-0 flex-1"><h2 id={`${id}-title`} className="text-body font-semibold">View and filters</h2><p id={`${id}-hint`} className="mt-0.5 text-caption text-muted-foreground">{active ? 'Filters are on — clear them to drag cards in Kanban.' : 'Changes apply as you select.'}</p></div>
         <Button ref={close} variant="ghost" size="icon" aria-label="Close filters" onClick={dismiss}><Icon name="close" /></Button>
       </header>
       <div className="space-y-4 p-4">
+        {options ? <div data-testid="view-options" className="space-y-3 border-b border-border pb-4">{options}</div> : null}
         <fieldset><legend className="mb-2 text-label font-semibold">Assignee</legend>
           <div className="max-h-48 space-y-1 overflow-y-auto overscroll-contain">
             {members.length ? members.map((member) => {

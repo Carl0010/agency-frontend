@@ -1,6 +1,6 @@
 'use client';
 
-import { BoardSkeleton, LoadingSkeleton } from '@/components/skeleton';
+import { BoardSkeleton } from '@/components/skeleton';
 
 import {
   closestCenter,
@@ -21,23 +21,21 @@ import {
 } from '@dnd-kit/core';
 import { horizontalListSortingStrategy, SortableContext, sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import { Icon } from '@/components/icon';
 import { ProjectArrivalLine } from '@/components/arrival';
-import { ProjectArrivalSettings } from '@/components/arrival-settings';
 import { ConfidencePrompt } from '@/components/arrival-actions';
 import { useBoardArrivals } from '@/lib/arrival';
+import { useShowArrivals, withArrivals } from '@/lib/board-display';
 import { ProjectActions } from '@/components/project-chrome';
 import { ProjectIcon } from '@/components/projects/project-icon';
 import { ProjectStatusMenu } from '@/components/projects/project-status';
 import { useToast } from '@/components/toast';
-import { Avatar, Button } from '@/components/ui';
+import { Avatar, Switch } from '@/components/ui';
 import { api, errorMessage } from '@/lib/api';
 import { findCard, moveCardLocal, moveListLocal, upsertCard, upsertList } from '@/lib/board-state';
 import { isFiltering, matchesFilters, parseFilters, writeFilters, type BoardFilters } from '@/lib/filters';
-import { cardRef } from '@/lib/cards';
 import { useProjectRealtime } from '@/lib/realtime';
 import type { Board, CardTile, Label, Page, Project } from '@/lib/types';
 import { useGroupingClock } from '@/lib/use-grouping-clock';
@@ -53,6 +51,7 @@ import { FilterBar } from './filter-bar';
 import { ListColumn } from './list-column';
 import { GroupedBoard } from './grouped-board';
 import { GroupingSelect } from './grouping-select';
+import { ProjectMenu } from './project-menu';
 
 type Drag = { type: 'card' | 'list'; activeId: string; board: Board; snapshot: Board };
 
@@ -107,9 +106,9 @@ export function BoardScreen({ boardId, projectId }: { boardId: string; projectId
   const timezone = user?.timezone ?? 'UTC';
   const [drag, setDrag] = useState<Drag | null>(null);
   const [editingListId, setEditingListId] = useState<string | null>(null);
-  const onListCreated = (id: string) => { setMobileListId(id); setEditingListId(id); };
+  const onListCreated = (id: string) => setEditingListId(id);
   const onListEditFinished = (id: string) => setEditingListId((current) => current === id ? null : current);
-  const [mobileListId, setMobileListId] = useState<string | null>(null);
+  const showArrivals = useShowArrivals();
 
   useProjectRealtime(projectId);
   // The scoped project supplies member access; board data also includes the icon.
@@ -158,7 +157,10 @@ export function BoardScreen({ boardId, projectId }: { boardId: string; projectId
   const qs = params.toString();
   const cardHref = (cardId: string) => `/w/${ws.id}/p/${projectId}/b/${boardId}/c/${cardId}${qs ? `?${qs}` : ''}`;
   const activeMembers = (members.data?.data ?? []).filter((m) => m.status === 'active' && m.role !== 'guest');
-  const selectedList = shown.lists.find((l) => l.id === mobileListId) ?? shown.lists[0];
+  const setShowArrivals = (on: boolean) => {
+    const query = withArrivals(window.location.search, on).toString();
+    router.push(query ? `${pathname}?${query}` : pathname, { scroll: false });
+  };
 
   function onDragStart(e: DragStartEvent) {
     const current = qc.getQueryData<Board>(['board', boardId]);
@@ -233,52 +235,41 @@ export function BoardScreen({ boardId, projectId }: { boardId: string; projectId
   return (
     <div data-testid="board-canvas" className="flex h-full bg-board-canvas">
       <div className="flex min-w-0 flex-1 flex-col">
-        <div data-testid="board-project-header" className="flex shrink-0 flex-wrap items-center gap-x-4 gap-y-1 border-b border-border bg-surface px-4 py-2">
-          <div className="flex min-w-0 grow basis-40 items-center gap-2.5">
+        {/* The essentials only: name, status, Share. The rest is in the ⋯ menu and the Filters panel. */}
+        <div data-testid="board-project-header" className="flex shrink-0 items-center gap-2 border-b border-border bg-surface px-3 py-1.5 sm:gap-3 sm:px-4 sm:py-2">
+          <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-2.5">
             <ProjectIcon project={{ color: project.data?.color ?? shown.project.color, icon: project.data?.icon ?? shown.project.icon }} />
-            <h1 className="min-w-0 max-w-full truncate text-lg font-semibold leading-6" data-testid="board-title">
+            <h1 className="min-w-0 truncate text-body-lg font-semibold leading-6 sm:text-lg" data-testid="board-title">
               {shown.project.name}
             </h1>
-            {project.data ? <ProjectStatusMenu project={project.data} /> : null}
-            <ProjectArrivalLine projectId={projectId} />
+            {project.data ? <ProjectStatusMenu project={project.data} compact /> : null}
+            {showArrivals ? <span className="hidden md:inline"><ProjectArrivalLine projectId={projectId} /></span> : null}
           </div>
-          <div className="flex max-w-full flex-wrap items-center gap-2">
-            {project.data ? <ProjectArrivalSettings projectId={projectId} canEdit={project.data.access === 'admin'} /> : null}
-            <ProjectActions projectId={projectId} />
-            <div role="group" aria-label="Project members" className="flex -space-x-1.5">
+          <div className="flex shrink-0 items-center gap-1 sm:gap-2">
+            <div role="group" aria-label="Project members" className="hidden -space-x-1.5 lg:flex">
               {activeMembers.slice(0, 5).map((member) => (
-                <Avatar key={member.userId} person={{ id: member.userId, name: member.name, avatarUrl: member.avatarUrl }} size={28} />
+                <Avatar key={member.userId} person={{ id: member.userId, name: member.name, avatarUrl: member.avatarUrl }} size={26} />
               ))}
             </div>
-            <ArchivedCards boardId={boardId} cardHref={cardHref} />
+            <ProjectActions projectId={projectId} />
+            <ProjectMenu projectId={projectId} boardId={boardId} canEdit={project.data?.access === 'admin'} cardHref={cardHref} />
           </div>
         </div>
-        <FilterBar filters={filters} onChange={setFilters} members={activeMembers} labels={labels.data?.data ?? []} leading={
-          <div className="flex flex-wrap items-center gap-3"><div role="group" aria-label="Board view" className="inline-flex shrink-0 gap-0.5 rounded-lg border border-border bg-background p-0.5">
-            <button type="button" aria-pressed={view === 'kanban'} onClick={() => setView('kanban')} className={`ui-button tap min-h-8 gap-1.5 px-2.5 ${view === 'kanban' ? 'bg-surface text-foreground shadow-sm' : 'text-muted-foreground hover:bg-subtle'}`}><Icon name="board" />Kanban</button>
-            <button type="button" aria-pressed={view === 'list'} onClick={() => setView('list')} className={`ui-button tap min-h-8 gap-1.5 px-2.5 ${view === 'list' ? 'bg-surface text-foreground shadow-sm' : 'text-muted-foreground hover:bg-subtle'}`}><Icon name="list" />List</button>
-          </div><GroupingSelect /></div>
-        } />
-        {arrivals.error ? <p role="alert" className="px-4 py-1 text-caption text-danger-text">{errorMessage(arrivals.error)}</p> : arrivals.data?.history === 'insufficient' ? <p className="px-4 py-1 text-caption text-muted-foreground">Arrival times appear once the team has finished 20 cards.</p> : null}
-        <ConfidencePrompt projectId={projectId} />
-
-        {grouping === 'list' && view === 'kanban' && shown.lists.length ? (
-          <div className="flex shrink-0 gap-2 overflow-x-auto border-b border-border bg-surface px-4 py-2 sm:hidden" role="tablist" aria-label="Lists">
-            {shown.lists.map((l) => (
-              <button
-                key={l.id}
-                type="button"
-                role="tab"
-                aria-selected={l.id === selectedList?.id}
-                onClick={() => setMobileListId(l.id)}
-                className={`tap inline-flex shrink-0 items-center gap-2 rounded-lg px-3 text-label font-medium ${l.id === selectedList?.id ? 'bg-primary text-primary-foreground hover:bg-primary-hover active:bg-primary-active' : 'bg-subtle text-secondary-foreground hover:bg-muted active:bg-muted'}`}
-              >
-                {l.name}<span className="min-w-4 text-center text-caption">{l.cards.length}</span>
-              </button>
-            ))}
-          </div>
-        ) : null}
-
+        <FilterBar filters={filters} onChange={setFilters} members={activeMembers} labels={labels.data?.data ?? []}
+          leading={
+            <div role="group" aria-label="Board view" className="inline-flex shrink-0 gap-0.5 rounded-lg border border-border bg-background p-0.5">
+              <button type="button" aria-pressed={view === 'kanban'} aria-label="Kanban" onClick={() => setView('kanban')} className={`ui-button tap min-h-8 gap-1.5 px-2.5 ${view === 'kanban' ? 'bg-surface text-foreground shadow-sm' : 'text-muted-foreground hover:bg-subtle'}`}><Icon name="board" /><span className="hidden sm:inline">Kanban</span></button>
+              <button type="button" aria-pressed={view === 'list'} aria-label="List" onClick={() => setView('list')} className={`ui-button tap min-h-8 gap-1.5 px-2.5 ${view === 'list' ? 'bg-surface text-foreground shadow-sm' : 'text-muted-foreground hover:bg-subtle'}`}><Icon name="list" /><span className="hidden sm:inline">List</span></button>
+            </div>
+          }
+          options={<>
+            <GroupingSelect stacked />
+            <Switch className="max-sm:min-h-11" checked={showArrivals} onChange={setShowArrivals} label="Show arrival estimates" />
+          </>}
+        />
+        {showArrivals ? arrivals.error ? <p role="alert" className="px-4 py-1 text-caption text-danger-text">{errorMessage(arrivals.error)}</p> : arrivals.data?.history === 'insufficient' ? <p className="px-4 py-1 text-caption text-muted-foreground">Arrival estimates appear once the team has finished 20 cards.</p> : null : null}
+        {/* The weekly question belongs to arrival estimates: it shows only when they are on. */}
+        {showArrivals ? <ConfidencePrompt projectId={projectId} /> : null}
 
         {grouping !== 'list' ? <GroupedBoard key={`${grouping}:${view}`} board={board.data} grouping={grouping} view={view} filters={filters} now={now} timezone={timezone} cardHref={cardHref} /> : view === 'list' ? <BoardListView editingListId={editingListId} onListCreated={onListCreated} onListEditFinished={onListEditFinished} board={shown} filters={filters} now={now} cardHref={cardHref} activeDrag={drag} onDragStart={onDragStart} onDragOver={onDragOver} onDragEnd={onDragEnd} onDragCancel={() => setDrag(null)} /> : <DndContext
           sensors={sensors}
@@ -288,7 +279,8 @@ export function BoardScreen({ boardId, projectId }: { boardId: string; projectId
           onDragEnd={onDragEnd}
           onDragCancel={() => setDrag(null)}
         >
-          <div className="flex min-h-0 flex-1 items-start gap-4 overflow-auto p-4" data-testid="board-lists">
+          {/* Phones swipe between full-height columns; the next one peeks in at the edge. */}
+          <div className="flex min-h-0 flex-1 snap-x snap-mandatory items-start gap-3 overflow-auto scroll-px-3 p-3 sm:snap-none sm:gap-4 sm:p-4" data-testid="board-lists">
             <SortableContext items={shown.lists.map((l) => `list:${l.id}`)} strategy={horizontalListSortingStrategy}>
               {shown.lists.map((l) => (
                 <ListColumn
@@ -301,7 +293,6 @@ export function BoardScreen({ boardId, projectId }: { boardId: string; projectId
                   dndDisabled={filtering}
                   startEditing={editingListId === l.id}
                   onEditingFinished={() => onListEditFinished(l.id)}
-                  className={l.id === selectedList?.id ? 'flex' : 'hidden sm:flex'}
                 />
               ))}
             </SortableContext>
@@ -318,39 +309,6 @@ export function BoardScreen({ boardId, projectId }: { boardId: string; projectId
           </DragOverlay>
         </DndContext>}
       </div>
-    </div>
-  );
-}
-
-function ArchivedCards({ boardId, cardHref }: { boardId: string; cardHref: (id: string) => string }) {
-  const [open, setOpen] = useState(false);
-  const archived = useQuery({
-    queryKey: ['archived', boardId],
-    queryFn: () => api.get<Page<CardTile>>(`/boards/${boardId}/archived-cards`),
-    enabled: open,
-  });
-  return (
-    <div className="relative">
-      <Button variant="ghost" aria-expanded={open} onClick={() => setOpen((o) => !o)}><Icon name="inbox" />Archived</Button>
-      {open ? (
-        <div className="absolute right-0 z-30 mt-1 max-h-96 w-72 overflow-y-auto rounded-md border border-border bg-surface p-2 shadow-lg">
-          {archived.isPending ? (
-            <LoadingSkeleton label="Loading archived cards" />
-          ) : archived.data?.data.length ? (
-            <ul className="space-y-1">
-              {archived.data.data.map((c) => (
-                <li key={c.id}>
-                  <Link href={cardHref(c.id)} onClick={() => setOpen(false)} className="tap block truncate rounded px-2 py-1 text-sm hover:bg-subtle">
-                    <span className="font-mono text-caption text-muted-foreground">{cardRef(c)}</span> {c.title}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="p-2 text-sm text-muted-foreground">No archived cards.</p>
-          )}
-        </div>
-      ) : null}
     </div>
   );
 }

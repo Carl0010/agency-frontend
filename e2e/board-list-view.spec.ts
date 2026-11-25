@@ -34,8 +34,8 @@ test('Add list creates a full column immediately and focuses its inline name wit
   const [tileBox, columnBox, headerBox, areaBox, emptyBox] = await Promise.all([tile.boundingBox(), column.boundingBox(), column.getByTestId('list-header').boundingBox(), column.getByTestId('list-cards').boundingBox(), column.getByTestId('list-empty-state').boundingBox()]);
   expect(tileBox!.width).toBe(columnBox!.width); expect(tileBox!.width).toBe(320);
   expect(tileBox!.height).toBe(headerBox!.height); expect(tileBox!.height).toBe(60);
-  expect(emptyBox!.height).toBeGreaterThanOrEqual(200);
-  expect(emptyBox!.height).toBeLessThanOrEqual(201);
+  expect(emptyBox!.height).toBeGreaterThanOrEqual(96);
+  expect(emptyBox!.height).toBeLessThanOrEqual(97);
   expect(columnBox!.height).toBeLessThan(360);
   expect(Math.abs(areaBox!.height - 4 - emptyBox!.height)).toBeLessThan(2);
   // Board controls share one compact row, leaving the work area close to the app bar.

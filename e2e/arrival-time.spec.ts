@@ -1,10 +1,16 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page as PwPage } from '@playwright/test';
 import { Client } from 'pg';
 import { accept, ownerApi } from './access-helpers';
 import { list, signupToBoard, darkTheme } from './helpers';
 import type { Board, CardTile, Page } from '../src/lib/types';
 import type { BoardArrivals, ProjectArrival } from '../src/lib/arrival';
 import type { Replan } from '../src/lib/arrival';
+
+async function openArrivalSettings(page: PwPage) {
+  await page.getByRole('button', { name: 'Project options', exact: true }).click();
+  await page.getByRole('menuitem', { name: 'Arrival settings', exact: true }).click();
+  await expect(page.getByRole('dialog', { name: 'Arrival settings' })).toBeVisible();
+}
 
 test('arrival settings, estimates, confidence and guest visibility follow API access', async ({ browser, request }, info) => {
   test.setTimeout(120_000);
@@ -19,12 +25,13 @@ test('arrival settings, estimates, confidence and guest visibility follow API ac
   await list(page, done.name).getByRole('button', { name: `List actions for ${done.name}` }).click();
   await page.getByRole('button', { name: 'Mark as done list' }).click();
   await expect(list(page, done.name)).toContainText('Done list');
-  await page.getByText('Arrival settings', { exact: true }).click();
+  await openArrivalSettings(page);
   await page.getByLabel('Target date').fill('2030-01-01');
   await page.getByLabel("Show clients each card's arrival time").check();
   await page.getByRole('button', { name: 'Save settings' }).click();
   await expect.poll(async () => (await call<{ targetDate: string | null }>('GET', `/projects/${projectId}/arrival-settings`)).targetDate).toBe('2030-01-01');
-  await page.getByText('Arrival settings', { exact: true }).click();
+  await page.getByRole('dialog', { name: 'Arrival settings' }).getByRole('button', { name: 'Close Arrival settings' }).click();
+  await expect(page.getByRole('dialog', { name: 'Arrival settings' })).toHaveCount(0);
 
   for (let i = 0; i < 20; i++) {
     const card = await call<CardTile>('POST', `/lists/${todo.id}/cards`, { title: `Finished ${i}` });
@@ -33,11 +40,17 @@ test('arrival settings, estimates, confidence and guest visibility follow API ac
   const open = await call<CardTile>('POST', `/lists/${todo.id}/cards`, { title: 'Open arrival card' });
   await expect.poll(async () => (await call<BoardArrivals>('GET', `/boards/${account.boardId}/arrivals`)).history, { timeout: 30_000 }).toBe('enough');
   await expect.poll(async () => (await call<ProjectArrival>('GET', `/projects/${projectId}/arrival`)).arrivesOn, { timeout: 30_000 }).not.toBeNull();
+  // Estimates are off by default; the board shows them once they are turned on in View and filters.
   await page.reload();
+  await expect(page.getByTestId('arrival-chip')).toHaveCount(0);
+  await page.getByRole('button', { name: 'Filters', exact: true }).click();
+  await page.getByRole('switch', { name: 'Show arrival estimates' }).click();
+  await expect(page).toHaveURL(/arrival=on/);
+  await page.keyboard.press('Escape');
   await expect(page.getByTestId('project-arrival')).toContainText('Arrives');
   await expect(page.getByTestId('card-tile').filter({ hasText: 'Open arrival card' }).getByTestId('arrival-chip')).toBeVisible();
   const prompt = page.getByRole('region', { name: 'Project confidence' });
-  await expect(prompt).toContainText('anonymous');
+  await expect(prompt).toContainText(/anonymous/i);
   await prompt.getByRole('button', { name: 'Yes', exact: true }).click();
   await expect(prompt).toContainText('three people');
   const login = await request.post('/api/v1/auth/login', { data: { email: account.email, password: account.password } });
@@ -58,8 +71,9 @@ test('arrival settings, estimates, confidence and guest visibility follow API ac
   const memberId = roster.data.find((person) => person.email === memberEmail)!.userId;
   await call('PUT', `/projects/${projectId}/members/${memberId}`, { access: 'edit' });
   await member.goto(account.boardUrl);
-  await member.getByText('Arrival settings', { exact: true }).click();
+  await openArrivalSettings(member);
   await expect(member.getByLabel('Target date')).toBeDisabled();
+  await member.getByRole('button', { name: 'Close Arrival settings' }).click();
   await list(member, done.name).getByRole('button', { name: `List actions for ${done.name}` }).click();
   await expect(member.getByRole('button', { name: /done list/i })).toHaveCount(0);
 
@@ -123,7 +137,7 @@ test('a late card offers and applies a real re-plan', async ({ browser, request 
     plan = (await call<{ replan: Replan | null }>('GET', `/cards/${late.id}/replan?project=${board.projectId}`)).replan;
     return plan !== null;
   }, { timeout: 30_000 }).toBe(true);
-  await page.reload();
+  await page.goto(`${page.url()}?arrival=on`);
   const card = page.getByTestId('card-tile').filter({ hasText: 'Homepage' });
   await expect(card.getByTestId('arrival-chip')).toContainText('late');
   await card.getByText('Homepage').click();

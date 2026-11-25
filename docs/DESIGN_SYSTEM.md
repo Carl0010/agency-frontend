@@ -148,8 +148,8 @@ text to avoid iOS zoom. Small avatar initials are a limited exception to the
 - `PageHeader` puts the title/description on the left and actions on the right,
   stacking naturally on small screens. Use one primary action per action group.
 - Use a 56px icon module rail beside the 256px contextual sidebar, with 320px
-  board lanes on desktop. Below 640px,
-  preserve the existing one-list-at-a-time board behavior.
+  board lanes on desktop. Below 640px, board lanes are 85vw (at most 320px), sit side
+  by side and snap as you swipe, so the next lane peeks in.
 - Follow [navigation ownership](NAVIGATION.md): workspace and project destinations
   live in the module rail and contextual sidebar; the global app bar owns search and
   theme/sidebar toggles, while page headers keep
@@ -206,9 +206,17 @@ The global app bar is 56px high. Board chrome uses a compact project row and
 one toolbar with the Kanban/List switch on the left and card search, Filters and
 Clear aligned right. Search says **Search by card name**. Do not
 give the view switch its own full-width row or repeat the empty-list guidance
-in a separate banner. The toolbar wraps on mobile while keeping 44px targets.
+in a separate banner. On mobile the toolbar stays one row: icon-only view switch,
+a search icon that expands over the row, and an icon Filters button, all 44px targets.
 
-Filters open a non-modal native popover anchored to their button, with member
+Show the main information by default and put the rest one step away. Secondary
+project actions go in the header's ⋯ menu, view options (Group by, arrival
+estimates) in the Filters panel, card actions in the card's ⋯ menu. Metadata
+lines render only when they have content; do not print placeholders like "No due
+date" on tiles.
+
+Filters open a non-modal native popover titled View and filters, anchored to their
+button, with the view options first, then member
 names/avatars, label names/colors, due date, selection counts, Reset and Done.
 Opening or changing filters never inserts a header row or moves board content.
 Keep the panel within the viewport and update its position on resize/scroll and
@@ -219,8 +227,8 @@ in the URL but never cause the popover to open automatically after reload.
 
 The project header wraps as the available board pane narrows, including when
 the card drawer is open. Filters use the shared input and consistent control
-heights. Preserve the single selected list below 640px and horizontal board
-scrolling on larger screens; never widen the document to fit every list.
+heights. Board lanes scroll horizontally inside the board (with snap below 640px);
+never widen the document to fit every list.
 
 `e2e/board-ux.spec.ts` checks a populated board at 1440px, 1024px and 390px,
 including metadata bounds and access to list headings and bottom actions.

@@ -1,10 +1,10 @@
 import { expect, test } from '@playwright/test';
 import { ownerApi } from './access-helpers';
-import { choose, signupToBoard, darkTheme } from './helpers';
+import { choose, signupToBoard, darkTheme, groupBy } from './helpers';
 
 test('select menus use the theme, the keyboard and typeahead, and work inside popovers, dialogs and forms', async ({ browser }, info) => {
   const { page, account } = await signupToBoard(browser, { viewport: { width: 1440, height: 1000 } });
-  const select = page.getByRole('combobox', { name: 'Group by', exact: true });
+  const select = await groupBy(page);
   const menu = page.getByRole('listbox');
   await select.click();
   await expect(select).toHaveAttribute('aria-expanded', 'true');
@@ -22,12 +22,12 @@ test('select menus use the theme, the keyboard and typeahead, and work inside po
   await choose(select, 'List'); await expect(page).not.toHaveURL(/group=/);
 
   await darkTheme(page);
-  await select.click(); await expect(menu.getByRole('option', { name: 'Due date', exact: true })).toBeVisible();
+  await groupBy(page); await select.click(); await expect(menu.getByRole('option', { name: 'Due date', exact: true })).toBeVisible();
   await page.screenshot({ path: info.outputPath('select-menu-dark.png'), fullPage: true, animations: 'disabled', style: 'nextjs-portal { visibility: hidden; }' });
   await page.keyboard.press('Escape');
 
   // Inside the filter popover: picking keeps the popover open.
-  await page.getByRole('button', { name: 'Filters', exact: true }).click();
+  await groupBy(page);
   const filters = page.getByTestId('filter-panel'); const due = filters.getByRole('combobox', { name: 'Due date' });
   await choose(due, 'No due date');
   await expect(filters).toBeVisible(); await expect(due).toHaveText('No due date');
@@ -47,7 +47,7 @@ test('select menus use the theme, the keyboard and typeahead, and work inside po
 
   // Phone: 44px options inside the viewport.
   await page.setViewportSize({ width: 390, height: 844 });
-  await select.click();
+  await groupBy(page); await select.click();
   const option = menu.getByRole('option', { name: 'Assignee', exact: true });
   await expect(option).toBeVisible();
   await menu.evaluate((node) => Promise.all(node.getAnimations().map((animation) => animation.finished)));

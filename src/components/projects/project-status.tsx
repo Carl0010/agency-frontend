@@ -20,9 +20,10 @@ const TONES: Record<StatusTone, { pill: string; dot: string }> = {
   muted: { pill: 'border border-border bg-surface text-muted-foreground', dot: 'bg-disabled-foreground' },
 };
 
-function PillBody({ status }: { status: string | undefined }) {
+/** `compact`: just the dot on phones, so the project name keeps the header's width. */
+function PillBody({ status, compact = false }: { status: string | undefined; compact?: boolean }) {
   const shown = projectStatus(status);
-  return <><span aria-hidden="true" className={`size-1.5 shrink-0 rounded-full ${TONES[shown.tone].dot}`} />{shown.label}</>;
+  return <><span aria-hidden="true" className={`size-1.5 shrink-0 rounded-full ${TONES[shown.tone].dot} ${compact ? 'max-sm:size-2.5' : ''}`} /><span className={compact ? 'max-sm:sr-only' : ''}>{shown.label}</span></>;
 }
 
 const PILL = 'inline-flex shrink-0 items-center gap-1.5 rounded-full px-2 py-0.5 text-caption font-medium whitespace-nowrap';
@@ -33,13 +34,13 @@ export function StatusDot({ tone }: { tone: StatusTone }) {
   return <span aria-hidden="true" className={`size-2 shrink-0 rounded-full ${TONES[tone].dot}`} />;
 }
 
-export function ProjectStatusPill({ project, className = '' }: { project: Pick<Project, 'status' | 'statusChangedAt'>; className?: string }) {
+export function ProjectStatusPill({ project, className = '', compact = false }: { project: Pick<Project, 'status' | 'statusChangedAt'>; className?: string; compact?: boolean }) {
   const since = statusSince(project.statusChangedAt);
-  return <span data-testid="project-status" data-status={projectStatus(project.status).value} title={since ?? undefined} className={`${PILL} ${TONES[projectStatus(project.status).tone].pill} ${className}`}><PillBody status={project.status} /></span>;
+  return <span data-testid="project-status" data-status={projectStatus(project.status).value} title={since ?? undefined} className={`${PILL} ${TONES[projectStatus(project.status).tone].pill} ${compact ? 'max-sm:bg-transparent max-sm:px-1' : ''} ${className}`}><PillBody status={project.status} compact={compact} /></span>;
 }
 
 /** Header pill that opens a radio menu of the five statuses; read-only when the workspace is. */
-export function ProjectStatusMenu({ project }: { project: Project }) {
+export function ProjectStatusMenu({ project, compact = false }: { project: Project; compact?: boolean }) {
   const ws = useWorkspace();
   const { readOnly } = useWriteAvailability(ws);
   const qc = useQueryClient();
@@ -67,7 +68,7 @@ export function ProjectStatusMenu({ project }: { project: Project }) {
     onSettled: () => { void qc.invalidateQueries({ queryKey: ['projects', ws.id] }); },
   });
   const since = statusSince(project.statusChangedAt);
-  if (readOnly) return <ProjectStatusPill project={project} />;
+  if (readOnly) return <ProjectStatusPill project={project} compact={compact} />;
 
   const items = () => [...(popover.current?.querySelectorAll<HTMLButtonElement>('[role="menuitemradio"]') ?? [])];
   function choose(status: ProjectStatus) {
@@ -86,14 +87,14 @@ export function ProjectStatusMenu({ project }: { project: Project }) {
     <button type="button" popoverTarget={id} aria-haspopup="menu" aria-busy={save.isPending || undefined} aria-disabled={save.isPending || undefined}
       aria-label={`Project status: ${projectStatus(project.status).label}${save.isPending ? ', saving' : ''}. Change status`}
       title={since ?? undefined} data-testid="project-status" data-status={current}
-      className={`${PILL} tap hover:brightness-95 aria-disabled:opacity-70 ${tone.pill}`}
+      className={`${PILL} tap hover:brightness-95 aria-disabled:opacity-70 ${tone.pill} ${compact ? 'max-sm:bg-transparent max-sm:px-1' : ''}`}
       onClick={(event) => {
         // Keep focus on the pill while saving; just do not open the menu again.
         if (save.isPending) { event.preventDefault(); popover.current?.hidePopover(); return; }
         const rect = event.currentTarget.getBoundingClientRect();
         setPosition({ left: Math.max(8, Math.min(rect.left, window.innerWidth - 216)), top: Math.min(rect.bottom + 4, window.innerHeight - 240) });
       }}>
-      <PillBody status={project.status} />{save.isPending ? <span className="sr-only">Saving…</span> : <Icon name="chevron" className="size-3 rotate-90" />}
+      <PillBody status={project.status} compact={compact} />{save.isPending ? <span className="sr-only">Saving…</span> : <Icon name="chevron" className={`size-3 rotate-90 ${compact ? "max-sm:hidden" : ""}`} />}
     </button>
     <div ref={popover} id={id} popover="auto" role="menu" aria-label="Project status" style={position} onKeyDown={onKeyDown}
       onToggle={(event) => { if (event.newState === 'open') (items().find((item) => item.getAttribute('aria-checked') === 'true') ?? items()[0])?.focus(); }}

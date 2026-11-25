@@ -84,7 +84,7 @@ export function ListHeader({ list, count, boardId, leading, drag, startEditing =
     } catch (error) { toast(errorMessage(error)); }
   }
   return <header data-testid="list-header" onMouseDown={startDrag} onTouchStart={startDrag}
-    className={`flex shrink-0 items-center gap-2 ${compact ? 'h-12 px-2' : 'h-15 px-3 py-3'} ${drag && !drag.disabled && !editing ? 'cursor-grab select-none active:cursor-grabbing' : ''}`}>
+    className={`flex shrink-0 items-center gap-2 ${compact ? 'h-12 px-2' : 'h-12 px-2.5 sm:h-15 sm:px-3 sm:py-3'} ${drag && !drag.disabled && !editing ? 'cursor-grab select-none active:cursor-grabbing' : ''}`}>
     {leading}
     {editing ? <Input ref={input} data-no-list-drag disabled={saving} aria-busy={saving} aria-invalid={Boolean(nameError)} aria-describedby={nameError ? `${menuId}-name-error` : undefined} defaultValue={list.name} aria-label="List name" maxLength={120}
       onBlur={(event) => void rename(event.target.value)}

@@ -8,6 +8,13 @@ export async function choose(field: Locator, option: string) {
   await field.page().getByRole('listbox').getByRole('option', { name: option, exact: true }).click();
 }
 
+/** "Group by" sits in the board's View and filters panel; this opens the panel when it is closed. */
+export async function groupBy(page: Page) {
+  const panel = page.getByTestId('filter-panel');
+  if (!(await panel.isVisible())) await page.getByRole('button', { name: 'Filters', exact: true }).click();
+  return panel.getByRole('combobox', { name: 'Group by', exact: true });
+}
+
 export interface Account {
   email: string;
   password: string;
@@ -43,7 +50,7 @@ export async function signupToBoard(browser: Browser, options: BrowserContextOpt
   // The coach-mark tour is covered in onboarding.spec.ts; other specs start without it.
   await page.getByTestId('coach-mark').getByRole('button', { name: 'Skip tour' }).click();
   await expect(page.getByTestId('coach-mark')).toHaveCount(0);
-  // Below 640px only the selected list is shown, so count columns rather than visible regions.
+  // Below 640px columns sit side by side and swipe, so count columns rather than visible regions.
   await expect(page.getByTestId('list-column')).toHaveCount(3);
   await expect(list(page, 'To do')).toBeVisible();
 

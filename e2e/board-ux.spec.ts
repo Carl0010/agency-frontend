@@ -198,7 +198,7 @@ test('a populated board keeps metadata readable and column actions reachable at 
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
     const tile = column.getByTestId('card-tile').first();
     await tile.scrollIntoViewIfNeeded();
-    for (const meta of [tile.getByTestId('due-pill'), tile.getByTestId('checklist-badge'), tile.getByTestId('comment-count'), tile.getByTitle('E2E Owner'), tile.getByTestId('card-tile-key')]) {
+    for (const meta of [tile.getByTestId('due-pill'), tile.getByTestId('checklist-badge'), tile.getByTestId('comment-count'), tile.getByTitle('E2E Owner')]) {
       expect(await within(meta, tile), `metadata clips at ${width}px`).toBe(true);
     }
     await expect(column.getByTestId('add-card-end')).toBeInViewport();

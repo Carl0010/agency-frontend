@@ -9,6 +9,7 @@ import { usePathname } from 'next/navigation';
 import { useState, type ReactNode } from 'react';
 import { Icon } from '@/components/icon';
 import { ArrivalChip } from '@/components/arrival';
+import { useShowArrivals } from '@/lib/board-display';
 import { ReplanAction } from '@/components/arrival-actions';
 import { LABEL_BG } from '@/components/ui';
 import { isFiltering, matchesFilters, type BoardFilters } from '@/lib/filters';
@@ -101,6 +102,7 @@ function CardRow({ card, now, href, selected, disabled, hidden }: { card: CardTi
 }
 
 export function CardRowCells({ card, cardKey, now, href, selected, handle }: { card: CardTile; cardKey: string; now: Date; href: string; selected: boolean; handle: ReactNode }) {
+  const showArrivals = useShowArrivals();
   return <>
     <td className="border-b border-border-subtle px-2 py-1 align-middle">
       <div className="flex min-w-0 items-center gap-1">
@@ -109,9 +111,10 @@ export function CardRowCells({ card, cardKey, now, href, selected, handle }: { c
         <AlsoInProjects card={card} />
         <RowName card={card} cardKey={cardKey} />
       </div>
-      <div className="ml-9"><ArrivalChip boardId={card.boardId} cardId={card.id} /><ReplanAction boardId={card.boardId} projectId={card.projectId} cardId={card.id} title={card.title} /></div>
+      {showArrivals ? <div className="ml-9"><ArrivalChip boardId={card.boardId} cardId={card.id} /><ReplanAction boardId={card.boardId} projectId={card.projectId} cardId={card.id} title={card.title} /></div> : null}
+      {/* Narrow rows: values that are set, and quiet icons to set the people and the due date. */}
       <div className="ml-9 flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1 @3xl:hidden">
-        <RowAssignees card={card} cardKey={cardKey} /><RowDue card={card} cardKey={cardKey} now={now} />
+        <RowAssignees card={card} cardKey={cardKey} compact /><RowDue card={card} cardKey={cardKey} now={now} compact />
         {card.labels.length ? <Labels card={card} /> : null}<Activity card={card} compact />
       </div>
     </td>
@@ -127,10 +130,9 @@ function Labels({ card }: { card: CardTile }) {
 }
 
 function Activity({ card, compact = false }: { card: CardTile; compact?: boolean }) {
-  const hasActivity = card.hasDescription || card.checklistTotal || card.commentCount || card.attachmentCount;
+  const hasActivity = card.checklistTotal || card.commentCount || card.attachmentCount;
   if (!hasActivity) return compact ? null : <span className="text-caption text-muted-foreground">—<span className="sr-only">No activity</span></span>;
   return <span className="inline-flex flex-wrap items-center gap-x-2 gap-y-1 text-caption text-muted-foreground">
-    {card.hasDescription ? <span title="Has description" aria-label="Has description"><Icon name="description" className="size-3.5" /></span> : null}
     {card.checklistTotal ? <span aria-label={`${card.checklistDone} of ${card.checklistTotal} checklist items complete`} className={`inline-flex items-center gap-1 ${card.checklistDone === card.checklistTotal ? 'text-success-text' : ''}`}><Icon name="checklist" className="size-3.5" />{card.checklistDone}/{card.checklistTotal}</span> : null}
     {card.commentCount ? <span aria-label={`${card.commentCount} comment${card.commentCount === 1 ? '' : 's'}`} className="inline-flex items-center gap-1"><Icon name="comment" className="size-3.5" />{card.commentCount}</span> : null}
     {card.attachmentCount ? <span aria-label={`${card.attachmentCount} attachment${card.attachmentCount === 1 ? '' : 's'}`} className="inline-flex items-center gap-1"><Icon name="attachment" className="size-3.5" />{card.attachmentCount}</span> : null}
