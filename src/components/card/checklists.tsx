@@ -170,13 +170,15 @@ function ChecklistItemRow({
   const [editing, setEditing] = useState(false);
   return (
     <li data-testid="checklist-item" className="group flex items-center gap-2">
-      <input
-        type="checkbox"
-        checked={item.doneAt !== null}
-        aria-label={item.text}
-        onChange={(e) => void run(() => api.patch(`/checklist-items/${item.id}`, { done: e.target.checked }))}
-        className="tap h-4 w-4 accent-primary"
-      />
+      <label className="tap -my-1 -ml-1 inline-grid shrink-0 cursor-pointer place-items-center rounded-md">
+        <input
+          type="checkbox"
+          checked={item.doneAt !== null}
+          aria-label={item.text}
+          onChange={(e) => void run(() => api.patch(`/checklist-items/${item.id}`, { done: e.target.checked }))}
+          className="h-4 w-4 accent-primary"
+        />
+      </label>
       {editing ? (
         <input
           autoFocus

@@ -115,7 +115,7 @@ export function ImportPreviewScreen({
       <section className="rounded-lg border border-border bg-surface p-4">
         <h2 className="mb-2 font-medium">Import into</h2>
         <div className="space-y-2 text-sm">
-          <label className="flex items-center gap-2">
+          <label className="tap flex items-center gap-2">
             <input type="radio" name="target" checked={mode === 'new'} onChange={() => setMode('new')} />A new project
           </label>
           {mode === 'new' ? (
@@ -127,7 +127,7 @@ export function ImportPreviewScreen({
               maxLength={120}
             />
           ) : null}
-          <label className="flex items-center gap-2">
+          <label className="tap flex items-center gap-2">
             <input type="radio" name="target" checked={mode === 'existing'} onChange={() => setMode('existing')} disabled={!openProjects.length} />
             An existing project
           </label>

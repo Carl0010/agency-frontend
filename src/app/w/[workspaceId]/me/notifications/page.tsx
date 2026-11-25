@@ -60,13 +60,13 @@ export default function NotificationSettingsPage() {
               <tr key={p.type} data-testid={`pref-${p.type}`}>
                 <td className="px-3 py-2">{p.label}</td>
                 <td className="px-3 py-2 text-center">
-                  <input type="checkbox" checked disabled aria-label={`${p.label} in-app (always on)`} className="size-4" />
+                  <label className="tap inline-grid cursor-pointer place-items-center"><input type="checkbox" checked disabled aria-label={`${p.label} in-app (always on)`} className="size-4" /></label>
                 </td>
                 <td className="px-3 py-2 text-center">
-                  <input type="checkbox" checked={p.email} onChange={() => void toggle(p, 'email')} aria-label={`${p.label} email`} className="size-4" />
+                  <label className="tap inline-grid cursor-pointer place-items-center"><input type="checkbox" checked={p.email} onChange={() => void toggle(p, 'email')} aria-label={`${p.label} email`} className="size-4" /></label>
                 </td>
                 <td className="px-3 py-2 text-center">
-                  <input type="checkbox" checked={p.push} onChange={() => void toggle(p, 'push')} aria-label={`${p.label} push`} className="size-4" />
+                  <label className="tap inline-grid cursor-pointer place-items-center"><input type="checkbox" checked={p.push} onChange={() => void toggle(p, 'push')} aria-label={`${p.label} push`} className="size-4" /></label>
                 </td>
               </tr>
             ))}

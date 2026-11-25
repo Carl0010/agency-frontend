@@ -10,6 +10,7 @@ import { useState, type ReactNode } from 'react';
 import { Icon } from '@/components/icon';
 import { ArrivalChip } from '@/components/arrival';
 import { useShowArrivals } from '@/lib/board-display';
+import { useDragAutoScroll } from '@/lib/drag-scroll';
 import { ReplanAction } from '@/components/arrival-actions';
 import { LABEL_BG } from '@/components/ui';
 import { isFiltering, matchesFilters, type BoardFilters } from '@/lib/filters';
@@ -48,9 +49,10 @@ export function BoardListView({ board, filters, now, cardHref, editingListId, on
   const pathname = usePathname();
   const pending = useIsMutating({ mutationKey: ['row-card'] }) > 0;
   const disabled = isFiltering(filters) || pending;
+  const autoScroll = useDragAutoScroll();
   const sensors = useSensors(useSensor(MouseSensor, { activationConstraint: { distance: 6 } }), useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 8 } }), useSensor(KeyboardSensor, { coordinateGetter: listKeyboardCoordinates, keyboardCodes: { start: ['Space'], end: ['Space'], cancel: ['Escape'] } }));
   const activeName = activeDrag?.type === 'list' ? board.lists.find((list) => list.id === activeDrag.activeId)?.name : board.lists.flatMap((list) => list.cards).find((card) => card.id === activeDrag?.activeId)?.title;
-  return <DndContext sensors={sensors} collisionDetection={listCollision} measuring={{ droppable: { strategy: MeasuringStrategy.Always } }} onDragStart={onDragStart} onDragOver={onDragOver} onDragEnd={onDragEnd} onDragCancel={onDragCancel}>
+  return <DndContext sensors={sensors} autoScroll={autoScroll} collisionDetection={listCollision} measuring={{ droppable: { strategy: MeasuringStrategy.Always } }} onDragStart={onDragStart} onDragOver={onDragOver} onDragEnd={onDragEnd} onDragCancel={onDragCancel}>
     <div data-testid="board-list-view" className="@container min-h-0 flex-1 overflow-y-auto overscroll-contain p-4">
       <table aria-label="Board cards" className="w-full table-fixed border-separate border-spacing-0 rounded-lg border border-border bg-surface text-left">
         <thead className="sticky top-0 z-10 bg-surface text-caption text-muted-foreground"><tr>

@@ -20,6 +20,7 @@ import { useWorkspace } from '@/lib/workspace';
 import { CardTileView } from './card-tile';
 import { ReplanAction } from '@/components/arrival-actions';
 import { useShowArrivals } from '@/lib/board-display';
+import { useDragAutoScroll } from '@/lib/drag-scroll';
 import { CardRowCells } from './list-view';
 
 /** Keyboard traverses whole groups rather than sorting cards within a group. */
@@ -54,6 +55,7 @@ export function GroupedBoard({ board, grouping, view, filters, now, timezone, ca
   const rowPending = useIsMutating({ mutationKey: ['row-card'] }) > 0;
   const disabled = readOnly || pending || rowPending || isFiltering(filters) || (grouping === 'assignee' && !people.data);
   const groups = boardGroups(board, grouping, people.data?.data ?? [], now, timezone).map((group) => ({ ...group, cards: group.cards.filter((card) => matchesFilters(card, filters, now)) }));
+  const autoScroll = useDragAutoScroll();
   const sensors = useSensors(useSensor(MouseSensor, { activationConstraint: { distance: 6 } }), useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 8 } }), useSensor(KeyboardSensor, { coordinateGetter: groupCoordinates, keyboardCodes: { start: ['Space'], end: ['Space'], cancel: ['Escape'] } }));
   useEffect(() => {
     if (pending || later || active || !restore.current) return;
@@ -86,7 +88,7 @@ export function GroupedBoard({ board, grouping, view, filters, now, timezone, ca
   }
   return <>
     {people.error && grouping === 'assignee' ? <div className="border-b border-border bg-surface px-4 py-2"><FormError message={errorMessage(people.error)} /><Button variant="secondary" onClick={() => void people.refetch()}>Retry assignable people</Button></div> : null}
-    <DndContext sensors={sensors} collisionDetection={(args) => args.pointerCoordinates ? pointerWithin(args) : closestCenter(args)} onDragStart={(event) => setActive(event.active.data.current as Occurrence)} onDragCancel={() => { if (active) restore.current = { cardId: active.card.id, groupId: active.groupId }; setActive(null); }} onDragEnd={(event) => {
+    <DndContext sensors={sensors} autoScroll={autoScroll} collisionDetection={(args) => args.pointerCoordinates ? pointerWithin(args) : closestCenter(args)} onDragStart={(event) => setActive(event.active.data.current as Occurrence)} onDragCancel={() => { if (active) restore.current = { cardId: active.card.id, groupId: active.groupId }; setActive(null); }} onDragEnd={(event) => {
       const source = active; setActive(null);
       if (!source) return;
       restore.current = { cardId: source.card.id, groupId: source.groupId };
@@ -95,7 +97,7 @@ export function GroupedBoard({ board, grouping, view, filters, now, timezone, ca
       if (grouping === 'due' && (target === 'overdue' || dueWindowOf(source.card, new Date(), timezone) === target)) return;
       if (grouping === 'due' && target === 'later') setLater(source); else void save(source, target);
     }}>
-      <div data-testid="grouped-board" className={`@container min-h-0 flex-1 overflow-auto p-3 sm:p-4 ${view === 'kanban' ? 'flex snap-x snap-mandatory items-start gap-3 scroll-px-3 sm:snap-none sm:gap-4' : ''}`}>
+      <div data-testid="grouped-board" className={`@container min-h-0 flex-1 overflow-auto p-3 sm:p-4 ${view === 'kanban' ? `flex items-start gap-3 scroll-px-3 sm:snap-none sm:gap-4 ${active ? 'snap-none' : 'snap-x snap-mandatory'}` : ''}`}>
         {view === 'list' ? <table aria-label="Board cards" className="w-full table-fixed border-separate border-spacing-0 rounded-lg border border-border bg-surface text-left"><thead className="text-caption text-muted-foreground"><tr><th className="w-full px-3 py-2 @3xl:w-auto">Card</th>{['Assignees', 'Due date', 'Labels', 'Activity'].map((label) => <th key={label} className="hidden w-28 px-2 py-2 @3xl:table-cell">{label}</th>)}</tr></thead>{groups.map((group) => <Group key={group.id} group={group} view={view} disabled={disabled} open={!collapsed.has(group.id)} onToggle={() => setCollapsed((current) => { const next = new Set(current); if (next.has(group.id)) next.delete(group.id); else next.add(group.id); return next; })}>{group.cards.map((card) => <GroupCard key={card.id} card={card} groupId={group.id} groupName={group.name} board={board} view={view} now={now} href={cardHref(card.id)} disabled={disabled} />)}</Group>)}</table> : groups.map((group) => <Group key={group.id} group={group} view={view} disabled={disabled} open={!collapsed.has(group.id)} onToggle={() => setCollapsed((current) => { const next = new Set(current); if (next.has(group.id)) next.delete(group.id); else next.add(group.id); return next; })}>{group.cards.map((card) => <GroupCard key={card.id} card={card} groupId={group.id} groupName={group.name} board={board} view={view} now={now} href={cardHref(card.id)} disabled={disabled} />)}</Group>)}
       </div>
       <DragOverlay dropAnimation={null}>{active ? <div className="w-72 rounded-lg border border-primary-border bg-surface p-3 text-label shadow-xl">{active.card.title}</div> : null}</DragOverlay>

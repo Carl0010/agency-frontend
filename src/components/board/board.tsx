@@ -27,6 +27,7 @@ import { Icon } from '@/components/icon';
 import { ProjectArrivalLine } from '@/components/arrival';
 import { ConfidencePrompt } from '@/components/arrival-actions';
 import { useBoardArrivals } from '@/lib/arrival';
+import { useDragAutoScroll } from '@/lib/drag-scroll';
 import { useShowArrivals, withArrivals } from '@/lib/board-display';
 import { ProjectActions } from '@/components/project-chrome';
 import { ProjectIcon } from '@/components/projects/project-icon';
@@ -139,6 +140,7 @@ export function BoardScreen({ boardId, projectId }: { boardId: string; projectId
     router.push(query ? `${pathname}?${query}` : pathname, { scroll: false });
   };
 
+  const autoScroll = useDragAutoScroll();
   const sensors = useSensors(
     useSensor(MouseSensor, { activationConstraint: { distance: 6 } }),
     // Long-press then drag on touch, so scrolling the board still works (§3.7).
@@ -278,9 +280,11 @@ export function BoardScreen({ boardId, projectId }: { boardId: string; projectId
           onDragOver={onDragOver}
           onDragEnd={onDragEnd}
           onDragCancel={() => setDrag(null)}
+          autoScroll={autoScroll}
         >
-          {/* Phones swipe between full-height columns; the next one peeks in at the edge. */}
-          <div className="flex min-h-0 flex-1 snap-x snap-mandatory items-start gap-3 overflow-auto scroll-px-3 p-3 sm:snap-none sm:gap-4 sm:p-4" data-testid="board-lists">
+          {/* Phones swipe between full-height columns; the next one peeks in at the edge. Snapping
+              pauses during a drag, or each small auto-scroll would jump a whole column. */}
+          <div className={`flex min-h-0 flex-1 items-start gap-3 overflow-auto scroll-px-3 p-3 sm:snap-none sm:gap-4 sm:p-4 ${drag ? 'snap-none' : 'snap-x snap-mandatory'}`} data-testid="board-lists">
             <SortableContext items={shown.lists.map((l) => `list:${l.id}`)} strategy={horizontalListSortingStrategy}>
               {shown.lists.map((l) => (
                 <ListColumn
