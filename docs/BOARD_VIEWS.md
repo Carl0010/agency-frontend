@@ -71,7 +71,8 @@ The board shows the work and little else; deeper information is one step away.
   Re-plan appear only with `?arrival=on`, set by the **Show arrival estimates**
   switch in View and filters. The card details always show a card's estimate. Guests
   see estimates whenever the project shares them (Arrival settings → Show clients).
-  The weekly confidence question is one slim, dismissible line.
+  The weekly confidence question ("On track to finish on time?") is part of the
+  same opt-in: one slim, dismissible line shown only while estimates are on.
 - **Card details**: a ⋯ **Card actions** menu (Add to project, Move to project, Copy
   link, Archive) beside the reference, and a two-column property list: List,
   Assignees, Labels, Due, Projects. Empty assignees and labels show a quiet "+ Add".

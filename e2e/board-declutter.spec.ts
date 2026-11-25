@@ -29,6 +29,7 @@ test('a phone shows the board as swipeable columns with a compact toolbar and se
 test('arrival estimates are opt-in and project extras live in the project menu', async ({ browser }) => {
   const { page } = await signupToBoard(browser, { viewport: { width: 1440, height: 1000 } });
   await expect(page.getByTestId('project-arrival')).toHaveCount(0);
+  await expect(page.getByRole('region', { name: 'Project confidence' })).toHaveCount(0);
 
   await page.getByRole('button', { name: 'Filters', exact: true }).click();
   const options = page.getByTestId('view-options');

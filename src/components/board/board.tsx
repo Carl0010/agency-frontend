@@ -268,7 +268,8 @@ export function BoardScreen({ boardId, projectId }: { boardId: string; projectId
           </>}
         />
         {showArrivals ? arrivals.error ? <p role="alert" className="px-4 py-1 text-caption text-danger-text">{errorMessage(arrivals.error)}</p> : arrivals.data?.history === 'insufficient' ? <p className="px-4 py-1 text-caption text-muted-foreground">Arrival estimates appear once the team has finished 20 cards.</p> : null : null}
-        <ConfidencePrompt projectId={projectId} />
+        {/* The weekly question belongs to arrival estimates: it shows only when they are on. */}
+        {showArrivals ? <ConfidencePrompt projectId={projectId} /> : null}
 
         {grouping !== 'list' ? <GroupedBoard key={`${grouping}:${view}`} board={board.data} grouping={grouping} view={view} filters={filters} now={now} timezone={timezone} cardHref={cardHref} /> : view === 'list' ? <BoardListView editingListId={editingListId} onListCreated={onListCreated} onListEditFinished={onListEditFinished} board={shown} filters={filters} now={now} cardHref={cardHref} activeDrag={drag} onDragStart={onDragStart} onDragOver={onDragOver} onDragEnd={onDragEnd} onDragCancel={() => setDrag(null)} /> : <DndContext
           sensors={sensors}
