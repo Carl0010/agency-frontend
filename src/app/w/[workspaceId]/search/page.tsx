@@ -105,7 +105,7 @@ function SearchScreen() {
         <label className="flex items-center gap-1">
           To <Input type="date" value={to ?? ''} onChange={(e) => set({ to: e.target.value || null })} className="w-auto" />
         </label>
-        <label className="flex items-center gap-1">
+        <label className="tap flex items-center gap-2">
           <input type="checkbox" checked={params.get('archived') === '1'} onChange={(e) => set({ archived: e.target.checked ? '1' : null })} />
           Include archived cards
         </label>
