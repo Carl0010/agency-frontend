@@ -32,7 +32,7 @@ test('right-aligned filters open over the board, preserve focus and filter both 
   const controls = toolbar.getByTestId('board-filter-controls');
   const search = controls.getByRole('searchbox', { name: 'Search by card name' });
   const trigger = controls.getByRole('button', { name: 'Filters', exact: true });
-  const panel = page.getByRole('dialog', { name: 'Board filters', exact: true });
+  const panel = page.getByRole('dialog', { name: 'View and filters', exact: true });
   await expect(search).toHaveAttribute('placeholder', 'Search by card name');
   const [toolbarBox, controlsBox, viewsBox, before] = await Promise.all([toolbar.boundingBox(), controls.boundingBox(), views.boundingBox(), page.getByTestId('board-lists').boundingBox()]);
   expect(viewsBox!.x - toolbarBox!.x).toBe(16);
@@ -77,7 +77,7 @@ test('right-aligned filters open over the board, preserve focus and filter both 
 test('mobile filter popover fits the viewport, stays anchored on resize and has accessible controls', async ({ browser }, info) => {
   const { page } = await signupToBoard(browser, { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, colorScheme: 'dark' });
   const trigger = page.getByRole('button', { name: 'Filters', exact: true });
-  const panel = page.getByRole('dialog', { name: 'Board filters', exact: true });
+  const panel = page.getByRole('dialog', { name: 'View and filters', exact: true });
   const before = await page.getByTestId('board-lists').boundingBox();
   await trigger.click(); await expect(panel).toBeVisible();
   await expect(panel.getByText('No labels in this workspace yet.')).toBeVisible();
@@ -86,9 +86,11 @@ test('mobile filter popover fits the viewport, stays anchored on resize and has 
   expect(box.x).toBeGreaterThanOrEqual(12); expect(box.x + box.width).toBeLessThanOrEqual(378);
   expect(box.y + box.height).toBeLessThanOrEqual(832);
   expect(await panel.evaluate((element) => element.scrollWidth <= element.clientWidth)).toBe(true);
-  for (const control of await panel.locator('button, select').all()) {
+  for (const control of await panel.locator('button:not([role="switch"]), select').all()) {
     const bounds = (await control.boundingBox())!; expect(bounds.width).toBeGreaterThanOrEqual(44); expect(bounds.height).toBeGreaterThanOrEqual(44);
   }
+  // A switch is pressed through its whole labelled row.
+  for (const row of await panel.locator('label:has([role="switch"])').all()) expect((await row.boundingBox())!.height).toBeGreaterThanOrEqual(44);
   await page.screenshot({ path: info.outputPath('board-filters-mobile.png'), fullPage: true, animations: 'disabled', style: 'nextjs-portal { visibility: hidden; }' });
   await page.setViewportSize({ width: 390, height: 520 });
   await expect.poll(async () => { const bounds = (await panel.boundingBox())!; return bounds.y + bounds.height; }).toBeLessThanOrEqual(508);

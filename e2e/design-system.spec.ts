@@ -38,9 +38,10 @@ test('workspace and board use the system without breaking the narrow layout', as
   await page.screenshot({ path: info.outputPath('projects-mobile.png'), fullPage: true });
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
   await page.goto(account.boardUrl);
-  await expect(list(page, 'To do')).toBeVisible();
-  await expect(list(page, 'In progress')).toBeHidden();
-  await expect(list(page, 'Done')).toBeHidden();
+  // Phones swipe between full-height columns; the next one peeks in at the edge.
+  await expect(list(page, 'To do')).toBeInViewport();
+  await expect(list(page, 'In progress')).toBeInViewport();
+  await expect(list(page, 'Done')).not.toBeInViewport();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
   await page.screenshot({ path: info.outputPath('board-mobile.png'), fullPage: true });
   await page.context().close();

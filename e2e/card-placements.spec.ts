@@ -39,8 +39,13 @@ async function world(browser: Browser, request: APIRequestContext) {
   return { owner, account, call, workspaceId, web, webBoard, launch, launchBoard, card, webUrl, launchUrl, member, place };
 }
 
+async function openCardAction(page: Page, name: string) {
+  await drawer(page).getByRole('button', { name: 'Card actions', exact: true }).click();
+  await page.getByRole('menuitem', { name, exact: true }).click();
+}
+
 async function addToProject(page: Page, verb: 'Add to project' | 'Move to project', projectName: string, listName: string) {
-  await drawer(page).getByRole('button', { name: verb, exact: true }).click();
+  await openCardAction(page, verb);
   const dialog = page.getByRole('dialog', { name: verb, exact: true });
   await choose(dialog.getByRole('combobox', { name: 'Project', exact: true }), projectName);
   await dialog.getByRole('combobox', { name: 'List', exact: true }).click();
@@ -67,7 +72,7 @@ test('a card added to a second project shows on both boards with its home key, a
   // The Launch board draws it in its own list, under the home key.
   await placements.nth(1).getByRole('link').click();
   await expect(owner).toHaveURL(new RegExp(`/p/${launch.id}/b/${launch.defaultBoardId}/c/${card.id}`));
-  await expect(list(owner, launchBoard.lists[1]!.name).getByTestId('card-tile-key')).toHaveText(ref);
+  await expect(list(owner, launchBoard.lists[1]!.name).getByTestId('card-tile')).toHaveAttribute('aria-label', `${ref}: Write launch blog post`);
   await expect(drawer(owner).getByTestId('card-key')).toHaveText(ref);
 
   // A move on Launch leaves Website alone.
@@ -103,7 +108,7 @@ test('adding to a project with guests asks first; the guest sees the card withou
 
   await guest.reload();
   const portalTile = guest.getByTestId('portal-card').filter({ hasText: 'Write launch blog post' });
-  await expect(portalTile.getByTestId('card-tile-key')).toHaveText(`${web.key}-${card.number}`);
+  await expect(portalTile).toHaveAttribute('aria-label', `${web.key}-${card.number}: Write launch blog post`);
   await expect(portalTile.getByTestId('card-also-in')).toHaveCount(0);
   await portalTile.click();
   await expect(guest.getByTestId('portal-card-detail')).toContainText(`${web.key}-${card.number}`);
@@ -124,7 +129,7 @@ test('removing from a project, making another project home, and transferring', a
   await expect(drawer(owner).getByTestId('card-key')).toHaveText(new RegExp(`^${launch.key}-\\d+$`));
   await expect(placements.first()).toContainText('Q4 Launch');
   await expect(placements.first()).toContainText('Home');
-  await expect(tile(owner, card.id).getByTestId('card-tile-key')).toHaveText(new RegExp(`^${launch.key}-`));
+  await expect(tile(owner, card.id)).toHaveAttribute('aria-label', new RegExp(`^${launch.key}-\\d+: `));
 
   // Website is no longer home, so it can be left; the drawer follows the card to Launch.
   await drawer(owner).getByRole('button', { name: `Remove from ${web.name}` }).click();
@@ -165,7 +170,9 @@ test('a person who sees only the second project opens the card there from a noti
   await expect(placements).toContainText('Q4 Launch');
   // The home is out of sight: nothing that would change it is offered.
   await expect(drawer(mia.page).getByRole('button', { name: /Make .* the home/ })).toHaveCount(0);
-  await expect(drawer(mia.page).getByRole('button', { name: 'Move to project', exact: true })).toHaveCount(0);
+  await drawer(mia.page).getByRole('button', { name: 'Card actions', exact: true }).click();
+  await expect(mia.page.getByRole('menuitem', { name: 'Move to project', exact: true })).toHaveCount(0);
+  await mia.page.keyboard.press('Escape');
   await expect(mia.page.locator('body')).not.toContainText(web.name);
 
   // A link into the project Mia cannot see lands in the one she can.
@@ -222,7 +229,7 @@ test('placement controls in both themes and at mobile width', async ({ browser, 
   await owner.emulateMedia({ colorScheme: 'dark' });
   const other = await call<CardTile>('POST', `/lists/${webBoard.lists[0]!.id}/cards`, { title: 'Press kit' });
   await owner.goto(`${webUrl}/c/${other.id}`);
-  await drawer(owner).getByRole('button', { name: 'Add to project', exact: true }).click();
+  await openCardAction(owner, 'Add to project');
   const dialog = owner.getByRole('dialog', { name: 'Add to project', exact: true });
   await choose(dialog.getByRole('combobox', { name: 'Project', exact: true }), 'Q4 Launch');
   await choose(dialog.getByRole('combobox', { name: 'List', exact: true }), launchBoard.lists[1]!.name);

@@ -1,6 +1,6 @@
 import { expect, test, type APIRequestContext, type Browser, type Locator, type Page } from '@playwright/test';
 import { accept, ownerApi } from './access-helpers';
-import { signupToBoard, choose, darkTheme } from './helpers';
+import { signupToBoard, choose, darkTheme, groupBy } from './helpers';
 import type { Board, CardTile, Member, Page as ApiPage, Project, User } from '../src/lib/types';
 
 const group = (page: Page, name: string) => page.getByRole('region', { name: `Group ${name}`, exact: true }).or(page.getByRole('rowgroup', { name: `Group ${name}`, exact: true }));
@@ -32,7 +32,7 @@ test('grouping composes with filters, presentation, reload and history', async (
   await page.getByRole('button', { name: 'Filters', exact: true }).click();
   await choose(page.getByTestId('filter-panel').getByRole('combobox', { name: 'Due date' }), 'No due date');
   await page.getByTestId('filter-panel').getByRole('button', { name: 'Done', exact: true }).click();
-  await choose(page.getByRole('combobox', { name: 'Group by', exact: true }), 'Due date');
+  await choose(await groupBy(page), 'Due date');
   await expect(group(page, 'No due date').getByRole('link')).toHaveCount(1);
   await expect(page).toHaveURL(/group=due/);
   await expect(handle(group(page, 'No due date'), (await group(page, 'No due date').locator('[data-group-card-handle]').getAttribute('data-card-id'))!)).toBeDisabled();
@@ -41,14 +41,14 @@ test('grouping composes with filters, presentation, reload and history', async (
   await expect(group(page, 'No due date').getByRole('button', { name: /Edit name/ })).toHaveText('Design homepage');
   await page.reload();
   await expect(page.getByRole('searchbox')).toHaveValue('Design');
-  await expect(page.getByRole('combobox', { name: 'Group by' })).toHaveText('Due date');
-  await choose(page.getByRole('combobox', { name: 'Group by' }), 'Assignee');
+  await expect(await groupBy(page)).toHaveText('Due date');
+  await choose(await groupBy(page), 'Assignee');
   await expect(group(page, 'Unassigned')).toContainText('Design homepage');
   await page.goBack();
-  await expect(page.getByRole('combobox', { name: 'Group by' })).toHaveText('Due date');
+  await expect(await groupBy(page)).toHaveText('Due date');
   await expect(page.getByRole('searchbox')).toHaveValue('Design');
   await page.goto(`${account.boardUrl}?group=unknown`);
-  await expect(page.getByRole('combobox', { name: 'Group by' })).toHaveText('List');
+  await expect(await groupBy(page)).toHaveText('List');
   await expect(page.getByTestId('board-lists')).toBeVisible();
   await page.context().close();
 });
