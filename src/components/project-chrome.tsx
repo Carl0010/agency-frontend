@@ -13,5 +13,5 @@ export function ProjectActions({ projectId }: { projectId: string }) {
   const [sharing, setSharing] = useState(false);
   const project = useQuery({ queryKey: ['project', projectId], queryFn: () => api.get<Project>(`/projects/${projectId}`) });
   if (project.data?.access !== 'admin' || project.error) return null;
-  return <><Button variant="ghost" data-testid="guests-button" onClick={() => setSharing(true)}><Icon name="people" />Share</Button>{sharing ? <ProjectSharing project={project.data} onClose={() => setSharing(false)} /> : null}</>;
+  return <><Button variant="ghost" data-testid="guests-button" onClick={() => setSharing(true)}><Icon name="people" /><span className="sr-only sm:not-sr-only">Share</span></Button>{sharing ? <ProjectSharing project={project.data} onClose={() => setSharing(false)} /> : null}</>;
 }
