@@ -202,7 +202,12 @@ The project header's status pill is a menu for members; see
 
 Share opens the project access dialog only for project admins. It manages teams,
 direct member edit/admin grants and direct guest grants. Workspace → Teams owns
-team names, membership, team roles, guest levels and archive/restore. The API
+team names, membership, team roles, guest levels and archive/restore. A team page has
+three tabs kept in the URL (`?tab=`): Overview (counts, then people grouped as team
+admins, members and guests, with Add people and Invite guest dialogs), Projects (the
+team's projects from `GET /workspaces/:id/projects?team=`, plus share/unshare for
+projects the viewer administers) and Settings (rename, archive/restore; team and
+workspace admins only). The API
 remains authoritative for access and billing gates. People pickers use the scoped
 project roster. [Contract integration](handoffs/BACKEND_CONTRACT_UPGRADE.md) records
 access-change cache handling and the difference between new grants and revocation.
