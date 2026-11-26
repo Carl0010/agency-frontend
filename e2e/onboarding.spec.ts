@@ -189,7 +189,7 @@ test('billing screen: owner sees plan and trial; forced cancel drops to read-onl
   const workspaceId = new URL(account.boardUrl).pathname.split('/')[2] ?? '';
 
   await expect(page.getByTestId('trial-pill').filter({ visible: true })).toContainText('14 days left in trial');
-  await page.getByRole('navigation', { name: 'Main modules' }).getByRole('link', { name: 'Workspace', exact: true }).click();
+  await page.getByRole('navigation', { name: 'Main modules' }).getByRole('link', { name: 'Admin console', exact: true }).click();
   await page.getByRole('link', { name: 'Billing', exact: true }).click();
   await expect(page).toHaveURL(new RegExp(`/w/${workspaceId}/settings/billing$`));
   await expect(page.getByTestId('billing-status')).toHaveText('Trial');

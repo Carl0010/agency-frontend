@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { Icon } from '@/components/icon';
 import { NotificationBell } from '@/components/notifications';
 import { useWorkspace } from '@/lib/workspace';
-import type { WorkspaceModule } from './workspace-modules';
+import { ADMIN_CONSOLE_PATH, canOpenAdminConsole, TEAMS_PATH, type WorkspaceModule } from './workspace-modules';
 
 /** The 56px rail switches modules; the neighboring sidebar owns their details. */
 export function ModuleRail({ activeModule, onNavigate }: { activeModule: WorkspaceModule; onNavigate?: () => void }) {
@@ -17,9 +17,12 @@ export function ModuleRail({ activeModule, onNavigate }: { activeModule: Workspa
           <Icon name="projects" className="size-5" /><span className="sr-only">Projects</span>
         </Link>
         <NotificationBell active={activeModule === 'inbox'} onNavigate={onNavigate} />
-        <Link href={`${base}/settings/members`} onClick={onNavigate} title="Workspace" aria-current={activeModule === 'workspace' ? 'location' : undefined} className="ui-module-link tap">
-          <Icon name="settings" className="size-5" /><span className="sr-only">Workspace</span>
+        <Link href={base + TEAMS_PATH} onClick={onNavigate} title="Teams" aria-current={activeModule === 'teams' ? 'location' : undefined} className="ui-module-link tap">
+          <Icon name="people" className="size-5" /><span className="sr-only">Teams</span>
         </Link>
+        {canOpenAdminConsole(ws.role) ? <Link href={base + ADMIN_CONSOLE_PATH} onClick={onNavigate} title="Admin console" aria-current={activeModule === 'admin' ? 'location' : undefined} className="ui-module-link tap">
+          <Icon name="settings" className="size-5" /><span className="sr-only">Admin console</span>
+        </Link> : null}
       </nav>
     </div>
   );
