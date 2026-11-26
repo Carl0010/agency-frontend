@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter, useSearchParams } from 'next/navigation';
-import { createContext, Suspense, useCallback, useContext, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
+import { createContext, Suspense, useCallback, useContext, useEffect, useLayoutEffect, useRef, useState, type PointerEvent, type ReactNode } from 'react';
 import { Icon } from '@/components/icon';
 import { Button } from '@/components/ui';
 import { CardDetail } from './card-detail';
@@ -57,6 +57,29 @@ function Drawer({ cardId, projectId, boardHref, open }: DrawerProps & { open: bo
   // An explicit board destination is safe even when history started outside the app.
   const close = () => router.push(boardUrl, { scroll: false });
 
+  // Phones: drag the sheet down by its top to close it (a short drag springs back).
+  const drag = useRef<{ startY: number; dy: number } | null>(null);
+  function dragStart(event: PointerEvent<HTMLElement>) {
+    if (event.pointerType === 'mouse' || window.matchMedia('(min-width: 768px)').matches) return;
+    if ((event.target as HTMLElement).closest('button, a')) return;
+    drag.current = { startY: event.clientY, dy: 0 };
+    event.currentTarget.setPointerCapture(event.pointerId);
+    panel.current?.setAttribute('data-dragging', '');
+  }
+  function dragMove(event: PointerEvent<HTMLElement>) {
+    if (!drag.current || !panel.current) return;
+    drag.current.dy = Math.max(0, event.clientY - drag.current.startY);
+    panel.current.style.transform = `translateY(${drag.current.dy}px)`;
+  }
+  function dragEnd() {
+    if (!drag.current || !panel.current) return;
+    const far = drag.current.dy > Math.min(120, panel.current.offsetHeight / 4);
+    drag.current = null;
+    panel.current.removeAttribute('data-dragging');
+    panel.current.style.transform = '';
+    if (far) close();
+  }
+
   useEffect(() => {
     if (!open) return;
     const element = panel.current;
@@ -72,6 +95,9 @@ function Drawer({ cardId, projectId, boardHref, open }: DrawerProps & { open: bo
   }, [cardId, open]);
 
   return (
+    <>
+    {/* Phones: the dimmed strip above the sheet closes it. */}
+    <button type="button" tabIndex={-1} aria-hidden="true" onClick={close} className="absolute inset-0 cursor-default md:hidden" />
     <div
       ref={panel}
       id="card-drawer"
@@ -89,7 +115,14 @@ function Drawer({ cardId, projectId, boardHref, open }: DrawerProps & { open: bo
       }}
       className="card-drawer-panel flex h-full min-h-0 w-full flex-col border-l border-border bg-surface outline-none"
     >
-      <header className="flex shrink-0 items-center gap-2 border-b border-border px-4 py-3">
+      <header
+        onPointerDown={dragStart}
+        onPointerMove={dragMove}
+        onPointerUp={dragEnd}
+        onPointerCancel={dragEnd}
+        className="relative flex shrink-0 touch-none items-center gap-2 border-b border-border px-4 py-3 max-md:pt-5 md:touch-auto"
+      >
+        <span aria-hidden="true" className="absolute left-1/2 top-2 h-1 w-10 -translate-x-1/2 rounded-full bg-border md:hidden" />
         <Icon name="description" className="size-4 text-muted-foreground" />
         <h2 id="card-drawer-heading" className="flex-1 text-label font-semibold">Card details</h2>
         <Button variant="ghost" size="icon" className="hidden md:inline-flex" aria-label="Focus board" title="Focus board" onClick={() => document.getElementById('board-view')?.focus()}>
@@ -107,6 +140,7 @@ function Drawer({ cardId, projectId, boardHref, open }: DrawerProps & { open: bo
         <CardDetail key={`${projectId}:${cardId}`} cardId={cardId} projectId={projectId} boardHref={boardHref} layout="drawer" />
       </div>
     </div>
+    </>
   );
 }
 

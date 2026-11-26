@@ -159,8 +159,26 @@
 }
 .card-drawer-panel { transition: transform var(--duration-panel) var(--ease-ui); }
 .card-drawer-frame[data-open='false'] { pointer-events: none; }
-.card-drawer-frame[data-open='false'] > .card-drawer-panel { transform: translateX(100%); }
+/* Phones: a bottom sheet that slides up over the board, on a backdrop that fades in. */
+@media (max-width: 767px) {
+  .card-drawer-frame {
+    display: flex;
+    flex-direction: column;
+    padding-top: max(0.75rem, env(safe-area-inset-top));
+    background-color: color-mix(in srgb, var(--color-overlay) 40%, transparent);
+    transition: background-color var(--duration-panel) var(--ease-ui);
+  }
+  .card-drawer-frame[data-open='false'] { background-color: transparent; }
+  .card-drawer-panel { position: relative; z-index: 1; min-height: 0; flex: 1; border-left: 0; border-radius: 1rem 1rem 0 0; box-shadow: var(--shadow-xl); }
+  .card-drawer-frame[data-open='false'] > .card-drawer-panel { transform: translateY(100%); }
+  .card-drawer-panel[data-dragging] { transition: none; }
+  @starting-style {
+    .card-drawer-frame { background-color: transparent; }
+    .card-drawer-panel { transform: translateY(100%); }
+  }
+}
 @media (min-width: 768px) {
+  .card-drawer-frame[data-open='false'] > .card-drawer-panel { transform: translateX(100%); }
   .card-drawer-frame {
     --inspector-width: 28rem;
     position: relative;
@@ -181,13 +199,17 @@
 @starting-style {
   .navigation-drawer[open] { transform: translateX(-100%); }
   .navigation-drawer[open]::backdrop { opacity: 0; }
-  .card-drawer-panel { transform: translateX(100%); }
+}
+@media (min-width: 768px) {
+  @starting-style { .card-drawer-panel { transform: translateX(100%); } }
 }
 
-/* A narrow card inspector uses the work area; workspace navigation stays usable.
-   Keep the board mounted, but remove its covered controls from keyboard order. */
+/* A narrow card inspector covers the work area; workspace navigation stays usable. The board stays
+   painted under the sheet while it slides, then leaves keyboard order once covered (visibility waits
+   for the slide), and comes back at once when the sheet starts to close: no blank frame either way. */
 @media (max-width: 767px) {
-  .board-split-view:has(.card-drawer-frame[data-open='true']) > #board-view { display: none; }
+  .board-split-view > #board-view { transition: visibility 0s; }
+  .board-split-view:has(.card-drawer-frame[data-open='true']) > #board-view { visibility: hidden; transition-delay: var(--duration-panel); }
 }
 
 html[data-theme='dark'] { color-scheme: dark; }
