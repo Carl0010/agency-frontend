@@ -42,6 +42,15 @@ const paths = {
   rocket: <><path d="M9 9c3-5 7-6 12-6 0 5-1 9-6 12l-6-6ZM9 9 4 9l-2 5 6-1m7 2v5l-5 2 1-6M6 17l-3 4 4-2" /><circle cx="16" cy="8" r="1.5" /></>,
   import: <><path d="M12 3v12m-4-4 4 4 4-4M4 16v4h16v-4" /></>,
   close: <path d="m6 6 12 12M6 18 18 6" />,
+  bold: <path d="M7 5h6a3.5 3.5 0 0 1 0 7H7zM7 12h7a3.5 3.5 0 0 1 0 7H7z" />,
+  italic: <path d="M14 5h-4M14 19h-4M14 5l-4 14" />,
+  underline: <path d="M7 4v7a5 5 0 0 0 10 0V4M5 20h14" />,
+  strike: <path d="M5 12h14M16 7.5C15.4 5.6 13.9 4.5 12 4.5c-2.4 0-4 1.3-4 3.2 0 1.4.9 2.4 2.6 3M8 16.5c.6 1.9 2.1 3 4 3 2.4 0 4-1.3 4-3.2 0-.6-.2-1.2-.5-1.6" />,
+  'list-bullet': <path d="M9 6h11M9 12h11M9 18h11M4.5 6h.01M4.5 12h.01M4.5 18h.01" strokeWidth="2.5" />,
+  'list-ordered': <path d="M10 6h10M10 12h10M10 18h10M4 5l1.5-1v5M3.5 14.5a1.5 1.5 0 1 1 2.5 1.2L3.5 18.5H6.5" />,
+  quote: <path d="M8 7H5v5h3v-1.5C8 9 7 8 5.5 8M17 7h-3v5h3v-1.5C17 9 16 8 14.5 8M5 16h14" />,
+  image: <><rect x="3.5" y="4.5" width="17" height="15" rx="2" /><path d="m4 17 5-5 4 4 2.5-2.5L20 17M15.5 9.5h.01" /></>,
+  link: <path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1" />,
   trash: <path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3" />,
 } as const;
 
