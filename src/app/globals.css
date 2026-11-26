@@ -39,7 +39,7 @@
 @layer components {
   .tap { min-height: 2rem; }
   .ui-button {
-    @apply inline-flex min-h-9 shrink-0 items-center justify-center gap-2 rounded-md px-3 text-label font-medium;
+    @apply inline-flex min-h-9 shrink-0 items-center justify-center gap-2 rounded-lg px-3 text-label font-medium transition-[background-color,border-color,box-shadow] duration-150;
   }
   .ui-button:disabled { opacity: 0.5; }
   .ui-input {
@@ -70,6 +70,9 @@
 
 @media (max-width: 639px) {
   .tap, .ui-button, .ui-nav-link, .ui-tab { min-height: 44px; min-width: 44px; }
+  /* Filled buttons are 40px tall on phones; a 2px invisible margin above and below keeps the 44px touch area. */
+  .ui-button.ui-button-filled { min-height: 40px; position: relative; padding-inline: 0.875rem; }
+  .ui-button.ui-button-filled::after { content: ''; position: absolute; inset: -2px 0; }
   input:not([type='checkbox'], [type='radio'], [type='hidden']), select, textarea { min-height: 44px; }
   /* Boxes stay small; the label around them (a full-width row, or a 44px `tap` wrapper) takes the touch. */
   input[type='checkbox']:not(.peer), input[type='radio']:not(.peer) { width: 20px; height: 20px; min-height: 0; min-width: 0; flex: none; }
@@ -81,6 +84,8 @@
   .qp-input input { min-height: 0; }
   .qp-option { min-height: 44px; }
   .qp-check, .qp-switch-row { min-height: 44px; align-items: center; }
+  /* A full-screen dialog's form fills the screen so its Cancel/Save row sits at the bottom. */
+  .dialog-body > form:last-child { display: flex; flex: 1; flex-direction: column; }
 }
 
 @media (prefers-reduced-motion: reduce) {

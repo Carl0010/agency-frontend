@@ -21,7 +21,8 @@ export function Button({
     danger: 'bg-danger text-inverse-foreground hover:bg-danger-hover active:bg-danger-active',
   }[variant];
   const sizes = { default: '', sm: 'min-h-8 px-2.5', icon: 'size-9 p-0' }[size];
-  return <button type="button" className={`ui-button tap disabled:pointer-events-none ${styles} ${sizes} ${className}`} {...props} />;
+  const filled = variant === 'primary' || variant === 'danger' ? 'ui-button-filled' : '';
+  return <button type="button" className={`ui-button tap disabled:pointer-events-none ${filled} ${styles} ${sizes} ${className}`} {...props} />;
 }
 
 export function Input({ className = '', ...props }: InputHTMLAttributes<HTMLInputElement> & { ref?: Ref<HTMLInputElement> }) {

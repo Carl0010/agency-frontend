@@ -273,6 +273,18 @@ including metadata bounds and access to list headings and bottom actions.
   is visible through surface and weight, not text color alone.
 - All keyboard-operable elements have a visible focus ring. Default shared
   controls are 36px high; compact controls are 32px. Mobile `.tap` targets are 44px.
+  Filled buttons (primary, danger) are 40px tall on phones with an invisible 2px
+  `::after` margin above and below, so they still take 44px of touch. Buttons use
+  the 8px (`rounded-lg`) radius. The e2e `touchBox` helper measures this real touch area.
+- On phones, a dialog with several fields fills the screen (`Dialog`, or
+  `FULL_SCREEN_ON_PHONE` for a hand-built one): no margin or corners, header pinned
+  at the top, and `DialogActions` pinned at the bottom with full-width buttons. A
+  dialog asking one question or for one field uses `size="compact"`.
+- Pick-or-create fields (labels) use Quiet Pro's `MultiCombobox` with `onCreate`:
+  typing filters, and a name with no exact match offers "Create “…”", which opens
+  a compact dialog for the rest (the label's colour).
+- Reorderable rows inside a card (checklists and their items) use a grip handle
+  (dnd-kit sortable): drag it, or Space to lift, arrows to move, Space to drop.
 - Hover is subtle, pressed states are explicit, and disabled controls cannot
   activate. Avoid globally moving/scaling buttons on click.
 - Use consistent SVG outline icons. No emoji as icons in navigation or actions.

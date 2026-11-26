@@ -124,7 +124,7 @@ function GroupCard({ card, groupId, groupName, view, now, href, disabled }: { ca
 
 function LaterDate({ timezone, pending, onClose, onSave }: { timezone: string; pending: boolean; onClose: () => void; onSave: (picked: string) => Promise<void> }) {
   const [date, setDate] = useState(''); const [error, setError] = useState<string | null>(null);
-  return <Dialog title="Choose a later due date" onClose={() => { if (!pending) onClose(); }}><form className="space-y-4" onSubmit={(event) => {
+  return <Dialog title="Choose a later due date" size="compact" onClose={() => { if (!pending) onClose(); }}><form className="space-y-4" onSubmit={(event) => {
     event.preventDefault(); const due = pickedDateEnd(date, timezone);
     if (due < localDayAt(new Date(), timezone, 8)) { setError('Choose a date after the next 7 days.'); return; }
     setError(null); void onSave(due.toISOString());

@@ -42,6 +42,7 @@ const paths = {
   rocket: <><path d="M9 9c3-5 7-6 12-6 0 5-1 9-6 12l-6-6ZM9 9 4 9l-2 5 6-1m7 2v5l-5 2 1-6M6 17l-3 4 4-2" /><circle cx="16" cy="8" r="1.5" /></>,
   import: <><path d="M12 3v12m-4-4 4 4 4-4M4 16v4h16v-4" /></>,
   close: <path d="m6 6 12 12M6 18 18 6" />,
+  trash: <path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3" />,
 } as const;
 
 export type IconName = keyof typeof paths;

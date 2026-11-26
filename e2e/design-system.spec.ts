@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { list, signupToBoard } from './helpers';
+import { list, signupToBoard, touchBox } from './helpers';
 
 test('shared form controls retain focus, reduced motion and mobile touch targets', async ({ page }, info) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
@@ -11,7 +11,9 @@ test('shared form controls retain focus, reduced motion and mobile touch targets
   await expect(email).toBeFocused();
   await expect(email).not.toHaveCSS('box-shadow', 'none');
   expect((await email.boundingBox())!.height).toBeGreaterThanOrEqual(44);
-  expect((await submit.boundingBox())!.height).toBeGreaterThanOrEqual(44);
+  // Filled buttons are 40px tall on phones; an invisible 2px margin above and below keeps 44px to touch.
+  expect((await submit.boundingBox())!.height).toBeGreaterThanOrEqual(40);
+  expect((await touchBox(submit)).height).toBeGreaterThanOrEqual(44);
   await expect(email).toHaveCSS('font-size', '16px');
   await expect(submit).toHaveCSS('transition-duration', '1e-05s');
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);

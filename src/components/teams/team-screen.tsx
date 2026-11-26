@@ -12,7 +12,7 @@ import { ProjectIcon } from '@/components/projects/project-icon';
 import { ProjectStatusPill } from '@/components/projects/project-status';
 import { LoadingSkeleton } from '@/components/skeleton';
 import { Avatar, Badge, Button, EmptyState, Field, Input, Select } from '@/components/ui';
-import { Dialog } from '@/components/ui-dialog';
+import { Dialog, DialogActions } from '@/components/ui-dialog';
 import { GUEST_ACCESS, TEAM_ROLES } from '@/lib/access-options';
 import { api, ApiError, errorMessage } from '@/lib/api';
 import { formText } from '@/lib/form';
@@ -166,7 +166,7 @@ function AddPeopleDialog({ team, act, onClose }: { team: TeamDetail; act: Write;
       <Field label={selected?.role === 'guest' ? 'Guest access' : 'Team role'}>
         {selected?.role === 'guest' ? <Select key="access" name="access" aria-label="New team guest access" defaultValue="comment" className="w-full" options={GUEST_ACCESS} /> : <Select key="role" name="role" aria-label="New team role" defaultValue="member" className="w-full" options={TEAM_ROLES} />}
       </Field>
-      <div className="flex justify-end gap-2"><Button type="button" variant="ghost" onClick={onClose}>Cancel</Button><Button type="submit" disabled={act.isPending || !selected}>Add person</Button></div>
+      <DialogActions><Button type="button" variant="ghost" onClick={onClose}>Cancel</Button><Button type="submit" disabled={act.isPending || !selected}>Add person</Button></DialogActions>
     </form>
   </Dialog>;
 }
@@ -182,7 +182,7 @@ function InviteGuestDialog({ team, act, onClose }: { team: TeamDetail; act: Writ
     }}>
       <Field label="Guest email"><Input name="email" type="email" required maxLength={254} placeholder="guest@example.com" autoFocus /></Field>
       <Field label="Access"><Select name="access" aria-label="Team guest access" defaultValue="comment" className="w-full" options={GUEST_ACCESS} /></Field>
-      <div className="flex justify-end gap-2"><Button type="button" variant="ghost" onClick={onClose}>Cancel</Button><Button type="submit" disabled={act.isPending || invitesBlocked}>Invite guest to team</Button></div>
+      <DialogActions><Button type="button" variant="ghost" onClick={onClose}>Cancel</Button><Button type="submit" disabled={act.isPending || invitesBlocked}>Invite guest to team</Button></DialogActions>
     </form>
   </Dialog>;
 }
@@ -225,7 +225,7 @@ function ShareProjectDialog({ team, shared, act, onClose }: { team: TeamDetail; 
       <Field label="Project"><Select aria-label="Project to share" value={projectId || null} required onChange={setProjectId} className="w-full"
         placeholder={all.isPending ? 'Loading projects…' : shareable.length ? 'Choose project' : 'No other projects you can share'}
         options={shareable.map((project) => ({ value: project.id, label: `${project.name} (${project.key})` }))} /></Field>
-      <div className="flex justify-end gap-2"><Button type="button" variant="ghost" onClick={onClose}>Cancel</Button><Button type="submit" disabled={act.isPending || !projectId}>Share project</Button></div>
+      <DialogActions><Button type="button" variant="ghost" onClick={onClose}>Cancel</Button><Button type="submit" disabled={act.isPending || !projectId}>Share project</Button></DialogActions>
     </form>
   </Dialog>;
 }
