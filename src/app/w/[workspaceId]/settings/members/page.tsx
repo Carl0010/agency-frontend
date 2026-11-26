@@ -72,7 +72,7 @@ export default function MembersPage() {
   const sorted = [...rows].sort((a, b) => order[a.status] - order[b.status] || a.name.localeCompare(b.name));
 
   return (
-    <main className="mx-auto max-w-3xl p-4 sm:p-8">
+    <main className="ui-page">
       <div className="mb-6 flex flex-wrap items-baseline justify-between gap-2">
         <h1 className="text-2xl font-semibold">Members</h1>
         {seats.data ? (

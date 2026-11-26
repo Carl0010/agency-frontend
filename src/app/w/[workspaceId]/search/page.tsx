@@ -73,7 +73,7 @@ function SearchScreen() {
   const shown = typeFilter.length ? TYPES.filter((t) => typeFilter.includes(t)) : TYPES;
 
   return (
-    <main className="mx-auto max-w-4xl p-4">
+    <main className="ui-page">
       <form onSubmit={onSubmit} className="mb-3 flex gap-2">
         <Input value={draft} onChange={(e) => setDraft(e.target.value)} aria-label="Search" placeholder='Search… "exact phrase" -exclude' />
         <Button type="submit">Search</Button>

@@ -20,7 +20,7 @@ export function TeamsDirectory() {
   const teams = useTeams(ws.id);
   const active = teams.data?.data.filter((team) => !team.archivedAt) ?? [];
   const admin = canOpenAdminConsole(ws.role);
-  return <main className="ui-page max-w-6xl">
+  return <main className="ui-page">
     <PageHeader title="Teams" />
     <FormError message={teams.error ? errorMessage(teams.error) : null} />
     {teams.error ? <Button variant="secondary" onClick={() => void teams.refetch()}>Retry teams</Button> : null}

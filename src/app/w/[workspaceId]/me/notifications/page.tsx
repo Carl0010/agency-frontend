@@ -39,7 +39,7 @@ export default function NotificationSettingsPage() {
   }
 
   return (
-    <main className="mx-auto max-w-2xl p-4 sm:p-6">
+    <main className="ui-page">
       <PageHeader title="Notifications" description={`Choose how you hear about activity in ${ws.name}. Your inbox always shows everything; message and comment emails only go out if you have not read them within 10 minutes.`} />
       {prefs.isPending ? (
         <LoadingSkeleton variant="form" />

@@ -60,7 +60,7 @@ export default function InboxPage() {
   const unread = feed.data?.pages[0]?.unreadCount ?? 0;
 
   return (
-    <main className="mx-auto max-w-3xl p-4">
+    <main className="ui-page">
       <div className="mb-3 flex items-center gap-2">
         <h1 className="text-xl font-semibold">Inbox</h1>
         {unread ? <span className="rounded-full bg-primary-subtle px-2 text-xs font-medium text-primary-text">{unread} unread</span> : null}

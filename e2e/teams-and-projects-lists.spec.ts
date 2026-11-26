@@ -71,7 +71,8 @@ test('teams list: person cards, search, people filter, team tabs; projects list:
   await expect(page.getByRole('heading', { name: 'No projects match' })).toBeVisible();
   await page.getByRole('button', { name: 'Clear search' }).click();
   await expect(projects).toHaveCount(2);
-  await projects.filter({ hasText: 'Spring campaign' }).click({ position: { x: 600, y: 20 } });
+  // Anywhere in the row outside its avatars and menu opens the board.
+  await projects.filter({ hasText: 'Spring campaign' }).click({ position: { x: 300, y: 20 } });
   await expect(page).toHaveURL(/\/p\/[0-9a-f-]+\/b\/[0-9a-f-]+/);
   await page.context().close();
 });

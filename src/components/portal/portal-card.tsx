@@ -50,7 +50,7 @@ export function PortalCard({ project, cardId }: { project: PortalProject; cardId
 
   return (
     <div className="h-full overflow-y-auto">
-      <article className="mx-auto max-w-3xl space-y-6 p-4" data-testid="portal-card-detail">
+      <article className="space-y-6 px-4 py-5 sm:px-6 sm:py-6" data-testid="portal-card-detail">
         {back}
         <header>
           <p className="text-xs text-muted-foreground">
