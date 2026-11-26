@@ -8,6 +8,20 @@ export async function choose(field: Locator, option: string) {
   await field.page().getByRole('listbox').getByRole('option', { name: option, exact: true }).click();
 }
 
+/**
+ * A control's touch area: its own box, the label or Quiet Pro field that forwards taps to it, and
+ * the invisible margin a filled button's ::after adds on phones (40px tall, 44px to touch).
+ */
+export async function touchBox(control: Locator): Promise<{ width: number; height: number }> {
+  return control.evaluate((el) => {
+    const box = el.getBoundingClientRect();
+    const target = (el.closest('label') ?? el.closest('.qp-input') ?? el).getBoundingClientRect();
+    const after = getComputedStyle(el, '::after');
+    const extra = after.content !== 'none' && after.position === 'absolute' ? -(parseFloat(after.top) || 0) - (parseFloat(after.bottom) || 0) : 0;
+    return { width: Math.max(box.width, target.width), height: Math.max(box.height + extra, target.height) };
+  });
+}
+
 /** "Group by" sits in the board's View and filters panel; this opens the panel when it is closed. */
 export async function groupBy(page: Page) {
   const panel = page.getByTestId('filter-panel');

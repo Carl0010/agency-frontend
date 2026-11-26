@@ -61,8 +61,11 @@ async function smallTargets(scope: Locator): Promise<string[]> {
     for (const el of root.querySelectorAll<HTMLElement>('button, a[href], input, select, textarea, [role="button"]')) {
       const box = el.getBoundingClientRect();
       if (box.width === 0 || box.height === 0 || getComputedStyle(el).visibility === 'hidden') continue;
-      const target = (el.closest('label') ?? el).getBoundingClientRect();
-      const height = Math.max(box.height, target.height);
+      // The label or Quiet Pro field that forwards taps, and a filled button's invisible ::after margin.
+      const target = (el.closest('label') ?? el.closest('.qp-input') ?? el).getBoundingClientRect();
+      const after = getComputedStyle(el, '::after');
+      const extra = after.content !== 'none' && after.position === 'absolute' ? -(parseFloat(after.top) || 0) - (parseFloat(after.bottom) || 0) : 0;
+      const height = Math.max(box.height + extra, target.height);
       const width = Math.max(box.width, target.width);
       if (height < 44 || width < 44) {
         out.push(`${el.tagName.toLowerCase()}[${el.getAttribute('aria-label') ?? el.textContent?.trim().slice(0, 30) ?? ''}] ${Math.round(width)}x${Math.round(height)}`);

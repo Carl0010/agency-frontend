@@ -1,5 +1,5 @@
 import { expect, test, type APIRequestContext } from '@playwright/test';
-import { list, signupToBoard, type Account, choose, darkTheme } from './helpers';
+import { list, signupToBoard, type Account, choose, darkTheme, touchBox } from './helpers';
 
 async function setup(request: APIRequestContext, account: Account) {
   const login = await request.post('/api/v1/auth/login', { data: { email: account.email, password: account.password } });
@@ -87,7 +87,7 @@ test('mobile filter popover fits the viewport, stays anchored on resize and has 
   expect(box.y + box.height).toBeLessThanOrEqual(832);
   expect(await panel.evaluate((element) => element.scrollWidth <= element.clientWidth)).toBe(true);
   for (const control of await panel.locator('button:not([role="switch"]), select').all()) {
-    const bounds = (await control.boundingBox())!; expect(bounds.width).toBeGreaterThanOrEqual(44); expect(bounds.height).toBeGreaterThanOrEqual(44);
+    const bounds = await touchBox(control); expect(bounds.width).toBeGreaterThanOrEqual(44); expect(bounds.height).toBeGreaterThanOrEqual(44);
   }
   // A switch is pressed through its whole labelled row.
   for (const row of await panel.locator('label:has([role="switch"])').all()) expect((await row.boundingBox())!.height).toBeGreaterThanOrEqual(44);
