@@ -97,12 +97,19 @@
   }
 }
 
-.prose-sm p { margin: 0.25rem 0; }
-.prose-sm ul { list-style: disc; padding-left: 1.25rem; }
-.prose-sm ol { list-style: decimal; padding-left: 1.25rem; }
+/* Rendered Markdown and the comment editor share one look, so a comment reads the same while typed. */
+.prose-sm p, .comment-editor p { margin: 0.25rem 0; }
+.prose-sm ul, .comment-editor ul { list-style: disc; padding-left: 1.25rem; }
+.prose-sm ol, .comment-editor ol { list-style: decimal; padding-left: 1.25rem; }
 .prose-sm h1, .prose-sm h2, .prose-sm h3 { font-weight: 600; margin: 0.5rem 0 0.25rem; }
-.prose-sm a { @apply text-primary underline decoration-primary-border underline-offset-2; }
-.prose-sm code { @apply rounded bg-subtle px-1 text-[0.85em]; }
+.prose-sm a, .comment-editor a { @apply text-primary underline decoration-primary-border underline-offset-2; }
+.prose-sm code, .comment-editor code { @apply rounded bg-subtle px-1 font-mono text-[0.85em]; }
+.prose-sm pre, .comment-editor pre { @apply my-1 overflow-x-auto rounded-md bg-subtle p-2 font-mono text-[0.85em]; }
+.prose-sm pre code, .comment-editor pre code { @apply bg-transparent p-0; }
+.prose-sm blockquote, .comment-editor blockquote { @apply my-1 border-l-2 border-border pl-3 text-secondary-foreground; }
+.prose-sm del, .comment-editor s { @apply text-muted-foreground; }
+.prose-sm input[type='checkbox'] { margin-right: 0.375rem; vertical-align: middle; }
+.comment-editor .is-editor-empty:first-child::before { content: attr(data-placeholder); float: left; height: 0; pointer-events: none; @apply text-muted-foreground; }
 
 .workspace-sidebar-panel {
   width: 16rem;

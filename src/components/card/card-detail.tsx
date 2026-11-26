@@ -3,6 +3,7 @@
 import { CardSkeleton } from '@/components/skeleton';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
 import { DuePill } from '@/components/due-pill';
@@ -10,7 +11,6 @@ import { Icon } from '@/components/icon';
 import { useWriteAvailability } from '@/components/billing/billing-notices';
 import { ArrivalChip } from '@/components/arrival';
 import { ReplanAction } from '@/components/arrival-actions';
-import { Markdown } from '@/components/markdown';
 import { useToast } from '@/components/toast';
 import { Avatar, Button, Checkbox, Field as FormField, Input, LABEL_BG, MultiCombobox, Select } from '@/components/ui';
 import { Dialog, DialogActions } from '@/components/ui-dialog';
@@ -25,7 +25,9 @@ import { useWorkspace } from '@/lib/workspace';
 import { cardDetailKey, cardPath, cardRef, useCardPeople } from '@/lib/cards';
 import { cardUrl } from '@/lib/card-url';
 import { ProjectError } from '@/components/projects/project-error';
-import { Attachments } from './attachments';
+import { Attachments, uploadCardAttachment } from './attachments';
+import type { RichEditorHandle } from './rich-editor';
+import { ToolButton } from './tool-button';
 import { CardPlacements, PlaceCardDialog } from './card-placements';
 import { Checklists } from './checklists';
 import { Comments } from './comments';
@@ -128,12 +130,19 @@ export function CardDetail({ cardId, projectId, boardHref, layout = 'page' }: { 
         </div>
 
         <MentionScopeContext.Provider value={{ projectId: c.projectId, surface: 'card', cardId: c.id }}>
-          <Description card={c} onSave={(description) => mutate(() => api.patch<CardTile>(cardPath(c.id, c.projectId), { description }))} />
+          <Description card={c} onSave={async (description) => { applyTile(qc, await api.patch<CardTile>(cardPath(c.id, c.projectId), { description })); void qc.invalidateQueries({ queryKey: ['card', c.id] }); }} />
           <Checklists cardId={c.id} projectId={c.projectId} checklists={c.checklists} />
           <Attachments cardId={c.id} projectId={c.projectId} attachments={c.attachments} />
-          <Comments cardId={c.id} projectId={c.projectId} />
+          <Comments
+            inDrawer={layout === 'drawer'}
+            cardId={c.id}
+            projectId={c.projectId}
+            activity={[
+              { id: 'created', at: c.createdAt, person: c.createdBy, text: 'created this card' },
+              ...c.attachments.filter((a) => a.uploaded).map((a) => ({ id: `attachment-${a.id}`, at: a.createdAt, person: a.uploadedBy, text: <>attached <span className="font-medium text-foreground">{a.filename}</span></> })),
+            ]}
+          />
         </MentionScopeContext.Provider>
-        {layout === 'drawer' ? <div className="border-t border-border pt-4 text-caption">{createdBy}</div> : null}
       </div>
 
       {layout === 'page' ? <aside className="space-y-4 text-sm lg:w-[35%]">{createdBy}</aside> : null}
@@ -366,76 +375,127 @@ function Due({ card, now, onSave }: { card: Detail; now: Date; onSave: (patch: {
   );
 }
 
+/** The description editor loads with the card; until then the box keeps its place. */
+const DescriptionEditor = dynamic(() => import('./rich-editor'), {
+  ssr: false,
+  loading: () => <div aria-hidden="true" className="min-h-24 px-3 py-2 text-body text-muted-foreground">Add a description…</div>,
+});
+
+type SaveState = 'idle' | 'saving' | 'saved' | 'error';
+
+/**
+ * The description: a formatting editor that saves itself a moment after typing stops and when it
+ * loses focus. Images (toolbar, paste or drop) upload as the card's attachments and show inline.
+ * Until a save succeeds the draft is also kept in localStorage, so a closed tab loses nothing (§3.3).
+ */
 function Description({ card, onSave }: { card: Detail; onSave: (d: string | null) => Promise<void> }) {
   const draftKey = `agency:draft:desc:${card.id}`;
-  const [editing, setEditing] = useState(false);
-  const [text, setText] = useState('');
+  const ws = useWorkspace();
+  const qc = useQueryClient();
+  const toast = useToast();
+  const { readOnly } = useWriteAvailability(ws);
+  const editor = useRef<RichEditorHandle>(null);
+  const picker = useRef<HTMLInputElement>(null);
+  const server = card.description ?? '';
+  const [initial] = useState(() => readDraft(draftKey) ?? server);
+  const latest = useRef(initial);
+  const saved = useRef(server);
+  const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const [state, setState] = useState<SaveState>(initial !== server ? 'idle' : 'saved');
+  const [focused, setFocused] = useState(false);
+  const [uploading, setUploading] = useState(0);
 
+  // Someone else saved while this box was idle: show their version.
   useEffect(() => {
-    // A draft left in localStorage reopens the editor so a closed tab loses nothing (§3.3).
-    const saved = localStorage.getItem(draftKey);
-    if (saved !== null && saved !== (card.description ?? '')) {
-      setText(saved);
-      setEditing(true);
+    if (focused || server === saved.current || latest.current !== saved.current) return;
+    saved.current = server;
+    latest.current = server;
+    editor.current?.setMarkdown(server);
+  }, [server, focused]);
+
+  async function flush() {
+    clearTimeout(timer.current);
+    const value = latest.current;
+    if (value === saved.current) return;
+    setState('saving');
+    try {
+      await onSave(value.trim() ? value : null);
+      saved.current = value;
+      if (latest.current === value) { writeDraft(draftKey, null); setState('saved'); }
+    } catch (err) {
+      setState('error');
+      toast(errorMessage(err));
     }
-  }, [draftKey, card.description]);
+  }
 
-  const begin = () => {
-    setText(localStorage.getItem(draftKey) ?? card.description ?? '');
-    setEditing(true);
-  };
-  const close = () => {
-    localStorage.removeItem(draftKey);
-    setEditing(false);
-  };
-  const save = async () => {
-    await onSave(text.trim() ? text : null);
-    close();
-  };
+  function change(markdown: string) {
+    latest.current = markdown;
+    writeDraft(draftKey, markdown === saved.current ? null : markdown);
+    setState('idle');
+    clearTimeout(timer.current);
+    timer.current = setTimeout(() => void flush(), 1000);
+  }
 
+  // Save what's left when the card closes.
+  useEffect(() => () => { clearTimeout(timer.current); if (latest.current !== saved.current) void onSave(latest.current.trim() ? latest.current : null); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  async function addImages(files: File[]) {
+    for (const f of files) {
+      setUploading((n) => n + 1);
+      try {
+        editor.current?.insertImage(await uploadCardAttachment(card.id, card.projectId, f), f.name);
+      } catch (err) {
+        toast(`${f.name}: ${errorMessage(err)}`);
+      } finally {
+        setUploading((n) => n - 1);
+        void qc.invalidateQueries({ queryKey: ['card', card.id] });
+      }
+    }
+  }
+
+  const status = uploading ? 'Uploading image…' : state === 'saving' ? 'Saving…' : state === 'saved' && latest.current ? 'Saved' : state === 'error' ? 'Couldn’t save' : '';
   return (
     <section aria-label="Description" className="space-y-1">
-      <h2 className="text-sm font-semibold text-secondary-foreground">Description</h2>
-      {editing ? (
-        <div className="space-y-2">
-          <textarea
-            autoFocus
-            rows={8}
-            value={text}
-            aria-label="Description"
-            maxLength={50_000}
-            onChange={(e) => {
-              setText(e.target.value);
-              localStorage.setItem(draftKey, e.target.value);
-            }}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
-                e.preventDefault();
-                void save();
-              }
-              if (e.key === 'Escape') e.stopPropagation();
-            }}
-            className="w-full rounded-md border border-input p-2 font-mono text-sm focus:border-ring focus:outline-none"
-          />
-          <div className="flex items-center gap-2">
-            <Button onClick={() => void save()}>Save</Button>
-            <Button variant="ghost" onClick={close}>
-              Cancel
-            </Button>
-            <span className="text-xs text-muted-foreground">Markdown · ⌘↵ to save</span>
-          </div>
-        </div>
-      ) : card.description ? (
-        <div role="button" tabIndex={0} onClick={begin} onKeyDown={(e) => e.key === 'Enter' && begin()} className="tap cursor-text rounded p-1 hover:bg-background" data-testid="description">
-          <Markdown source={card.description} />
-        </div>
-      ) : (
-        <button type="button" onClick={begin} className="tap w-full rounded-md bg-background p-3 text-left text-sm text-muted-foreground hover:bg-subtle">
-          Add a description…
-        </button>
-      )}
+      <div className="flex items-center justify-between gap-2">
+        <h2 className="text-sm font-semibold text-secondary-foreground">Description</h2>
+        <p role="status" data-testid="description-status" className="flex items-center gap-2 text-caption text-muted-foreground">
+          {status}
+          {state === 'error' ? <button type="button" className="tap font-medium text-primary-text" onClick={() => void flush()}>Retry</button> : null}
+        </p>
+      </div>
+      <div
+        data-testid="description"
+        className={`flex flex-col rounded-lg border ${focused ? 'border-ring ring-2 ring-primary-border' : 'border-transparent bg-background hover:border-border'}`}
+      >
+        <DescriptionEditor
+          ref={editor}
+          value={initial}
+          onChange={change}
+          onSubmit={() => void flush()}
+          onFocus={() => setFocused(true)}
+          onBlur={() => { setFocused(false); void flush(); }}
+          onImageFiles={readOnly ? undefined : (files) => void addImages(files)}
+          editable={!readOnly}
+          label="Description"
+          placeholder="Add a description…"
+          mentionable={[]}
+          toolbar={focused}
+          actions={<ToolButton label="Insert image" icon="image" disabled={readOnly || uploading > 0} onClick={() => picker.current?.click()} />}
+          className="min-h-24"
+        />
+        <input ref={picker} type="file" accept="image/*" multiple hidden aria-hidden="true" tabIndex={-1}
+          onChange={(e) => { void addImages(Array.from(e.target.files ?? [])); e.target.value = ''; }} />
+      </div>
     </section>
   );
+}
+
+function readDraft(key: string): string | null {
+  try { return localStorage.getItem(key); } catch { return null; }
+}
+
+function writeDraft(key: string, value: string | null) {
+  try { if (value === null) localStorage.removeItem(key); else localStorage.setItem(key, value); } catch { /* Storage can be unavailable; the autosave still runs. */ }
 }
 
 function MoveToList({ card, onMove }: { card: Detail; onMove: (listId: string) => Promise<void> }) {

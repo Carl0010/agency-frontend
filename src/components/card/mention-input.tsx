@@ -9,6 +9,18 @@ import { activeMentionQuery, insertMention } from '@/lib/mentions';
 import type { Page, RosterEntry } from '@/lib/types';
 import { useWorkspace } from '@/lib/workspace';
 
+/** The people who can be mentioned on the current surface (MentionScopeContext); the API decides who. */
+export function useMentionCandidates() {
+  const ws = useWorkspace();
+  const scope = useMentionScope();
+  const path = mentionablePath(ws.id, scope);
+  return useQuery({
+    queryKey: scope?.cardId ? ['card-people', scope.cardId, 'mentionable'] : ['members', ws.id, path],
+    queryFn: () => api.get<Page<RosterEntry>>(path),
+    enabled: Boolean(scope),
+  });
+}
+
 /**
  * Textarea with `@` mention typeahead (AC20). Candidates come from the card's
  * `/mentionable` read or the roster's `?mentionable=true`, scoped to the
@@ -39,18 +51,11 @@ export function MentionInput({
   onTyping?: () => void;
   rows?: number;
 }) {
-  const ws = useWorkspace();
   const ref = useRef<HTMLTextAreaElement>(null);
   const [caret, setCaret] = useState(0);
   const [highlight, setHighlight] = useState(0);
   const [dismissed, setDismissed] = useState<number | null>(null);
-  const scope = useMentionScope();
-  const path = mentionablePath(ws.id, scope);
-  const members = useQuery({
-    queryKey: scope?.cardId ? ['card-people', scope.cardId, 'mentionable'] : ['members', ws.id, path],
-    queryFn: () => api.get<Page<RosterEntry>>(path),
-    enabled: Boolean(scope),
-  });
+  const members = useMentionCandidates();
 
   const active = activeMentionQuery(value, caret);
   const q = active?.query.toLowerCase() ?? '';

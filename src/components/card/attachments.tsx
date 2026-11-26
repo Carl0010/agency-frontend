@@ -36,6 +36,21 @@ export function putWithProgress(url: string, file: File, headers: Record<string,
 }
 
 /**
+ * Uploads a file as one of the card's attachments (ticket, presigned PUT, complete) and returns its id.
+ * The API checks size and quota before any upload URL is issued.
+ */
+export async function uploadCardAttachment(cardId: string, projectId: string, file: File, onProgress: (pct: number) => void = () => undefined): Promise<string> {
+  const ticket = await api.post<UploadTicket>(cardPath(cardId, projectId, '/attachments'), {
+    filename: file.name,
+    mimeType: file.type || 'application/octet-stream',
+    sizeBytes: file.size,
+  });
+  await putWithProgress(ticket.upload.url, file, ticket.upload.headers, onProgress);
+  await api.post(`/attachments/${ticket.attachmentId}/complete`);
+  return ticket.attachmentId;
+}
+
+/**
  * Attachments (AC18): presigned PUT straight to object storage with progress.
  * Size and quota are checked by the API before any upload URL is issued, so a
  * file over 25 MB fails with 413 before a byte moves.
@@ -57,13 +72,7 @@ export function Attachments({ cardId, projectId, attachments }: { cardId: string
     setUploads((u) => [...u, { key, name: file.name, progress: 0 }]);
     const setProgress = (progress: number) => setUploads((u) => u.map((x) => (x.key === key ? { ...x, progress } : x)));
     try {
-      const ticket = await api.post<UploadTicket>(cardPath(cardId, projectId, '/attachments'), {
-        filename: file.name,
-        mimeType: file.type || 'application/octet-stream',
-        sizeBytes: file.size,
-      });
-      await putWithProgress(ticket.upload.url, file, ticket.upload.headers, setProgress);
-      await api.post(`/attachments/${ticket.attachmentId}/complete`);
+      await uploadCardAttachment(cardId, projectId, file, setProgress);
     } catch (err) {
       toast(err instanceof ApiError && err.status === 413 ? `${file.name}: ${err.message}` : `${file.name}: ${errorMessage(err)}`);
     } finally {
