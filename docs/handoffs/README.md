@@ -5,6 +5,9 @@ Completed handoffs remain as implementation and contract records. Include curren
 authorization, acceptance criteria, test plan and what remains unimplemented.
 Never represent a proposal as a completed feature.
 
+- [Card activity feed and files on comments](CARD_ACTIVITY_AND_COMMENT_FILES.md): frontend
+  shipped 2026-11-26 (rich text, autosave, images and files as card attachments, derived Activity);
+  a per-card activity feed and comment-owned attachments are proposed for the API.
 - [Teams release and board grouping](TEAMS_RELEASE_AND_BOARD_GROUPING.md): completed
   2026-10-21, including 15 reviewed previews, 155 unit tests and all 59 browser checks.
 - [Resolved access contract mismatch](ACCESS_CONTRACT_BLOCKER.md): backend
