@@ -9,12 +9,13 @@ The guest portal keeps its separate navigation and imports none of this shell.
 
 | Surface | Responsibility | Contents |
 | --- | --- | --- |
-| Module rail | Switch high-level areas | Projects, Inbox with live unread count, Workspace |
+| Module rail | Switch high-level areas | Projects, Inbox with live unread count, Teams, and Admin console for workspace owners and admins |
 | Sidebar identity | Identify workspace and selected module | Workspace name and current module label |
 | App bar | Global actions and navigation visibility | Centered 44px search palette trigger, hamburger, Agency home. No theme switch |
 | Projects sidebar | Browse shared work and project surfaces | Projects overview, import, team groups, Starred, create button, per-project menu, current project's Board/Shared/internal Team |
 | Inbox sidebar | Browse activity and configure delivery | All notifications and a link to notification preferences (Your settings) |
-| Workspace sidebar | Manage people and subscription | Members, teams, owner-only billing |
+| Teams sidebar | Browse teams | All teams, then Your teams and Other teams (active teams only) |
+| Admin console sidebar | Manage the organization | Organization: Members, Teams (create, archive), owner-only Billing |
 | Your settings sidebar | The person's own settings | Notifications, Appearance; Profile and Language shown as "Soon" ([handoff](handoffs/PERSONAL_SETTINGS.md)) |
 | Sidebar footer | Resume setup, understand trial status, account actions | Setup progress, trial link, and the account menu: user identity/role opening Your settings and Log out |
 | Project/page header | Describe and act on the current view | Project title, sharing, collaborators, archive; page-specific primary actions |
@@ -33,8 +34,13 @@ destructive operations belong beside the content they affect.
   internal Team, import and global search results belong to this module.
 - **Inbox** opens workspace activity, retaining its live unread badge across
   all member screens. Its notification preferences link opens Your settings.
-- **Workspace** opens Members. The contextual sidebar contains Members, Teams and
-  owner-only Billing; existing API permissions still apply.
+- **Teams** (`/teams`, `/teams/:teamId`) shows teams only: a directory of the workspace's
+  active teams, yours first, and each team's page (Overview, Projects, and Settings for
+  the people who manage that team). No creating, archiving or workspace member management here.
+- **Admin console** (`/settings/*`) appears in the rail for workspace owners and admins only.
+  Its sidebar has one group, **Organization**: Members (invite, roles, seats), Teams
+  (create, archive/restore, open a team under `/settings/teams/:teamId`) and owner-only
+  Billing. Hiding the entry is not access control; the API still decides every action.
 - **Your settings** (`/me/*`) has no rail entry: it opens from the account menu (the
   user row in the sidebar footer). Log out lives in that menu too, never in plain sight.
   Notification preferences are personal, so they live here; `/settings/notifications`
@@ -205,7 +211,7 @@ The project header's status pill is a menu for members; see
 [the project status record](handoffs/PROJECT_STATUS.md). Guest surfaces never show status.
 
 Share opens the project access dialog only for project admins. It manages teams,
-direct member edit/admin grants and direct guest grants. Workspace → Teams owns
+direct member edit/admin grants and direct guest grants. Admin console → Teams owns
 team names, membership, team roles, guest levels and archive/restore. A team page has
 three tabs kept in the URL (`?tab=`): Overview (counts, then people grouped as team
 admins, members and guests, with Add people and Invite guest dialogs), Projects (the

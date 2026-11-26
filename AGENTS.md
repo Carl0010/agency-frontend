@@ -23,14 +23,15 @@ For navigation changes also read [sidebar responsibilities](docs/NAVIGATION.md).
 - `src/lib/content-colors.ts` owns mappings for user-selected labels, projects and avatars.
 - Use semantic color utilities. `design-system/semantic-colors` is an ESLint error.
 - Keep business logic, API behavior and audience boundaries separate from visual changes.
-- The 56px icon module rail owns Projects, Inbox and Workspace selection. The 256px
-  contextual sidebar owns the selected module's links, project menus and account controls.
+- The 56px icon module rail owns Projects, Inbox, Teams and (owners/admins only) Admin console
+  selection. The 256px contextual sidebar owns the selected module's links, project menus and account controls.
   The top app bar owns centered global search and sidebar visibility. The theme is chosen in
   Your settings → Appearance only.
   Page headers own local actions. Do not duplicate a project rail or member tabs.
 - Projects are visible through team shares or direct grants. Sidebar groups use
   `teamIds`; Starred reads the full `?starred=true` collection from the API. Keep
-  saved icons and personal stars server-backed. Workspace settings own Teams.
+  saved icons and personal stars server-backed. Admin console → Organization owns Members
+  and team management; the Teams module only lists teams.
 - Only `project.access === 'admin'` exposes sharing and guest mutations. Team
   management follows `myRole` plus workspace owner/admin access. People pickers
   use scoped roster queries: a card's assignee and mention pickers read

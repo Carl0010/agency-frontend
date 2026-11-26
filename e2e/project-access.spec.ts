@@ -13,6 +13,10 @@ test('implicit workspace administrators are absent from direct grants and the sh
   await call('POST', `/workspaces/${project.workspaceId}/members/invites`, { email, role: 'member' });
   const member = await accept(browser, email, 'Future Admin');
   await expect(member.getByRole('heading', { name: 'No projects shared with you yet' })).toBeVisible();
+  // A member gets Teams but not the Admin console.
+  const memberModules = member.getByRole('navigation', { name: 'Main modules' }).filter({ visible: true });
+  await expect(memberModules.getByRole('link', { name: 'Teams', exact: true })).toBeVisible();
+  await expect(memberModules.getByRole('link', { name: 'Admin console', exact: true })).toHaveCount(0);
   const roster = await call<{ data: { userId: string; email: string }[] }>('GET', `/workspaces/${project.workspaceId}/members`);
   const id = roster.data.find((person) => person.email === email)!.userId;
   await call('PUT', `/projects/${projectId}/members/${id}`, { access: 'edit' });

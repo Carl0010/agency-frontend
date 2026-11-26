@@ -22,22 +22,31 @@ import { useWorkspace } from '@/lib/workspace';
 import { useTeamWrite } from './teams-screen';
 
 type Tab = 'overview' | 'projects' | 'settings';
+export type TeamSection = 'teams' | 'admin';
+
+/** The team list a team page belongs to. */
+export function teamsListPath(workspaceId: string, section: TeamSection) {
+  return section === 'admin' ? `/w/${workspaceId}/settings/teams` : `/w/${workspaceId}/teams`;
+}
 type Write = ReturnType<typeof useTeamWrite>;
 
 /**
  * One team, in three tabs kept in the URL (`?tab=`): Overview (people, grouped, with Add people
  * and Invite guest), Projects (shared through `?team=`), and Settings (name, archive) for the
  * people who manage the team. The API enforces every action; the UI only hides what can't work.
+ * `section` is the module it opens in: the Teams directory (`/teams`) or Admin console → Teams
+ * (`/settings/teams`). Both show the same team; only the back link and tab URLs differ.
  */
-export function TeamScreen({ teamId }: { teamId: string }) {
+export function TeamScreen({ teamId, section = 'teams' }: { teamId: string; section?: TeamSection }) {
   const ws = useWorkspace();
+  const list = teamsListPath(ws.id, section);
   const { readOnly } = useWriteAvailability(ws);
   const params = useSearchParams();
   const team = useQuery({ queryKey: ['team', teamId], queryFn: ({ signal }) => api.get<TeamDetail>(`/teams/${teamId}`, signal) });
   const projects = useQuery({ queryKey: ['projects', ws.id, { team: teamId }], queryFn: ({ signal }) => api.get<Page<Project>>(`/workspaces/${ws.id}/projects?team=${teamId}`, signal) });
   const act = useTeamWrite(teamId);
   if (team.isPending) return <LoadingSkeleton variant="cards" className="p-4 sm:p-6" />;
-  if (team.error) return <main className="ui-page"><BackLink workspaceId={ws.id} /><h1 className="mb-2 text-page font-semibold">{team.error instanceof ApiError && team.error.code === 'not_found' ? 'Team unavailable' : 'Could not load team'}</h1><FormError message={errorMessage(team.error)} /><Button variant="secondary" onClick={() => void team.refetch()}>Retry team</Button></main>;
+  if (team.error) return <main className="ui-page"><BackLink href={list} /><h1 className="mb-2 text-page font-semibold">{team.error instanceof ApiError && team.error.code === 'not_found' ? 'Team unavailable' : 'Could not load team'}</h1><FormError message={errorMessage(team.error)} /><Button variant="secondary" onClick={() => void team.refetch()}>Retry team</Button></main>;
 
   const t = team.data; const archived = Boolean(t.archivedAt);
   const canManage = !readOnly && (ws.role === 'owner' || ws.role === 'admin' || t.myRole === 'admin');
@@ -48,10 +57,10 @@ export function TeamScreen({ teamId }: { teamId: string }) {
     { id: 'projects', label: 'Projects', count: projects.data?.data.length },
     ...(canManage ? [{ id: 'settings' as const, label: 'Settings' }] : []),
   ];
-  const base = `/w/${ws.id}/settings/teams/${teamId}`;
+  const base = `${list}/${teamId}`;
 
   return <main className="ui-page max-w-5xl">
-    <BackLink workspaceId={ws.id} />
+    <BackLink href={list} />
     <header className="mb-5 flex flex-wrap items-center gap-4">
       <span aria-hidden="true" className="grid size-14 shrink-0 place-items-center rounded-2xl bg-primary-subtle text-primary-text"><Icon name="people" className="size-7" /></span>
       <div className="min-w-0 flex-1">
@@ -76,8 +85,8 @@ export function TeamScreen({ teamId }: { teamId: string }) {
   </main>;
 }
 
-function BackLink({ workspaceId }: { workspaceId: string }) {
-  return <Link href={`/w/${workspaceId}/settings/teams`} className="tap mb-3 inline-flex items-center gap-1.5 text-label text-primary"><Icon name="chevron" className="size-3.5 rotate-180" />All teams</Link>;
+function BackLink({ href }: { href: string }) {
+  return <Link href={href} className="tap mb-3 inline-flex items-center gap-1.5 text-label text-primary"><Icon name="chevron" className="size-3.5 rotate-180" />All teams</Link>;
 }
 
 function Overview({ team, canManage, projectCount, act }: { team: TeamDetail; canManage: boolean; projectCount?: number; act: Write }) {

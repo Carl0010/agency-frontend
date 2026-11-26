@@ -17,7 +17,7 @@ import { Button } from '@/components/ui';
 import type { Channel, Project, Team } from '@/lib/types';
 import { useWorkspace } from '@/lib/workspace';
 import { AccountMenu } from '@/components/account-menu';
-import { MODULE_LABELS, PERSONAL_SETTINGS_PATH, type WorkspaceModule } from './workspace-modules';
+import { MODULE_LABELS, PERSONAL_SETTINGS_PATH, TEAMS_PATH, type WorkspaceModule } from './workspace-modules';
 
 function UnreadDot({ label }: { label: string }) {
   return <span role="img" aria-label={label} data-testid="unread-dot" className="inline-block size-2 shrink-0 rounded-full bg-primary" />;
@@ -46,8 +46,9 @@ export function WorkspaceSidebar({ data, projectId, activeModule, onNavigate, on
   const router = useRouter();
   const pathname = usePathname();
   const base = `/w/${ws.id}`;
-  const settings: { path: string; label: string; icon: IconName }[] = [
-    { path: '/settings/members', label: 'Members', icon: 'people' },
+  // Admin console → Organization: the people and the teams of this workspace, and owner-only Billing.
+  const organization: { path: string; label: string; icon: IconName }[] = [
+    { path: '/settings/members', label: 'Members', icon: 'person' },
     { path: '/settings/teams', label: 'Teams', icon: 'people' },
     // Billing remains the owner's surface (§8.6).
     ...(ws.role === 'owner' ? [{ path: '/settings/billing', label: 'Billing', icon: 'credit-card' as const }] : []),
@@ -94,9 +95,10 @@ export function WorkspaceSidebar({ data, projectId, activeModule, onNavigate, on
           </nav>
 
         </> : null}
-        {activeModule === 'workspace' ? <nav aria-label="Workspace settings" className="space-y-1">
-          <p className="mb-2 px-2.5 text-caption font-medium text-muted-foreground">Workspace</p>
-          {settings.map((item) => <Link key={item.path} href={base + item.path} onClick={onNavigate} aria-current={pathname.startsWith(base + item.path) ? 'page' : undefined} className="ui-nav-link tap"><Icon name={item.icon} />{item.label}</Link>)}
+        {activeModule === 'teams' ? <TeamsNav teams={data.teams} pending={data.pending} base={base} pathname={pathname} onNavigate={onNavigate} /> : null}
+        {activeModule === 'admin' ? <nav aria-label="Admin console" className="space-y-1">
+          <p className="mb-2 px-2.5 text-caption font-medium text-muted-foreground">Organization</p>
+          {organization.map((item) => <Link key={item.path} href={base + item.path} onClick={onNavigate} aria-current={pathname.startsWith(base + item.path) ? 'page' : undefined} className="ui-nav-link tap"><Icon name={item.icon} />{item.label}</Link>)}
         </nav> : null}
         {activeModule === 'inbox' ? <nav aria-label="Inbox navigation" className="space-y-1">
           <p className="mb-2 px-2.5 text-caption font-medium text-muted-foreground">Activity</p>
@@ -147,4 +149,19 @@ function SidebarProject({ project, data, currentId, expanded, showClosed = false
       return <li key={section.label}><Link href={projectBase + section.path} onClick={onNavigate} aria-current={selected ? 'page' : undefined} data-tour={section.kind === 'shared' ? 'shared-channel' : undefined} className="ui-nav-link tap"><Icon name={section.icon} className="size-3.5" /><span>{section.label}</span>{section.kind === 'internal' ? <span data-testid="internal-badge" className="ml-auto rounded-sm bg-muted px-1 text-caption text-muted-foreground">Internal</span> : null}{unread ? <UnreadDot label={`Unread in ${section.label}`} /> : null}</Link></li>;
     })}</ul> : null}
   </li>;
+}
+
+/** The Teams module lists teams only: yours first, then the rest of the workspace's active teams. */
+function TeamsNav({ teams, pending, base, pathname, onNavigate }: { teams: Team[]; pending: boolean; base: string; pathname: string; onNavigate?: () => void }) {
+  const active = teams.filter((team) => !team.archivedAt);
+  const mine = active.filter((team) => team.myRole !== null);
+  const others = active.filter((team) => team.myRole === null);
+  const root = base + TEAMS_PATH;
+  const link = (team: Team) => <li key={team.id}><Link href={`${root}/${team.id}`} onClick={onNavigate} aria-current={pathname === `${root}/${team.id}` ? 'page' : undefined} className="ui-nav-link tap"><span aria-hidden="true" className="grid size-5 shrink-0 place-items-center rounded-md bg-primary-subtle text-caption font-semibold text-primary-text">{team.name.slice(0, 1).toUpperCase()}</span><span className="min-w-0 flex-1 truncate">{team.name}</span></Link></li>;
+  return <nav aria-label="Teams" className="space-y-1">
+    <Link href={root} onClick={onNavigate} aria-current={pathname === root ? 'page' : undefined} className="ui-nav-link tap"><Icon name="people" /><span>All teams</span><span className="ml-auto text-caption text-muted-foreground">{pending ? '—' : active.length}</span></Link>
+    {pending ? <LoadingSkeleton label="Loading teams" count={3} className="px-2" /> : null}
+    {mine.length ? <section aria-label="Your teams" className="pt-5"><h3 className="mb-2 px-2.5 text-caption font-medium text-muted-foreground">Your teams</h3><ul className="space-y-1">{mine.map(link)}</ul></section> : null}
+    {others.length ? <section aria-label="Other teams" className="pt-5"><h3 className="mb-2 px-2.5 text-caption font-medium text-muted-foreground">Other teams</h3><ul className="space-y-1">{others.map(link)}</ul></section> : null}
+  </nav>;
 }

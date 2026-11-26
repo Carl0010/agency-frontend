@@ -38,7 +38,7 @@ export function TeamsScreen() {
     {teams.error ? <Button variant="secondary" onClick={() => void teams.refetch()}>Retry teams</Button> : null}
     <label className="tap mb-4 flex items-center gap-2 text-label"><input type="checkbox" checked={archived} onChange={(event) => setArchived(event.target.checked)} />Include archived teams</label>
     {teams.isPending ? <LoadingSkeleton variant="cards" className="p-4 sm:p-6" /> : teams.data?.data.length ? <ul className="grid gap-3 sm:grid-cols-2">{teams.data.data.map((team) => <li key={team.id}>
-      <Link href={`/w/${ws.id}/settings/teams/${team.id}`} className="ui-panel flex min-h-24 items-center gap-3 p-4 hover:border-border-hover"><span className="min-w-0 flex-1"><span className="block truncate font-semibold">{team.name}</span><span className="text-label text-muted-foreground">{team.memberCount} people{team.myRole ? ` · ${team.myRole === 'admin' ? 'Team admin' : 'Team member'}` : ''}</span></span>{team.archivedAt ? <Badge>Archived</Badge> : null}</Link>
+      <Link href={`/w/${ws.id}/settings/teams/${team.id}`} className="ui-panel flex min-h-24 items-center gap-3 p-4 hover:border-border-hover"><span className="min-w-0 flex-1"><span className="block truncate font-semibold">{team.name}</span><span className="text-label text-muted-foreground">{team.memberCount} {team.memberCount === 1 ? 'person' : 'people'}{team.myRole ? ` · ${team.myRole === 'admin' ? 'Team admin' : 'Team member'}` : ''}</span></span>{team.archivedAt ? <Badge>Archived</Badge> : null}</Link>
     </li>)}</ul> : !teams.error ? <EmptyState title="No teams yet" description="Create a team, add people, and share projects with it." icon="people" /> : null}
   </main>;
 }
