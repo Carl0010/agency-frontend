@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { Icon } from '@/components/icon';
 import { Button, Field, Input, Select } from '@/components/ui';
+import { FULL_SCREEN_ON_PHONE } from '@/components/ui-dialog';
 import { FormError } from '@/components/auth-card';
 import { api, errorMessage } from '@/lib/api';
 import { PROJECT_DOT } from '@/lib/content-colors';
@@ -64,9 +65,9 @@ export function ProjectEditor({ project, onClose, onSaved }: {
     onKeyDown={(event) => event.stopPropagation()}
     onCancel={(event) => { event.preventDefault(); event.stopPropagation(); if (!save.isPending) onClose(); }}
     onClick={(event) => { if (event.target === event.currentTarget && !save.isPending) onClose(); }}
-    className="fixed inset-0 m-auto max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] max-w-md overflow-y-auto rounded-2xl border border-border bg-surface p-0 text-foreground shadow-xl backdrop:bg-overlay/40">
-    <form onSubmit={submit} className="space-y-5 p-6">
-      <header className="flex items-center justify-between gap-3"><h2 className="text-body-lg font-semibold">{project ? 'Edit project' : 'New project'}</h2><Button variant="ghost" size="icon" aria-label="Close project editor" disabled={save.isPending} onClick={onClose}><Icon name="close" /></Button></header>
+    className={`fixed inset-0 m-auto max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] max-w-md overflow-y-auto rounded-2xl border border-border bg-surface p-0 text-foreground shadow-xl backdrop:bg-overlay/40 ${FULL_SCREEN_ON_PHONE}`}>
+    <form onSubmit={submit} className="space-y-5 p-6 max-sm:px-5 max-sm:pt-0">
+      <header className="flex items-center justify-between gap-3 max-sm:sticky max-sm:top-0 max-sm:z-10 max-sm:-mx-5 max-sm:border-b max-sm:border-border max-sm:bg-surface max-sm:px-5 max-sm:pb-3 max-sm:pt-[max(0.75rem,env(safe-area-inset-top))]"><h2 className="text-body-lg font-semibold">{project ? 'Edit project' : 'New project'}</h2><Button variant="ghost" size="icon" aria-label="Close project editor" disabled={save.isPending} onClick={onClose}><Icon name="close" /></Button></header>
       <FormError message={validation ?? (save.error ? errorMessage(save.error) : null)} />
       <Field label="Project name"><Input autoFocus name="name" required maxLength={120} defaultValue={project?.name} /></Field>
       <Field label="Status"><Select name="status" defaultValue={projectStatus(project?.status).value} options={PROJECT_STATUSES.map((status) => ({ value: status.value, label: status.label, icon: <StatusDot tone={status.tone} /> }))} /></Field>
@@ -84,7 +85,7 @@ export function ProjectEditor({ project, onClose, onSaved }: {
         </label>)}
       </div></fieldset>
       {!project ? <TeamPicker workspaceId={ws.id} disabled={save.isPending} /> : null}
-      <footer className="flex justify-end gap-2 border-t border-border pt-4"><Button variant="ghost" disabled={save.isPending} onClick={onClose}>Cancel</Button><Button type="submit" disabled={readOnly || save.isPending || (!project && (teams.isPending || Boolean(teams.error)))}>{save.isPending ? 'Saving…' : project ? 'Save changes' : 'Create project'}</Button></footer>
+      <footer className="flex justify-end gap-2 border-t border-border pt-4 max-sm:sticky max-sm:-bottom-6 max-sm:z-10 max-sm:-mx-5 max-sm:-mb-6 max-sm:bg-surface max-sm:px-5 max-sm:pt-3 max-sm:pb-[max(0.75rem,env(safe-area-inset-bottom))] max-sm:[&>*]:flex-1"><Button variant="ghost" disabled={save.isPending} onClick={onClose}>Cancel</Button><Button type="submit" disabled={readOnly || save.isPending || (!project && (teams.isPending || Boolean(teams.error)))}>{save.isPending ? 'Saving…' : project ? 'Save changes' : 'Create project'}</Button></footer>
     </form>
   </dialog>;
 }

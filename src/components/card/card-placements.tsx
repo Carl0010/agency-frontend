@@ -10,7 +10,7 @@ import { useConfirm } from '@/components/confirmation';
 import { ProjectIcon } from '@/components/projects/project-icon';
 import { useToast } from '@/components/toast';
 import { Badge, Button, Field, Select } from '@/components/ui';
-import { Dialog } from '@/components/ui-dialog';
+import { Dialog, DialogActions } from '@/components/ui-dialog';
 import { api, ApiError, errorMessage } from '@/lib/api';
 import { removeFromList } from '@/lib/board-state';
 import { cardPath, cardPeopleKey } from '@/lib/cards';
@@ -205,10 +205,10 @@ export function PlaceCardDialog({ card, mode, onClose }: { card: CardDetail; mod
           </Field>
         ) : null}
         <FormError message={error ?? (projects.error ? errorMessage(projects.error) : board.error ? errorMessage(board.error) : null)} />
-        <div className="flex justify-end gap-2">
+        <DialogActions>
           <Button variant="secondary" onClick={onClose} disabled={pending}>Cancel</Button>
           <Button type="submit" disabled={pending || !project || !chosenList}>{pending ? 'Saving…' : verb}</Button>
-        </div>
+        </DialogActions>
       </form>
     </Dialog>
   );
