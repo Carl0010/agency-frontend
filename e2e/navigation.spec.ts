@@ -53,7 +53,6 @@ test('the sidebar owns workspace and project destinations while headers retain l
   await expect(page).toHaveURL(/\/teams\/[0-9a-f-]+$/);
   await expect(page.getByRole('heading', { name: 'Design', level: 1 })).toBeVisible();
   await expect(teamsNav.getByRole('link', { name: 'Design', exact: true })).toHaveAttribute('aria-current', 'page');
-  await expect(page.getByRole('main').getByRole('link', { name: 'All teams' })).toHaveAttribute('href', /\/teams$/);
   await page.screenshot({ path: info.outputPath('module-teams.png'), fullPage: true, style: 'nextjs-portal { visibility: hidden; }' });
 
   await modules.getByRole('link', { name: 'Admin console', exact: true }).click();

@@ -199,36 +199,42 @@ function CardActionsMenu({ card, onArchive, onCopyLink }: { card: Detail; onArch
   );
 }
 
+/** Shared by the title and its editor, so switching between them moves nothing: same box, border, padding and line height. */
+const TITLE_BOX = 'tap -mx-1.5 min-h-9 w-[calc(100%+0.75rem)] rounded-md border px-1.5 py-0.5 text-left text-xl font-semibold leading-7';
+
 function Title({ card, onSave }: { card: Detail; onSave: (title: string) => Promise<void> }) {
   const [editing, setEditing] = useState(false);
-  if (editing) {
-    return (
-      <input
-        autoFocus
-        defaultValue={card.title}
-        aria-label="Card title"
-        maxLength={500}
-        onBlur={(e) => {
-          setEditing(false);
-          const t = e.target.value.trim();
-          if (t && t !== card.title) void onSave(t);
-        }}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter') e.currentTarget.blur();
-          if (e.key === 'Escape') {
-            e.stopPropagation();
-            setEditing(false);
-          }
-        }}
-        className="mt-1 w-full rounded border border-ring px-1 text-xl font-semibold"
-      />
-    );
-  }
+  // The editor wraps like the heading does: it grows to fit, so long titles keep their lines.
+  const fit = (el: HTMLTextAreaElement | null) => { if (el) { el.style.height = 'auto'; el.style.height = `${el.scrollHeight + el.offsetHeight - el.clientHeight}px`; } };
   return (
-    <h1 className="mt-1 text-xl font-semibold">
-      <button type="button" onClick={() => setEditing(true)} className="tap w-full break-words text-left hover:bg-background" data-testid="card-title">
-        {card.title}
-      </button>
+    <h1 className="mt-1">
+      {editing ? (
+        <textarea
+          ref={(el) => { fit(el); el?.focus(); el?.setSelectionRange(el.value.length, el.value.length); }}
+          defaultValue={card.title}
+          aria-label="Card title"
+          maxLength={500}
+          rows={1}
+          onInput={(e) => fit(e.currentTarget)}
+          onBlur={(e) => {
+            setEditing(false);
+            const t = e.target.value.replace(/\s+/g, ' ').trim();
+            if (t && t !== card.title) void onSave(t);
+          }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') { e.preventDefault(); e.currentTarget.blur(); }
+            if (e.key === 'Escape') {
+              e.stopPropagation();
+              setEditing(false);
+            }
+          }}
+          className={`${TITLE_BOX} block resize-none overflow-hidden border-ring bg-surface shadow-[0_0_0_2px_var(--color-primary-border)] outline-none`}
+        />
+      ) : (
+        <button type="button" onClick={() => setEditing(true)} className={`${TITLE_BOX} flex items-start break-words border-transparent hover:bg-background`} data-testid="card-title">
+          {card.title}
+        </button>
+      )}
     </h1>
   );
 }
@@ -403,6 +409,7 @@ function Description({ card, onSave }: { card: Detail; onSave: (d: string | null
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const [state, setState] = useState<SaveState>(initial !== server ? 'idle' : 'saved');
   const [focused, setFocused] = useState(false);
+  const [toolbarSlot, setToolbarSlot] = useState<HTMLDivElement | null>(null);
   const [uploading, setUploading] = useState(0);
 
   // Someone else saved while this box was idle: show their version.
@@ -455,10 +462,18 @@ function Description({ card, onSave }: { card: Detail; onSave: (d: string | null
 
   const status = uploading ? 'Uploading image…' : state === 'saving' ? 'Saving…' : state === 'saved' && latest.current ? 'Saved' : state === 'error' ? 'Couldn’t save' : '';
   return (
-    <section aria-label="Description" className="space-y-1">
-      <div className="flex items-center justify-between gap-2">
-        <h2 className="text-sm font-semibold text-secondary-foreground">Description</h2>
-        <p role="status" data-testid="description-status" className="flex items-center gap-2 text-caption text-muted-foreground">
+    <section
+      aria-label="Description"
+      className="space-y-1"
+      // Focus anywhere in the section (the text, or the toolbar's link field) counts as editing.
+      onFocus={() => setFocused(true)}
+      onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget)) { setFocused(false); void flush(); } }}
+    >
+      {/* While editing, the formatting toolbar takes the label's place in this row, at the same height, so nothing below moves. */}
+      <div className="flex min-h-8 items-center justify-between gap-2 max-sm:min-h-11">
+        <h2 className={`text-sm font-semibold text-secondary-foreground ${focused ? 'sr-only' : ''}`}>Description</h2>
+        <div ref={setToolbarSlot} className={`min-w-0 flex-1 ${focused ? '' : 'hidden'}`} />
+        <p role="status" data-testid="description-status" className="flex shrink-0 items-center gap-2 text-caption text-muted-foreground">
           {status}
           {state === 'error' ? <button type="button" className="tap font-medium text-primary-text" onClick={() => void flush()}>Retry</button> : null}
         </p>
@@ -472,14 +487,13 @@ function Description({ card, onSave }: { card: Detail; onSave: (d: string | null
           value={initial}
           onChange={change}
           onSubmit={() => void flush()}
-          onFocus={() => setFocused(true)}
-          onBlur={() => { setFocused(false); void flush(); }}
           onImageFiles={readOnly ? undefined : (files) => void addImages(files)}
           editable={!readOnly}
           label="Description"
           placeholder="Add a description…"
           mentionable={[]}
           toolbar={focused}
+          toolbarTarget={toolbarSlot}
           actions={<ToolButton label="Insert image" icon="image" disabled={readOnly || uploading > 0} onClick={() => picker.current?.click()} />}
           className="min-h-24"
         />
