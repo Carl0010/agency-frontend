@@ -1,7 +1,10 @@
 # Card activity feed and files on comments
 
-Status: frontend shipped with what the API supports today (2026-11-26). The two API additions
-below are proposed and not yet implemented in `Carl0010/agency-mvp`.
+Status: implemented 2026-11-26. The API side is `Carl0010/agency-mvp` #8 (migration 0019:
+`GET /cards/{id}/activity` and `attachmentIds` on comments, as proposed below). The client uses the
+activity route as its capability check: where it answers, the Activity tab shows the feed and the
+comment box posts files with the comment (listed under it, removable before posting); where an older
+API answers 404, both fall back to the behaviour described next.
 
 ## What the card details do now
 

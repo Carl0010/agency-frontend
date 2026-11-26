@@ -49,8 +49,11 @@ export function Markdown({ source }: { source: string }) {
   );
 }
 
-/** A file attached to the card, linked from a comment: downloads through a short-lived URL from the API. */
-function AttachmentLink({ id, children }: { id: string; children: ReactNode }) {
+/**
+ * A file attached to the card: downloads through a short-lived URL from the API. `plain` drops the
+ * chip styling, for wrapping an image preview.
+ */
+export function AttachmentLink({ id, children, plain = false }: { id: string; children: ReactNode; plain?: boolean }) {
   const toast = useToast();
   async function open() {
     try {
@@ -61,9 +64,13 @@ function AttachmentLink({ id, children }: { id: string; children: ReactNode }) {
     }
   }
   return (
-    <button type="button" data-testid="comment-attachment" onClick={() => void open()} className="inline-flex max-w-full items-center gap-1 rounded-md border border-border bg-subtle px-1.5 py-0.5 align-middle text-label font-medium text-foreground hover:border-border-hover">
-      <Icon name="attachment" className="size-3.5 shrink-0" /><span className="truncate">{children}</span>
-    </button>
+    plain ? (
+      <button type="button" data-testid="comment-attachment" onClick={() => void open()} className="block rounded-md focus-visible:outline-2 focus-visible:outline-ring">{children}</button>
+    ) : (
+      <button type="button" data-testid="comment-attachment" onClick={() => void open()} className="inline-flex max-w-full items-center gap-1 rounded-md border border-border bg-subtle px-1.5 py-0.5 align-middle text-label font-medium text-foreground hover:border-border-hover">
+        <Icon name="attachment" className="size-3.5 shrink-0" /><span className="truncate">{children}</span>
+      </button>
+    )
   );
 }
 
