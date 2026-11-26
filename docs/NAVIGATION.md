@@ -94,9 +94,13 @@ persistent board layout. The URL identifies the card and its presentation.
   drawer is 448px wide, 512px from 1280px, and 576px from 1536px. The board's
   lists remain horizontally scrollable beside it; there is no backdrop, page
   scroll lock or focus trap. Clicking another tile switches the inspector.
-- Below 768px, the drawer fills the work area below workspace navigation.
-  The board remains mounted but is hidden, including its covered keyboard
-  controls, until the drawer closes. Workspace navigation remains available.
+- Below 768px, the card opens as a bottom sheet that slides up over the work area
+  below workspace navigation: rounded top corners, a grab handle, and a dimmed
+  strip of board above it. Tapping that strip or dragging the sheet down by its
+  header closes it. The board stays painted under the sheet while it slides, and
+  becomes `visibility: hidden` (out of keyboard order) only once covered; it is
+  visible again the moment the sheet starts to close, so no frame is blank.
+  Workspace navigation remains available.
 - The drawer owns card editing and an independent content scroll area. Its
   header keeps Close, Open card as full page, and desktop Focus board available.
   The selected tile has an expanded state and a visible outline.
