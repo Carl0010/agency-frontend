@@ -70,3 +70,28 @@ test('card actions sit behind one menu in the card details', async ({ browser })
   await expect(page.getByRole('menuitem', { name: 'Archive', exact: true })).toBeHidden();
   await page.context().close();
 });
+
+test('on a phone the card opens as a bottom sheet over the board, and the backdrop closes it', async ({ browser }) => {
+  const { page } = await signupToBoard(browser, { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+  await list(page, 'To do').getByTestId('add-card-end').click();
+  await page.getByLabel('Card title').fill('Draft the homepage copy');
+  await page.keyboard.press('Enter');
+  await page.keyboard.press('Escape');
+  await page.getByTestId('card-tile').filter({ hasText: 'Draft the homepage copy' }).click();
+
+  const sheet = page.getByTestId('card-drawer');
+  await expect(sheet).toBeVisible();
+  // It slides up (transform on the Y axis), sits flush with the bottom, and leaves a strip of board above.
+  await expect.poll(() => sheet.evaluate((el) => new DOMMatrix(getComputedStyle(el).transform).m42)).toBe(0);
+  const box = (await sheet.boundingBox())!;
+  expect(Math.round(box.y + box.height)).toBe(844);
+  expect(box.y).toBeGreaterThan(40);
+  expect(await sheet.evaluate((el) => getComputedStyle(el).borderTopLeftRadius)).not.toBe('0px');
+  // Once covered, the board leaves keyboard order; it was never removed from the page.
+  await expect.poll(() => page.locator('#board-view').evaluate((el) => getComputedStyle(el).visibility)).toBe('hidden');
+
+  await page.mouse.click(195, box.y - 6);
+  await expect(page).not.toHaveURL(/\/c\//);
+  await expect(page.locator('#board-view')).toBeVisible();
+  await page.context().close();
+});

@@ -44,7 +44,7 @@ For navigation changes also read [sidebar responsibilities](docs/NAVIGATION.md).
 - Handle project `404 not_found` as no access. Access-change events clear stale
   project content; reconnects refetch while preserving unrelated drafts. New
   grants require fresh reads; the API only guarantees narrowing events.
-- Member card details use a non-modal right drawer. Keep desktop board controls
+- Member card details use a non-modal right drawer (a bottom sheet below 768px). Keep desktop board controls
   active; do not add a blocking backdrop, focus trap or document scroll lock.
 - Board presentations follow [docs/BOARD_VIEWS.md](docs/BOARD_VIEWS.md). Keep view/filter
   state in the URL and server ordering unchanged; reuse the shared list header and composers.
