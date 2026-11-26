@@ -63,7 +63,7 @@ export function TeamScreen({ teamId, section = 'teams' }: { teamId: string; sect
     ...(canManage ? [{ id: 'settings' as const, label: 'Settings' }] : []),
   ];
 
-  return <main className="ui-page max-w-6xl">
+  return <main className="ui-page">
     <BackLink href={list} />
     <header className="mb-3 flex flex-wrap items-center gap-3">
       <Avatar person={{ id: t.id, name: t.name, avatarUrl: null }} size={36} plain />

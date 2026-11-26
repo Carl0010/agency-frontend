@@ -65,7 +65,7 @@ function BillingScreen() {
 
   if (ws.role !== 'owner') {
     return (
-      <main className="mx-auto max-w-3xl p-4 sm:p-8">
+      <main className="ui-page">
         <h1 className="mb-4 text-2xl font-semibold">Billing</h1>
         <p data-testid="billing-owner-only" className="rounded-lg border border-border bg-surface p-4 text-secondary-foreground">
           Only the workspace owner can manage billing.
@@ -79,7 +79,7 @@ function BillingScreen() {
   const status = STATUS[b.status];
 
   return (
-    <main className="mx-auto max-w-3xl space-y-6 p-4 sm:p-8">
+    <main className="ui-page space-y-6">
       <h1 className="text-2xl font-semibold">Billing</h1>
       <FormError message={go.error ? errorMessage(go.error) : null} />
 

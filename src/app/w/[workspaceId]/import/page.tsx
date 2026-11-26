@@ -86,7 +86,7 @@ export default function ImportPage() {
   };
 
   return (
-    <main className="mx-auto max-w-3xl p-4 sm:p-8">
+    <main className="ui-page">
       <h1 className="mb-1 text-2xl font-semibold">Import from Trello</h1>
       <p className="mb-6 text-sm text-secondary-foreground">Bring a Trello board over as a project. Nothing is written until you confirm.</p>
       <div className="mb-4 space-y-2">

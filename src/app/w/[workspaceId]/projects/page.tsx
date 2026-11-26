@@ -45,7 +45,7 @@ export default function ProjectsPage() {
   const teamName = teams.data?.data.find((item) => item.id === team)?.name;
   const rows = list.map((project, index) => ({ project, people: people[index] })).filter(({ project }) => fold(project.name).includes(fold(query)));
 
-  return <main className="ui-page max-w-6xl">
+  return <main className="ui-page">
     <PageHeader title="Projects" actions={<>
       <Link href={`/w/${ws.id}/import`} title="Import from Trello" className="ui-button tap text-secondary-foreground hover:bg-subtle"><Icon name="import" /><span className="sr-only sm:not-sr-only">Import from Trello</span></Link><Button onClick={() => setCreating(true)}><Icon name="plus" />New project</Button>
     </>} />

@@ -55,7 +55,7 @@ export default function ImportJobPage() {
   if (job.error) {
     const missing = job.error instanceof ApiError && job.error.status === 404;
     return (
-      <main className="mx-auto max-w-3xl p-4 sm:p-8">
+      <main className="ui-page">
         <FormError message={missing ? 'Import not found.' : errorMessage(job.error)} />
       </main>
     );
@@ -73,7 +73,7 @@ export default function ImportJobPage() {
   }[j.status];
 
   return (
-    <main className="mx-auto max-w-3xl space-y-4 p-4 sm:p-8">
+    <main className="ui-page space-y-4">
       <div>
         <h1 className="text-2xl font-semibold" data-testid="import-status" data-status={j.status}>
           {heading}

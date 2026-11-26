@@ -15,7 +15,7 @@ export default function CardPage() {
   const query = boardParams.toString();
   if (params.get('full') !== 'true') return <CardDrawer cardId={cardId} projectId={projectId} boardHref={boardHref} />;
   return (
-    <main className="mx-auto max-w-5xl p-4 sm:p-8">
+    <main className="ui-page">
       <Link href={`${boardHref}${query ? `?${query}` : ''}`} className="tap mb-4 inline-flex items-center text-sm text-primary">
         ← Back to board
       </Link>

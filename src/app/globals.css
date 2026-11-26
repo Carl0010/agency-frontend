@@ -59,7 +59,8 @@
   .qp-field-label { font-size: var(--text-label); line-height: var(--text-label--line-height); }
   .qp-check, .qp-switch-row { display: flex; width: fit-content; }
   .ui-panel { @apply rounded-xl border border-border bg-surface; }
-  .ui-page { @apply mx-auto w-full max-w-5xl px-4 py-6 sm:px-8 sm:py-8; }
+  /* Workspace content uses the full width beside the navigation, with modest gutters. */
+  .ui-page { @apply w-full px-4 py-5 sm:px-6 sm:py-6; }
   .ui-nav-link { @apply flex min-h-8 items-center gap-2 rounded-md px-2.5 py-1 text-label text-secondary-foreground hover:bg-subtle hover:text-foreground; }
   .ui-nav-link[aria-current='page'] { @apply bg-primary-subtle font-medium text-primary-text; }
   .ui-module-link { @apply flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-secondary-foreground hover:bg-subtle hover:text-foreground active:bg-muted focus-visible:outline-offset-1; }

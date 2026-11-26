@@ -29,7 +29,7 @@ export function TeamsScreen() {
   const ws = useWorkspace(); const [archived, setArchived] = useState(false);
   const { readOnly } = useWriteAvailability(ws);
   const teams = useTeams(ws.id, archived); const create = useTeamWrite();
-  return <main className="ui-page max-w-6xl">
+  return <main className="ui-page">
     <PageHeader title="Teams" description="Group people and share projects with them. Team admins manage their team and its shared projects." />
     {!readOnly ? <form className="mb-6 flex flex-wrap gap-2 rounded-xl border border-border bg-surface p-4" onSubmit={(event) => {
       event.preventDefault(); const form = event.currentTarget; const values = new FormData(form);
