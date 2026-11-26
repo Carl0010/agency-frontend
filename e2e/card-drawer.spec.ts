@@ -33,8 +33,13 @@ test('card drawer leaves the board usable, switches cards safely and retains fil
   await expect(drawer.getByTestId('card-title')).toHaveText('Review first concept');
   await expect(page).toHaveURL(/q=Review/);
 
-  await drawer.getByRole('button', { name: 'Add a description…' }).click();
-  await drawer.getByRole('textbox', { name: 'Description', exact: true }).fill('Draft for the first concept');
+  // The description is always editable and saves itself.
+  const description = drawer.getByRole('textbox', { name: 'Description', exact: true });
+  await description.click();
+  await description.fill('Draft for the first concept');
+  // Enough lines that the card details scroll on their own.
+  for (let line = 1; line <= 16; line++) { await page.keyboard.press('Enter'); await page.keyboard.type(`Note ${line}`); }
+  await expect(drawer.getByTestId('description-status')).toHaveText('Saved', { timeout: 5_000 });
   const content = drawer.getByTestId('card-drawer-content');
   const boardScroll = await page.getByTestId('board-lists').evaluate((element) => element.scrollTop);
   await content.evaluate((element) => { element.scrollTop = element.scrollHeight; });
@@ -44,10 +49,9 @@ test('card drawer leaves the board usable, switches cards safely and retains fil
   await second.click();
   await expect(drawer.getByTestId('card-title')).toHaveText('Review final layout');
   await expect.poll(() => content.evaluate((element) => element.scrollTop)).toBe(0);
-  await expect(drawer.getByRole('textbox', { name: 'Description', exact: true })).toHaveCount(0);
+  await expect(description).toHaveText('');
   await first.click();
-  await expect(drawer.getByRole('textbox', { name: 'Description', exact: true })).toHaveValue('Draft for the first concept');
-  await drawer.getByRole('button', { name: 'Cancel', exact: true }).click();
+  await expect(description).toContainText('Draft for the first concept');
 
   // A board editor owns Escape independently; it must not close card details.
   await list(page, 'To do').getByTestId('add-card-end').click();
