@@ -8,6 +8,7 @@ import { EditorContent, NodeViewWrapper, ReactNodeViewRenderer, useEditor, useEd
 import StarterKit from '@tiptap/starter-kit';
 import type { SuggestionKeyDownProps, SuggestionProps } from '@tiptap/suggestion';
 import { useEffect, useImperativeHandle, useRef, useState, type ReactNode, type Ref } from 'react';
+import { createPortal } from 'react-dom';
 import type { IconName } from '@/components/icon';
 import { AttachmentImage } from '@/components/markdown';
 import { Avatar } from '@/components/ui';
@@ -86,6 +87,7 @@ export default function RichEditor({
   autoFocus = false,
   mentionable,
   toolbar = true,
+  toolbarTarget,
   actions,
   className = '',
 }: {
@@ -105,6 +107,8 @@ export default function RichEditor({
   mentionable: RosterEntry[];
   /** Show the formatting toolbar. */
   toolbar?: boolean;
+  /** Render the toolbar in this element instead of above the text, such as a heading row it replaces. */
+  toolbarTarget?: HTMLElement | null;
   /** Extra toolbar buttons on the right, such as Attach. */
   actions?: ReactNode;
   className?: string;
@@ -217,7 +221,7 @@ export default function RichEditor({
 
   return (
     <div className={`relative flex min-h-0 flex-col ${className}`}>
-      {toolbar && editor ? <Toolbar editor={editor} actions={actions} /> : null}
+      {toolbar && editor ? toolbarTarget ? createPortal(<Toolbar editor={editor} actions={actions} inline />, toolbarTarget) : <Toolbar editor={editor} actions={actions} /> : null}
       <EditorContent editor={editor} className="min-h-0 flex-1 overflow-y-auto" />
       {menu?.items.length ? (
         <ul role="listbox" aria-label="Mention a teammate" data-testid="mention-options" className="absolute bottom-full left-0 z-30 mb-1 w-64 rounded-md border border-border bg-surface py-1 shadow-lg">
@@ -250,7 +254,7 @@ const FORMATS: { name: string; icon: IconName; mark?: string; node?: string; run
   { name: 'Code', icon: 'code', mark: 'code', run: (e) => e.chain().focus().toggleCode().run() },
 ];
 
-function Toolbar({ editor, actions }: { editor: Editor; actions?: ReactNode }) {
+function Toolbar({ editor, actions, inline = false }: { editor: Editor; actions?: ReactNode; inline?: boolean }) {
   const active: Record<string, boolean> = useEditorState({
     editor,
     selector: ({ editor: e }): Record<string, boolean> => Object.fromEntries([...FORMATS.map((f): [string, boolean] => [f.name, e.isActive(f.mark ?? f.node ?? '')]), ['Link', e.isActive('link')]]),
@@ -262,7 +266,8 @@ function Toolbar({ editor, actions }: { editor: Editor; actions?: ReactNode }) {
     setLinking(null);
   }
   return (
-    <div role="toolbar" aria-label="Formatting" className="flex flex-wrap items-center gap-0.5 border-b border-border-subtle px-1.5 py-1">
+    // Inline, it sits in a one-line row (one height, scrolling sideways on narrow screens) so it can swap with a label.
+    <div role="toolbar" aria-label="Formatting" className={inline ? 'flex flex-wrap items-center gap-0.5 [&>button]:shrink-0 max-sm:flex-nowrap max-sm:overflow-x-auto' : 'flex flex-wrap items-center gap-0.5 border-b border-border-subtle px-1.5 py-1'}>
       {FORMATS.map((f) => (
         <ToolButton key={f.name} label={f.name} icon={f.icon} pressed={Boolean(active[f.name])} onClick={() => f.run(editor)} />
       ))}

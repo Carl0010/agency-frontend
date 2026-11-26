@@ -220,3 +220,30 @@ test('opening and closing a card on a slow network never draws a second board sk
   await expect(page.getByTestId('card-tile')).toBeVisible();
   await page.context().close();
 });
+
+test('editing the title or the description moves nothing below it', async ({ browser }) => {
+  for (const viewport of [{ width: 1440, height: 1000 }, { width: 390, height: 844 }]) {
+    const { page } = await signupToBoard(browser, { viewport });
+    await addCard(page, 'A title long enough to wrap onto a second line inside the card drawer on a phone');
+    await list(page, 'To do').getByRole('button', { name: /A title long enough/ }).click();
+    const drawer = page.getByRole('dialog', { name: 'Card details' });
+    const description = drawer.getByRole('region', { name: 'Description' });
+    const text = drawer.getByRole('textbox', { name: 'Description', exact: true });
+    await expect(text).toBeVisible();
+    const top = async () => (await description.boundingBox())!.y;
+    const textTop = async () => (await text.boundingBox())!.y;
+
+    const before = await top();
+    await drawer.getByTestId('card-title').click();
+    await expect(drawer.getByLabel('Card title')).toBeFocused();
+    expect(Math.abs((await top()) - before)).toBeLessThan(1);
+    await page.keyboard.press('Escape');
+
+    const textBefore = await textTop();
+    await text.click();
+    await expect(drawer.getByRole('toolbar', { name: 'Formatting' })).toBeVisible();
+    await expect(description.getByRole('heading', { name: 'Description' })).toHaveClass(/sr-only/);
+    expect(Math.abs((await textTop()) - textBefore)).toBeLessThan(1);
+    await page.context().close();
+  }
+});

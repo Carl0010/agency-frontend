@@ -78,8 +78,9 @@
   /* Boxes stay small; the label around them (a full-width row, or a 44px `tap` wrapper) takes the touch. */
   input[type='checkbox']:not(.peer), input[type='radio']:not(.peer) { width: 20px; height: 20px; min-height: 0; min-width: 0; flex: none; }
   .qp-check-box { margin-top: 0; }
-  /* iOS should focus fields without zooming the viewport. */
-  input, select, textarea { font-size: 16px; }
+  /* iOS should focus fields without zooming the viewport. Fields set larger than 16px (the card title) keep their size,
+     so they wrap like the text they replace. */
+  :is(input, select, textarea):not(.text-xl) { font-size: 16px; }
   /* Quiet Pro controls: the field, not its inner input, takes the 44px touch height. */
   .qp-input { min-height: 44px; }
   .qp-input input { min-height: 0; }

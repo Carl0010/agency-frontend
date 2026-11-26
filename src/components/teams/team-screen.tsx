@@ -37,7 +37,7 @@ type Write = ReturnType<typeof useTeamWrite>;
  * as Soon), and Settings (name, archive) for the people who manage the team. The API enforces every
  * action; the UI only hides what can't work. `section` is the module it opens in: the Teams
  * directory (`/teams`) or Admin console → Teams (`/settings/teams`). Both show the same team; only
- * the back link and tab URLs differ.
+ * the tab URLs differ.
  */
 export function TeamScreen({ teamId, section = 'teams' }: { teamId: string; section?: TeamSection }) {
   const ws = useWorkspace();
@@ -48,7 +48,7 @@ export function TeamScreen({ teamId, section = 'teams' }: { teamId: string; sect
   const projects = useQuery({ queryKey: ['projects', ws.id, { team: teamId }], queryFn: ({ signal }) => api.get<Page<Project>>(`/workspaces/${ws.id}/projects?team=${teamId}`, signal) });
   const act = useTeamWrite(teamId);
   if (team.isPending) return <LoadingSkeleton variant="cards" className="p-4 sm:p-6" />;
-  if (team.error) return <main className="ui-page"><BackLink href={list} /><h1 className="mb-2 text-page font-semibold">{team.error instanceof ApiError && team.error.code === 'not_found' ? 'Team unavailable' : 'Could not load team'}</h1><FormError message={errorMessage(team.error)} /><Button variant="secondary" onClick={() => void team.refetch()}>Retry team</Button></main>;
+  if (team.error) return <main className="ui-page"><h1 className="mb-2 text-page font-semibold">{team.error instanceof ApiError && team.error.code === 'not_found' ? 'Team unavailable' : 'Could not load team'}</h1><FormError message={errorMessage(team.error)} /><Button variant="secondary" onClick={() => void team.refetch()}>Retry team</Button></main>;
 
   const t = team.data; const archived = Boolean(t.archivedAt);
   const canManage = !readOnly && (ws.role === 'owner' || ws.role === 'admin' || t.myRole === 'admin');
@@ -64,7 +64,6 @@ export function TeamScreen({ teamId, section = 'teams' }: { teamId: string; sect
   ];
 
   return <main className="ui-page">
-    <BackLink href={list} />
     <header className="mb-3 flex flex-wrap items-center gap-3">
       <Avatar person={{ id: t.id, name: t.name, avatarUrl: null }} size={36} plain />
       <h1 className="min-w-0 break-words text-page font-semibold">{t.name}</h1>
@@ -111,10 +110,6 @@ function Overview({ team, projects, canShare, membersHref }: { team: TeamDetail;
       </section>
     </div>
   </div>;
-}
-
-function BackLink({ href }: { href: string }) {
-  return <Link href={href} className="tap mb-3 inline-flex items-center gap-1.5 text-label text-primary"><Icon name="chevron" className="size-3.5 rotate-180" />All teams</Link>;
 }
 
 /** People, grouped: team admins, members, guests. Managers add people and invite guests here. */
