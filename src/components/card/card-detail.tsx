@@ -2,9 +2,9 @@
 
 import { CardSkeleton } from '@/components/skeleton';
 
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
-import { useEffect, useId, useRef, useState, type FormEvent, type ReactNode } from 'react';
+import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
 import { DuePill } from '@/components/due-pill';
 import { Icon } from '@/components/icon';
 import { useWriteAvailability } from '@/components/billing/billing-notices';
@@ -12,7 +12,9 @@ import { ArrivalChip } from '@/components/arrival';
 import { ReplanAction } from '@/components/arrival-actions';
 import { Markdown } from '@/components/markdown';
 import { useToast } from '@/components/toast';
-import { Avatar, Button, Checkbox, Input, LABEL_BG, Select } from '@/components/ui';
+import { Avatar, Button, Checkbox, Field as FormField, Input, LABEL_BG, MultiCombobox, Select } from '@/components/ui';
+import { Dialog, DialogActions } from '@/components/ui-dialog';
+import { FormError } from '@/components/auth-card';
 import { api, errorMessage } from '@/lib/api';
 import { MentionScopeContext } from '@/lib/mention-scope';
 import { applyTile, useProjectRealtime, useRoom } from '@/lib/realtime';
@@ -272,63 +274,65 @@ function Assignees({ card, onToggle }: { card: Detail; onToggle: (userId: string
 
 function Labels({ card, onToggle }: { card: Detail; onToggle: (labelId: string, on: boolean) => Promise<void> }) {
   const ws = useWorkspace();
-  const qc = useQueryClient();
-  const toast = useToast();
   const labels = useQuery({ queryKey: ['labels', ws.id], queryFn: () => api.get<Page<Label>>(`/workspaces/${ws.id}/labels`) });
-  const on = new Set(card.labels.map((l) => l.id));
+  const [creating, setCreating] = useState<string | null>(null);
+  const current = card.labels.map((l) => l.id);
+  const options = (labels.data?.data ?? card.labels).map((l) => ({ value: l.id, label: l.name, icon: <LabelDot color={l.color} /> }));
 
-  async function create(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    const formEl = e.currentTarget;
-    const form = new FormData(formEl);
-    try {
-      const label = await api.post<Label>(`/workspaces/${ws.id}/labels`, { name: form.get('name'), color: form.get('color') });
-      await qc.invalidateQueries({ queryKey: ['labels', ws.id] });
-      formEl.reset();
-      await onToggle(label.id, true);
-    } catch (err) {
-      toast(errorMessage(err));
-    }
+  function change(next: string[]) {
+    for (const id of next) if (!current.includes(id)) void onToggle(id, true);
+    for (const id of current) if (!next.includes(id)) void onToggle(id, false);
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-1">
-      {card.labels.map((l) => (
-        <span key={l.id} className="inline-flex items-center gap-1.5 rounded bg-subtle px-2 py-0.5 text-xs font-medium text-secondary-foreground">
-          <span aria-hidden="true" className={`size-2 rounded-full ${LABEL_BG[l.color] ?? 'bg-disabled-foreground'}`} />{l.name}
-        </span>
-      ))}
-      <Popover label="Edit labels" empty={card.labels.length === 0}>
-        {() => (
-          <div className="space-y-2">
-            <ul className="space-y-0.5">
-              {(labels.data?.data ?? []).map((l) => (
-                <li key={l.id}>
-                  <Checkbox
-                    className="rounded px-2 py-1 hover:bg-background"
-                    checked={on.has(l.id)}
-                    onChange={(e) => void onToggle(l.id, e.target.checked)}
-                    label={<span className="inline-flex items-center gap-2"><span aria-hidden="true" className={`size-3 rounded-full ${LABEL_BG[l.color] ?? 'bg-disabled-foreground'}`} />{l.name}</span>}
-                  />
-                </li>
-              ))}
-            </ul>
-            <form onSubmit={(e) => void create(e)} className="flex gap-1 border-t border-border-subtle pt-2">
-              <Input name="name" required maxLength={60} placeholder="New label" aria-label="New label name" className="min-w-0 flex-1" />
-              <Select name="color" aria-label="Label colour" defaultValue="blue" className="w-32"
-                options={LABEL_COLORS.map((col) => ({
-                  value: col,
-                  label: col.charAt(0).toUpperCase() + col.slice(1),
-                  icon: <span className={`h-2.5 w-2.5 rounded-full ${LABEL_BG[col] ?? 'bg-disabled-foreground'}`} />,
-                }))} />
-              <Button type="submit" size="sm">
-                Add
-              </Button>
-            </form>
+    <>
+      {/* Type to find a label; a name with no match offers "Create", which asks for its colour. */}
+      <MultiCombobox aria-label="Labels" placeholder="Add a label…" emptyText="No labels yet" options={options} values={current} onChange={change} onCreate={setCreating} className="w-full" />
+      {creating !== null ? <NewLabelDialog name={creating} onClose={() => setCreating(null)} onCreated={(label) => onToggle(label.id, true)} /> : null}
+    </>
+  );
+}
+
+function LabelDot({ color }: { color: string }) {
+  return <span aria-hidden="true" className={`size-2.5 shrink-0 rounded-full ${LABEL_BG[color] ?? 'bg-disabled-foreground'}`} />;
+}
+
+/** Names a new workspace label and picks its colour, then adds it to the card. */
+function NewLabelDialog({ name, onClose, onCreated }: { name: string; onClose: () => void; onCreated: (label: Label) => Promise<void> }) {
+  const ws = useWorkspace();
+  const qc = useQueryClient();
+  const [color, setColor] = useState<string>('blue');
+  const [text, setText] = useState(name);
+  const create = useMutation({
+    mutationFn: () => api.post<Label>(`/workspaces/${ws.id}/labels`, { name: text.trim(), color }),
+    onSuccess: async (label) => { await qc.invalidateQueries({ queryKey: ['labels', ws.id] }); await onCreated(label); onClose(); },
+  });
+  return (
+    <Dialog title="New label" size="compact" onClose={() => { if (!create.isPending) onClose(); }}>
+      <form className="space-y-4" onSubmit={(event) => { event.preventDefault(); if (text.trim()) create.mutate(); }}>
+        <FormError message={create.error ? errorMessage(create.error) : null} />
+        <FormField label="Name"><Input autoFocus required maxLength={60} value={text} onChange={(event) => setText(event.target.value)} /></FormField>
+        <fieldset>
+          <legend className="mb-2 text-label font-medium">Colour</legend>
+          <div className="flex flex-wrap gap-2">
+            {LABEL_COLORS.map((value) => (
+              <label key={value} title={value} className={`tap relative inline-flex size-10 cursor-pointer items-center justify-center rounded-lg border ${color === value ? 'border-ring bg-primary-subtle' : 'border-border bg-background hover:bg-subtle'}`}>
+                <input type="radio" name="color" value={value} aria-label={value} checked={color === value} onChange={() => setColor(value)} className="peer absolute inset-0 z-10 size-full cursor-pointer opacity-0" />
+                <span className={`size-5 rounded-full ${LABEL_BG[value] ?? 'bg-disabled-foreground'}`} />
+                <span className="pointer-events-none absolute inset-0 rounded-lg peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-ring" />
+              </label>
+            ))}
           </div>
-        )}
-      </Popover>
-    </div>
+        </fieldset>
+        <p className="flex items-center gap-2 text-label text-muted-foreground">Preview
+          <span className="inline-flex items-center gap-1.5 rounded bg-subtle px-2 py-0.5 text-caption font-medium text-secondary-foreground"><LabelDot color={color} />{text.trim() || 'Label'}</span>
+        </p>
+        <DialogActions>
+          <Button variant="ghost" disabled={create.isPending} onClick={onClose}>Cancel</Button>
+          <Button type="submit" disabled={create.isPending || !text.trim()}>{create.isPending ? 'Creating…' : 'Create label'}</Button>
+        </DialogActions>
+      </form>
+    </Dialog>
   );
 }
 
