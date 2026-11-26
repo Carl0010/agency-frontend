@@ -200,7 +200,7 @@ test('billing screen: owner sees plan and trial; forced cancel drops to read-onl
 
   // The demo's forced cancellation, applied the way the webhook would leave it.
   await sqlQuery(
-    `UPDATE subscription SET status = 'canceled', stripe_subscription_id = $2, canceled_at = now(), data_delete_after = now() + interval '90 days'
+    `UPDATE subscription SET status = 'canceled', provider_subscription_id = $2, canceled_at = now(), data_delete_after = now() + interval '90 days'
       WHERE workspace_id = $1`,
     [workspaceId, `sub_e2e_${Date.now()}`],
   );

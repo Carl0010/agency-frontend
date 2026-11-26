@@ -15,9 +15,9 @@ import type { Billing, SubscriptionStatus } from '@/lib/types';
 import { useWorkspace } from '@/lib/workspace';
 
 /**
- * Billing (§8.6), owner only. Card entry, invoices' payment and cancellation
- * happen on Stripe's hosted Checkout and Billing Portal — there is no card
- * form in this app (AC2). Everything shown is read from the billing endpoint.
+ * Billing (§8.6), owner only. Paddle is the merchant of record: card entry happens in Paddle's
+ * checkout (opened on /pay), and invoices, payment methods and cancellation in Paddle's customer
+ * portal. There is no card form in this app (AC2). Everything shown is read from the billing endpoint.
  */
 
 const STATUS: Record<SubscriptionStatus, { label: string; tone: string }> = {
@@ -52,9 +52,10 @@ function BillingScreen() {
 
   useEffect(() => {
     if (checkoutResult === 'success') {
-      toast('Payment method added. Stripe can take a few seconds to confirm.', 'info');
+      toast('Payment method added. It can take a few seconds to show here.', 'info');
       void qc.invalidateQueries({ queryKey: ['billing', ws.id] });
     }
+    if (checkoutResult === 'canceled') toast('Checkout closed. Nothing was charged.', 'info');
   }, [checkoutResult, toast, qc, ws.id]);
 
   const go = useMutation({
@@ -137,7 +138,7 @@ function BillingScreen() {
               variant="secondary"
               disabled={!b.configured || go.isPending}
               onClick={async () => {
-                if (await confirmAction({ title: 'Continue to subscription cancellation?', description: 'After cancellation, everyone keeps read-only access and can export their work. You will confirm the cancellation on Stripe.', confirmLabel: 'Continue to Stripe' })) {
+                if (await confirmAction({ title: 'Continue to subscription cancellation?', description: 'After cancellation, everyone keeps read-only access and can export their work. You will confirm the cancellation in Paddle’s customer portal.', confirmLabel: 'Continue to Paddle' })) {
                   go.mutate('portal-session');
                 }
               }}
@@ -147,11 +148,12 @@ function BillingScreen() {
           ) : null}
         </div>
         {!b.configured ? <p className="mt-2 text-xs text-muted-foreground">Billing is not configured on this server.</p> : null}
-        <p className="mt-2 text-xs text-muted-foreground">Card details are entered on Stripe and never touch our servers.</p>
+        <p className="mt-2 text-xs text-muted-foreground">Payments are processed by Paddle, our reseller and merchant of record. Card details never touch our servers.</p>
       </section>
 
       <section className="rounded-lg border border-border bg-surface p-4" aria-label="Invoices">
         <h2 className="mb-2 font-semibold">Invoices</h2>
+        {b.invoices.length ? <p className="mb-2 text-xs text-muted-foreground">Download invoices from Manage billing.</p> : null}
         {b.invoices.length === 0 ? (
           <p className="text-sm text-secondary-foreground">No invoices yet.</p>
         ) : (
