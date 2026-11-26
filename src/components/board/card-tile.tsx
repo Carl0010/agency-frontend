@@ -98,6 +98,8 @@ export function SortableCard({ card, now, href, disabled }: { card: Tile; now: D
   const open = () => {
     if (!dragged.current && !selected) router.push(href, { scroll: false });
   };
+  // Fetch the card's route as soon as the tile is pointed at or focused, so the drawer opens at once.
+  const prefetch = () => router.prefetch(href);
   const onKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
     listeners?.onKeyDown?.(e);
     if (!e.defaultPrevented && e.key === 'Enter') open();
@@ -111,6 +113,8 @@ export function SortableCard({ card, now, href, disabled }: { card: Tile; now: D
       {...listeners}
       onKeyDown={onKeyDown}
       onClick={open}
+      onPointerEnter={prefetch}
+      onFocus={prefetch}
       role="button"
       // Filtering disables sorting, while opening the card remains available.
       aria-disabled={undefined}

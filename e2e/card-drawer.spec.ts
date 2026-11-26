@@ -1,5 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import { list, signupToBoard } from './helpers';
+import { ownerApi } from './access-helpers';
+import type { Board } from '../src/lib/types';
 
 async function addCard(page: Page, title: string) {
   await list(page, 'To do').getByTestId('add-card-end').click();
@@ -190,5 +192,31 @@ test('selected card links are inert in List and grouped board presentations', as
     await expect(page.locator('#board-view')).toBeVisible();
     await expect(page.getByRole('group', { name: 'Board view' })).toBeVisible();
   }
+  await page.context().close();
+});
+
+test('opening and closing a card on a slow network never draws a second board skeleton', async ({ browser, request }) => {
+  const { page, account } = await signupToBoard(browser, { viewport: { width: 1440, height: 900 } });
+  const call = await ownerApi(request, account);
+  const board = await call<Board>('GET', `/boards/${account.boardId}`);
+  await call('POST', `/lists/${board.lists[0]!.id}/cards`, { title: 'Homepage copy' });
+  await page.reload();
+  await expect(page.getByTestId('card-tile')).toHaveCount(1);
+
+  const cdp = await page.context().newCDPSession(page);
+  await cdp.send('Network.enable');
+  await cdp.send('Network.emulateNetworkConditions', { offline: false, latency: 1500, downloadThroughput: -1, uploadThroughput: -1 });
+  const boardSkeletons = page.getByTestId('loading-skeleton').filter({ hasText: 'Loading board' });
+  let seen = 0;
+  const watch = async (until: () => Promise<boolean>) => {
+    for (let i = 0; i < 40 && !(await until()); i++) { seen = Math.max(seen, await boardSkeletons.count()); await page.waitForTimeout(100); }
+  };
+
+  await page.getByTestId('card-tile').click();
+  await watch(async () => (await page.getByTestId('card-drawer').count()) > 0 && /\/c\//.test(page.url()));
+  await page.getByRole('button', { name: 'Close card' }).click();
+  await watch(() => Promise.resolve(!/\/c\//.test(page.url())));
+  expect(seen).toBe(0);
+  await expect(page.getByTestId('card-tile')).toBeVisible();
   await page.context().close();
 });
