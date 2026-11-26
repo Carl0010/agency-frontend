@@ -363,6 +363,32 @@ export interface Comment {
   createdAt: string;
   editedAt: string | null;
   deletedAt: string | null;
+  /** Files posted with the comment. Absent from APIs older than migration 0019. */
+  attachments?: CommentAttachment[];
+}
+
+export interface CommentAttachment {
+  id: string;
+  filename: string;
+  mimeType: string | null;
+  sizeBytes: number | null;
+  scanState: 'pending' | 'clean' | 'blocked';
+  createdAt: string;
+}
+
+export type CardActivityKind =
+  | 'created' | 'renamed' | 'due_changed' | 'due_completed' | 'due_reopened' | 'description_edited'
+  | 'moved' | 'archived' | 'restored' | 'assigned' | 'unassigned' | 'labelled' | 'unlabelled'
+  | 'placed' | 'unplaced' | 'rehomed' | 'attachment_added' | 'attachment_deleted';
+
+/** One entry of `GET /cards/:id/activity`; `data` keeps names as they were. */
+export interface CardActivity {
+  id: string;
+  kind: CardActivityKind;
+  at: string;
+  actor: { id: string; name: string; avatarUrl: string | null; active: boolean } | null;
+  projectId: string | null;
+  data: Record<string, unknown>;
 }
 
 export interface Page<T> {
