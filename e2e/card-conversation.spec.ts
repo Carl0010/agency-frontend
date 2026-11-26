@@ -48,7 +48,8 @@ test('formatted comments, the pinned comment box, Comments/Activity tabs and the
 
   // Activity lists what happened, oldest first.
   await drawer.getByRole('tab', { name: 'Activity' }).click();
-  await expect(drawer.getByTestId('card-activity').getByRole('listitem')).toHaveText([/created this card/, /commented/]);
+  // The API's activity feed, with the comments merged in.
+  await expect(drawer.getByTestId('card-activity').getByRole('listitem')).toHaveText([/created this card/, /edited the description/, /commented/]);
   await drawer.getByRole('tab', { name: /Comments/ }).click();
   await expect(comment).toBeVisible();
   await page.context().close();

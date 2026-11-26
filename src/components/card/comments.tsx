@@ -6,17 +6,18 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import dynamic from 'next/dynamic';
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useId, useRef, useState, type FocusEvent, type ReactNode } from 'react';
-import { Markdown } from '@/components/markdown';
+import { AttachmentImage, AttachmentLink, Markdown } from '@/components/markdown';
 import { useConfirm } from '@/components/confirmation';
 import { Icon } from '@/components/icon';
 import { useToast } from '@/components/toast';
-import { Avatar, Button, GuestChip } from '@/components/ui';
+import { Avatar, Button, GuestChip, LABEL_BG } from '@/components/ui';
 import { api, ApiError, errorMessage } from '@/lib/api';
 import { cardPath } from '@/lib/cards';
 import { applyComment } from '@/lib/realtime';
 import { useSession } from '@/lib/session';
 import { timeAgo } from '@/lib/time';
-import type { Comment, PersonRef } from '@/lib/types';
+import { describeActivity } from '@/lib/card-activity';
+import type { CardActivity, Comment, PersonRef } from '@/lib/types';
 import { useNow } from '@/lib/use-now';
 import { uploadCardAttachment } from './attachments';
 import { useMentionCandidates } from './mention-input';
@@ -50,10 +51,10 @@ function useComments(cardId: string, projectId: string) {
     // Cached flat so realtime events can patch single comments; grouped at render time.
     queryFn: async () => (await api.get<{ data: Thread[] }>(cardPath(cardId, projectId, '/comments'))).data.flatMap(({ replies, ...root }) => [root, ...replies]),
   });
-  async function post(body: string, parentCommentId?: string): Promise<boolean> {
+  async function post(body: string, parentCommentId?: string, attachmentIds: string[] = []): Promise<boolean> {
     if (!body.trim()) return false;
     try {
-      const c = await api.post<Comment>(cardPath(cardId, projectId, '/comments'), { body, ...(parentCommentId ? { parentCommentId } : {}) });
+      const c = await api.post<Comment>(cardPath(cardId, projectId, '/comments'), { body, ...(parentCommentId ? { parentCommentId } : {}), ...(attachmentIds.length ? { attachmentIds } : {}) });
       applyComment(qc, c);
       void qc.invalidateQueries({ queryKey: ['card', cardId] });
       return true;
@@ -83,6 +84,14 @@ export function Comments({ cardId, projectId, canPost = true, activity, inDrawer
   inDrawer?: boolean;
 }) {
   const { comments, post } = useComments(cardId, projectId);
+  // The card's activity feed. An API without it (before migration 0019) answers 404: the tab then shows
+  // what the card read returns, and comment files are linked from the text instead of posted with it.
+  const feed = useQuery({
+    queryKey: ['card', cardId, 'activity'],
+    queryFn: async () => (await api.get<{ data: CardActivity[] }>(cardPath(cardId, projectId, '/activity'))).data,
+    enabled: Boolean(activity),
+    retry: false,
+  });
   const [tab, setTab] = useState<'comments' | 'activity'>('comments');
   const tabsId = useId();
 
@@ -129,7 +138,7 @@ export function Comments({ cardId, projectId, canPost = true, activity, inDrawer
               ))}
             </div>
             <div role="tabpanel" id={`${tabsId}-${tab}-panel`} aria-labelledby={`${tabsId}-${tab}`} className="space-y-4">
-              {tab === 'comments' ? list : <Activity events={activity} comments={live} />}
+              {tab === 'comments' ? list : <Activity events={feed.data ? feed.data.map(toEvent) : activity} comments={live} />}
             </div>
           </>
         ) : (
@@ -140,7 +149,7 @@ export function Comments({ cardId, projectId, canPost = true, activity, inDrawer
         )}
       </section>
       {canPost ? (
-        <CommentComposer cardId={cardId} projectId={projectId} inDrawer={inDrawer} onPost={(body) => post(body)} onPosted={() => setTab('comments')} />
+        <CommentComposer cardId={cardId} projectId={projectId} inDrawer={inDrawer} filesWithComment={feed.isSuccess} onPost={(body, attachmentIds) => post(body, undefined, attachmentIds)} onPosted={() => setTab('comments')} />
       ) : (
         <p data-testid="view-only" className="rounded-md bg-background px-3 py-2 text-sm text-secondary-foreground">
           {VIEW_ONLY}
@@ -148,6 +157,25 @@ export function Comments({ cardId, projectId, canPost = true, activity, inDrawer
       )}
     </>
   );
+}
+
+const shortDate = (iso: string) => new Date(iso).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
+
+/** An entry of the card's activity feed, as a line of the Activity tab. */
+function toEvent(entry: CardActivity): ActivityEvent {
+  return {
+    id: `activity-${entry.id}`,
+    at: entry.at,
+    person: entry.actor ?? { id: 'deleted', name: 'Someone' },
+    text: describeActivity(entry, shortDate).map((part, i) =>
+      typeof part === 'string' ? part : (
+        <span key={i} className="inline-flex items-center gap-1 font-medium text-foreground">
+          {part.color ? <span aria-hidden="true" className={`size-2 rounded-full ${LABEL_BG[part.color] ?? 'bg-disabled-foreground'}`} /> : null}
+          {part.name}
+        </span>
+      ),
+    ),
+  };
 }
 
 /** Everything that happened on the card, oldest first: the events given plus each comment. */
@@ -178,7 +206,15 @@ interface Upload { key: number; name: string; progress: number }
  * The comment box: one line until it is focused, then a formatting editor (full screen on phones)
  * with Attach. Files upload as the card's attachments and are linked from the comment.
  */
-function CommentComposer({ cardId, projectId, inDrawer, onPost, onPosted }: { cardId: string; projectId: string; inDrawer: boolean; onPost: (body: string) => Promise<boolean>; onPosted: () => void }) {
+function CommentComposer({ cardId, projectId, inDrawer, filesWithComment, onPost, onPosted }: {
+  cardId: string;
+  projectId: string;
+  inDrawer: boolean;
+  /** The API posts files with the comment (`attachmentIds`); otherwise they are linked from the text. */
+  filesWithComment: boolean;
+  onPost: (body: string, attachmentIds: string[]) => Promise<boolean>;
+  onPosted: () => void;
+}) {
   const toast = useToast();
   const qc = useQueryClient();
   const people = useMentionCandidates();
@@ -188,12 +224,13 @@ function CommentComposer({ cardId, projectId, inDrawer, onPost, onPosted }: { ca
   const [draft, setDraft] = useState('');
   const [busy, setBusy] = useState(false);
   const [uploads, setUploads] = useState<Upload[]>([]);
+  const [files, setFiles] = useState<{ id: string; filename: string }[]>([]);
   const seq = useRef(0);
 
   async function submit() {
     if (!draft.trim() || busy || uploads.length) return;
     setBusy(true);
-    if (await onPost(draft)) { setDraft(''); setExpanded(false); onPosted(); }
+    if (await onPost(draft, files.map((f) => f.id))) { setDraft(''); setFiles([]); setExpanded(false); onPosted(); }
     setBusy(false);
   }
 
@@ -203,7 +240,8 @@ function CommentComposer({ cardId, projectId, inDrawer, onPost, onPosted }: { ca
       setUploads((u) => [...u, { key, name: f.name, progress: 0 }]);
       try {
         const id = await uploadCardAttachment(cardId, projectId, f, (progress) => setUploads((u) => u.map((x) => (x.key === key ? { ...x, progress } : x))));
-        editor.current?.insertAttachment(id, f.name);
+        if (filesWithComment) setFiles((list) => [...list, { id, filename: f.name }]);
+        else editor.current?.insertAttachment(id, f.name);
       } catch (err) {
         toast(err instanceof ApiError && err.status === 413 ? `${f.name}: ${err.message}` : `${f.name}: ${errorMessage(err)}`);
       } finally {
@@ -215,7 +253,14 @@ function CommentComposer({ cardId, projectId, inDrawer, onPost, onPosted }: { ca
   }
 
   function collapseIfEmpty(event: FocusEvent<HTMLDivElement>) {
-    if (!event.currentTarget.contains(event.relatedTarget) && !draft.trim() && !uploads.length) setExpanded(false);
+    if (!event.currentTarget.contains(event.relatedTarget) && !draft.trim() && !uploads.length && !files.length) setExpanded(false);
+  }
+
+  /** An attached file not posted yet: taking it off deletes it from the card. */
+  async function discard(id: string) {
+    setFiles((list) => list.filter((f) => f.id !== id));
+    try { await api.del(`/attachments/${id}`); } catch (err) { toast(errorMessage(err)); }
+    void qc.invalidateQueries({ queryKey: ['card', cardId] });
   }
 
   return (
@@ -250,13 +295,19 @@ function CommentComposer({ cardId, projectId, inDrawer, onPost, onPosted }: { ca
         <input ref={file} type="file" multiple hidden aria-hidden="true" tabIndex={-1} onChange={(e) => void attach(e.target.files)} />
         {expanded ? (
           <div className="flex flex-wrap items-center gap-2 border-t border-border-subtle px-3 py-2 max-sm:pb-[max(0.5rem,env(safe-area-inset-bottom))]">
+            {files.map((f) => (
+              <span key={f.id} data-testid="pending-comment-file" className="inline-flex items-center gap-1 rounded-md border border-border bg-subtle py-0.5 pl-2 pr-0.5 text-caption text-secondary-foreground">
+                <Icon name="attachment" className="size-3.5" />{f.filename}
+                <button type="button" aria-label={`Remove ${f.filename}`} onClick={() => void discard(f.id)} className="tap inline-grid size-5 place-items-center rounded hover:bg-muted"><Icon name="close" className="size-3" /></button>
+              </span>
+            ))}
             {uploads.map((u) => (
               <span key={u.key} role="status" className="inline-flex items-center gap-1.5 rounded-md bg-subtle px-2 py-0.5 text-caption text-secondary-foreground">
                 <Icon name="attachment" className="size-3.5" />{u.name} · {u.progress}%
               </span>
             ))}
             <span className="mr-auto hidden text-caption text-muted-foreground sm:inline">⌘↵ to post</span>
-            <Button variant="ghost" size="sm" onClick={() => { setDraft(''); editor.current?.clear(); setExpanded(false); }}>Cancel</Button>
+            <Button variant="ghost" size="sm" onClick={() => { for (const f of files) void discard(f.id); setDraft(''); editor.current?.clear(); setExpanded(false); }}>Cancel</Button>
             <Button size="sm" onClick={() => void submit()} disabled={busy || !draft.trim() || uploads.length > 0}>Comment</Button>
           </div>
         ) : null}
@@ -342,7 +393,10 @@ function CommentItem({ comment, cardId, onReply }: { comment: Comment; cardId: s
         ) : editing ? (
           <InlineEditor value={editBody} onChange={setEditBody} onSubmit={() => void save()} onCancel={() => setEditing(false)} label="Edit comment" submitLabel="Save" />
         ) : (
-          <Markdown source={comment.body ?? ''} />
+          <>
+            <Markdown source={comment.body ?? ''} />
+            {comment.attachments?.length ? <CommentFiles files={comment.attachments} /> : null}
+          </>
         )}
         {!deleted && !editing ? (
           <div className="mt-0.5 flex gap-3 text-xs text-muted-foreground">
@@ -383,5 +437,20 @@ function InlineEditor({ value, onChange, onSubmit, onCancel, label, placeholder,
         <Button size="sm" onClick={onSubmit} disabled={!value.trim()}>{submitLabel}</Button>
       </div>
     </div>
+  );
+}
+
+/** Files posted with a comment: images as previews, other files as download chips. */
+function CommentFiles({ files }: { files: NonNullable<Comment['attachments']> }) {
+  return (
+    <ul data-testid="comment-files" className="mt-1.5 flex flex-wrap items-start gap-2">
+      {files.map((f) => (
+        <li key={f.id}>
+          {f.mimeType?.startsWith('image/') && f.scanState === 'clean'
+            ? <AttachmentLink id={f.id} plain><AttachmentImage src={`attachment:${f.id}`} alt={f.filename} /></AttachmentLink>
+            : <AttachmentLink id={f.id}>{f.filename}</AttachmentLink>}
+        </li>
+      ))}
+    </ul>
   );
 }
