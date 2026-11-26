@@ -102,14 +102,14 @@ function initials(name: string): string {
     .join('');
 }
 
-export function Avatar({ person, size = 24 }: { person: Pick<PersonRef, 'id' | 'name' | 'avatarUrl'> & { active?: boolean }; size?: number }) {
+export function Avatar({ person, size = 24, plain = false }: { person: Pick<PersonRef, 'id' | 'name' | 'avatarUrl'> & { active?: boolean }; size?: number; /** No native title tooltip, for avatars that show a person card instead. */ plain?: boolean }) {
   const color = AVATAR_COLORS[[...person.id].reduce((n, ch) => n + ch.charCodeAt(0), 0) % AVATAR_COLORS.length];
   const style = { width: size, height: size, fontSize: Math.max(9, size * 0.4) };
   return person.avatarUrl ? (
-    <img src={person.avatarUrl} alt={person.name} title={person.name} style={style} className="rounded-full object-cover ring-2 ring-surface" />
+    <img src={person.avatarUrl} alt={person.name} title={plain ? undefined : person.name} style={style} className="rounded-full object-cover ring-2 ring-surface" />
   ) : (
     <span
-      title={person.active === false ? `${person.name} (deactivated)` : person.name}
+      title={plain ? undefined : person.active === false ? `${person.name} (deactivated)` : person.name}
       style={style}
       className={`inline-flex items-center justify-center rounded-full font-semibold tracking-tight text-inverse-foreground ring-2 ring-surface ${
         person.active === false ? 'bg-disabled-foreground' : color

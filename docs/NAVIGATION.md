@@ -212,12 +212,17 @@ The project header's status pill is a menu for members; see
 
 Share opens the project access dialog only for project admins. It manages teams,
 direct member edit/admin grants and direct guest grants. Admin console → Teams owns
-team names, membership, team roles, guest levels and archive/restore. A team page has
-three tabs kept in the URL (`?tab=`): Overview (counts, then people grouped as team
-admins, members and guests, with Add people and Invite guest dialogs), Projects (the
-team's projects from `GET /workspaces/:id/projects?team=`, plus share/unshare for
-projects the viewer administers) and Settings (rename, archive/restore; team and
-workspace admins only). The API
+team names, membership, team roles, guest levels and archive/restore. The Teams list (Teams module and
+Admin console → Teams) is a table: search by team, person name or email, a people filter from the
+workspace roster (teams that include everyone chosen), and per team its people as avatars that open
+a person card (avatar, name, email; nothing else) plus their names. Both stay in the URL (`?q=`,
+`?people=`). A team page has tabs kept in the URL (`?tab=`): Overview (a cover with the team's mark,
+its Projects from `GET /workspaces/:id/projects?team=` with share/unshare for projects the viewer
+administers, and a Members card), Members (people grouped as team admins, members and guests, with
+emails and the Add people and Invite guest dialogs), Team chat (shown as Soon: no team channel in the
+API yet) and Settings (rename, archive/restore; team and workspace admins only). The old
+`?tab=projects` lands on Overview. See [the lists handoff](handoffs/TEAMS_AND_PROJECTS_LISTS.md).
+The API
 remains authoritative for access and billing gates. People pickers use the scoped
 project roster. [Contract integration](handoffs/BACKEND_CONTRACT_UPGRADE.md) records
 access-change cache handling and the difference between new grants and revocation.

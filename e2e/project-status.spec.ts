@@ -51,18 +51,18 @@ test('project status: create, change from the header by keyboard, filters, sideb
   await expect(sidebar.getByRole('link', { name: /Acme site rebuild/ })).toHaveCount(0);
   await expect(sidebar.getByRole('link', { name: /Spring campaign/ })).toBeVisible();
   await page.goto(`/w/${workspaceId}/projects`);
-  const filters = page.getByRole('group', { name: 'Filter projects by status' });
-  await expect(filters.getByRole('button', { name: 'Open', exact: true })).toHaveAttribute('aria-pressed', 'true');
-  const rows = page.getByRole('main').getByRole('listitem');
+  const filter = page.getByRole('combobox', { name: 'Project status', exact: true });
+  await expect(filter).toHaveText('Open');
+  const rows = page.getByTestId('project-row');
   await expect(rows.filter({ hasText: 'Spring campaign' })).toBeVisible();
   await expect(rows.filter({ hasText: 'Acme site rebuild' })).toHaveCount(0);
-  await filters.getByRole('button', { name: 'Completed', exact: true }).click();
+  await choose(filter, 'Completed');
   await expect(page).toHaveURL(/status=completed/);
   await expect(rows.filter({ hasText: 'Acme site rebuild' }).getByTestId('project-status')).toHaveText('Completed');
   await expect(rows.filter({ hasText: 'Spring campaign' })).toHaveCount(0);
-  await filters.getByRole('button', { name: 'Cancelled', exact: true }).click();
+  await choose(filter, 'Cancelled');
   await expect(page.getByRole('heading', { name: 'No cancelled projects' })).toBeVisible();
-  await filters.getByRole('button', { name: 'All', exact: true }).click();
+  await choose(filter, 'All');
   await expect(rows).toHaveCount(2);
 
   // AC4: archive and restore keep the status.

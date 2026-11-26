@@ -5,6 +5,9 @@ Completed handoffs remain as implementation and contract records. Include curren
 authorization, acceptance criteria, test plan and what remains unimplemented.
 Never represent a proposal as a completed feature.
 
+- [Teams and Projects lists](TEAMS_AND_PROJECTS_LISTS.md): implemented 2026-11-26 with per-row
+  reads; proposes `include=people` on the team and project lists, and a team channel (Team chat is Soon).
+
 - [Card activity feed and files on comments](CARD_ACTIVITY_AND_COMMENT_FILES.md): implemented
   2026-11-26 with agency-mvp #8 (activity feed, files posted with comments); older APIs fall back to
   the derived Activity and files linked from the comment text.
