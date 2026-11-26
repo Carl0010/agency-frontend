@@ -19,9 +19,10 @@ import { formText } from '@/lib/form';
 import { useSession } from '@/lib/session';
 import type { Member, Page, Project, TeamDetail, TeamMember } from '@/lib/types';
 import { useWorkspace } from '@/lib/workspace';
+import { PersonAvatar, useRoster } from '@/components/people/person-card';
 import { useTeamWrite } from './teams-screen';
 
-type Tab = 'overview' | 'projects' | 'settings';
+type Tab = 'overview' | 'members' | 'settings';
 export type TeamSection = 'teams' | 'admin';
 
 /** The team list a team page belongs to. */
@@ -31,11 +32,12 @@ export function teamsListPath(workspaceId: string, section: TeamSection) {
 type Write = ReturnType<typeof useTeamWrite>;
 
 /**
- * One team, in three tabs kept in the URL (`?tab=`): Overview (people, grouped, with Add people
- * and Invite guest), Projects (shared through `?team=`), and Settings (name, archive) for the
- * people who manage the team. The API enforces every action; the UI only hides what can't work.
- * `section` is the module it opens in: the Teams directory (`/teams`) or Admin console → Teams
- * (`/settings/teams`). Both show the same team; only the back link and tab URLs differ.
+ * One team, in tabs kept in the URL (`?tab=`): Overview (a cover, the team's projects and its
+ * people), Members (grouped, with Add people and Invite guest), Team chat (not in the API yet, shown
+ * as Soon), and Settings (name, archive) for the people who manage the team. The API enforces every
+ * action; the UI only hides what can't work. `section` is the module it opens in: the Teams
+ * directory (`/teams`) or Admin console → Teams (`/settings/teams`). Both show the same team; only
+ * the back link and tab URLs differ.
  */
 export function TeamScreen({ teamId, section = 'teams' }: { teamId: string; section?: TeamSection }) {
   const ws = useWorkspace();
@@ -51,62 +53,78 @@ export function TeamScreen({ teamId, section = 'teams' }: { teamId: string; sect
   const t = team.data; const archived = Boolean(t.archivedAt);
   const canManage = !readOnly && (ws.role === 'owner' || ws.role === 'admin' || t.myRole === 'admin');
   const requested = params.get('tab');
-  const tab: Tab = requested === 'projects' || (requested === 'settings' && canManage) ? requested : 'overview';
+  // `?tab=projects` predates the Projects card on Overview; it lands there.
+  const tab: Tab = requested === 'members' || (requested === 'settings' && canManage) ? requested : 'overview';
+  const base = `${list}/${teamId}`;
+  const href = (id: Tab) => id === 'overview' ? base : `${base}?tab=${id}`;
   const tabs: { id: Tab; label: string; count?: number }[] = [
     { id: 'overview', label: 'Overview' },
-    { id: 'projects', label: 'Projects', count: projects.data?.data.length },
+    { id: 'members', label: 'Members', count: t.memberCount },
     ...(canManage ? [{ id: 'settings' as const, label: 'Settings' }] : []),
   ];
-  const base = `${list}/${teamId}`;
 
-  return <main className="ui-page max-w-5xl">
+  return <main className="ui-page max-w-6xl">
     <BackLink href={list} />
-    <header className="mb-5 flex flex-wrap items-center gap-4">
-      <span aria-hidden="true" className="grid size-14 shrink-0 place-items-center rounded-2xl bg-primary-subtle text-primary-text"><Icon name="people" className="size-7" /></span>
-      <div className="min-w-0 flex-1">
-        <h1 className="break-words text-page font-semibold">{t.name}</h1>
-        <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-label text-muted-foreground">
-          <span>{t.memberCount} {t.memberCount === 1 ? 'person' : 'people'}{projects.data ? ` · ${projects.data.data.length} ${projects.data.data.length === 1 ? 'project' : 'projects'}` : ''}</span>
-          {archived ? <Badge tone="warning">Archived</Badge> : null}
-          {t.myRole ? <Badge>{t.myRole === 'admin' ? 'You’re a team admin' : 'You’re a member'}</Badge> : null}
-        </p>
-      </div>
+    <header className="mb-3 flex flex-wrap items-center gap-3">
+      <Avatar person={{ id: t.id, name: t.name, avatarUrl: null }} size={36} plain />
+      <h1 className="min-w-0 break-words text-page font-semibold">{t.name}</h1>
+      {archived ? <Badge tone="warning">Archived</Badge> : null}
     </header>
     <nav aria-label="Team sections" className="mb-5 flex gap-1 overflow-x-auto border-b border-border pb-2">
-      {tabs.map((item) => <Link key={item.id} href={item.id === 'overview' ? base : `${base}?tab=${item.id}`} scroll={false} aria-current={tab === item.id ? 'page' : undefined} className="ui-tab shrink-0">
-        {item.label}{item.count !== undefined ? <span className="rounded-full bg-subtle px-1.5 text-caption text-muted-foreground">{item.count}</span> : null}
-      </Link>)}
+      {tabs.slice(0, 2).map((item) => <TabLink key={item.id} item={item} href={href(item.id)} current={tab === item.id} />)}
+      <span aria-disabled="true" className="ui-tab shrink-0 cursor-default text-muted-foreground hover:bg-transparent">Team chat<span className="rounded-full bg-subtle px-2 py-0.5 text-caption">Soon</span></span>
+      {tabs.slice(2).map((item) => <TabLink key={item.id} item={item} href={href(item.id)} current={tab === item.id} />)}
     </nav>
     {archived ? <p className="mb-5 rounded-lg border border-warning-border bg-warning-subtle p-3 text-label text-warning-text">This team is archived. Its people and project shares are paused until it’s restored{canManage ? ' in Settings' : ''}.</p> : null}
     <FormError message={act.error ? errorMessage(act.error) : null} />
-    {tab === 'overview' ? <Overview team={t} canManage={canManage && !archived} projectCount={projects.data?.data.length} act={act} /> : null}
-    {tab === 'projects' ? <Projects team={t} projects={projects} canShare={!readOnly && !archived} /> : null}
+    {tab === 'overview' ? <Overview team={t} projects={projects} canShare={!readOnly && !archived} membersHref={href('members')} /> : null}
+    {tab === 'members' ? <Members team={t} canManage={canManage && !archived} act={act} /> : null}
     {tab === 'settings' ? <Settings team={t} act={act} /> : null}
   </main>;
+}
+
+function TabLink({ item, href, current }: { item: { label: string; count?: number }; href: string; current: boolean }) {
+  return <Link href={href} scroll={false} aria-current={current ? 'page' : undefined} className="ui-tab shrink-0">
+    {item.label}{item.count !== undefined ? <span className="rounded-full bg-subtle px-1.5 text-caption text-muted-foreground">{item.count}</span> : null}
+  </Link>;
+}
+
+/** A cover with the team's mark and name, then its projects beside its people. */
+function Overview({ team, projects, canShare, membersHref }: { team: TeamDetail; projects: ReturnType<typeof useQuery<Page<Project>>>; canShare: boolean; membersHref: string }) {
+  const { byId } = useRoster();
+  const count = projects.data?.data.length;
+  return <div>
+    <div aria-hidden="true" className="relative mb-14 h-28 rounded-2xl bg-primary-subtle sm:h-36">
+      <span className="absolute -bottom-12 left-6 flex rounded-full ring-4 ring-background sm:left-10"><Avatar person={{ id: team.id, name: team.name, avatarUrl: null }} size={96} plain /></span>
+    </div>
+    <div className="mb-6 px-1 sm:px-4">
+      <p aria-hidden="true" className="break-words text-2xl font-semibold">{team.name}</p>
+      <p className="text-label text-muted-foreground">{team.memberCount} {team.memberCount === 1 ? 'person' : 'people'}{count !== undefined ? ` · ${count} ${count === 1 ? 'project' : 'projects'}` : ''}</p>
+    </div>
+    <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_20rem]">
+      <Projects team={team} projects={projects} canShare={canShare} />
+      <section aria-labelledby="team-members-card" className="ui-panel p-4">
+        <div className="mb-3 flex items-center gap-2"><h2 id="team-members-card" className="flex-1 font-semibold">Members</h2><Link href={membersHref} scroll={false} className="tap inline-flex items-center rounded-md px-1 text-label text-primary">View all {team.memberCount}</Link></div>
+        {team.members.length ? <ul aria-label={`People in ${team.name}`} className="flex flex-wrap gap-2">
+          {team.members.map((member) => <li key={member.userId} className="flex"><PersonAvatar person={member} email={byId.get(member.userId)?.email} size={36} /></li>)}
+        </ul> : <p className="text-label text-muted-foreground">No one in this team yet.</p>}
+      </section>
+    </div>
+  </div>;
 }
 
 function BackLink({ href }: { href: string }) {
   return <Link href={href} className="tap mb-3 inline-flex items-center gap-1.5 text-label text-primary"><Icon name="chevron" className="size-3.5 rotate-180" />All teams</Link>;
 }
 
-function Overview({ team, canManage, projectCount, act }: { team: TeamDetail; canManage: boolean; projectCount?: number; act: Write }) {
+/** People, grouped: team admins, members, guests. Managers add people and invite guests here. */
+function Members({ team, canManage, act }: { team: TeamDetail; canManage: boolean; act: Write }) {
   const [dialog, setDialog] = useState<'add' | 'guest' | null>(null);
   const admins = team.members.filter((member) => !member.guest && member.role === 'admin');
   const members = team.members.filter((member) => !member.guest && member.role !== 'admin');
   const guests = team.members.filter((member) => member.guest);
   const invited = team.members.filter((member) => member.status === 'invited').length;
-  const stats = [
-    { label: 'Members', value: admins.length + members.length, icon: 'people' as const },
-    { label: 'Guests', value: guests.length, icon: 'person' as const },
-    { label: 'Projects', value: projectCount ?? '–', icon: 'board' as const },
-  ];
   return <div className="space-y-5">
-    <ul className="grid grid-cols-3 gap-2 sm:gap-3" aria-label="Team at a glance">
-      {stats.map((stat) => <li key={stat.label} className="ui-panel flex items-center gap-3 p-3 sm:p-4">
-        <span aria-hidden="true" className="hidden size-10 shrink-0 place-items-center rounded-xl bg-subtle text-secondary-foreground sm:grid"><Icon name={stat.icon} /></span>
-        <span><span className="block text-body-lg font-semibold">{stat.value}</span><span className="text-caption text-muted-foreground">{stat.label}</span></span>
-      </li>)}
-    </ul>
     <section className="ui-panel" aria-labelledby="team-people">
       <header className="flex flex-col gap-3 border-b border-border px-4 py-3 sm:flex-row sm:items-center">
         <div className="min-w-0 flex-1"><h2 id="team-people" className="font-semibold">People</h2><p className="text-caption text-muted-foreground">{team.memberCount} in this team{invited ? ` · ${invited} invited` : ''}</p></div>
@@ -128,7 +146,7 @@ function Overview({ team, canManage, projectCount, act }: { team: TeamDetail; ca
 }
 
 function PeopleGroup({ title, hint, people, team, canManage, act, empty }: { title: string; hint: string; people: TeamMember[]; team: TeamDetail; canManage: boolean; act: Write; empty?: ReactNode }) {
-  const { user } = useSession(); const confirm = useConfirm();
+  const { user } = useSession(); const confirm = useConfirm(); const { byId } = useRoster();
   const { readOnly } = useWriteAvailability(useWorkspace());
   const adminCount = team.members.filter((member) => !member.guest && member.role === 'admin').length;
   if (!people.length && !empty) return null;
@@ -141,6 +159,7 @@ function PeopleGroup({ title, hint, people, team, canManage, act, empty }: { tit
       return <li key={member.userId} className="flex flex-col gap-2 py-2.5 sm:flex-row sm:items-center sm:gap-3" data-testid="team-member-row">
         <div className="flex min-w-0 flex-1 items-center gap-3" data-testid="team-member-identity"><Avatar person={{ id: member.userId, ...member }} size={32} /><div className="min-w-0 flex-1">
           <p className="break-words text-label font-medium">{member.name}{self ? ' (you)' : ''}</p>
+          {byId.get(member.userId)?.email ? <p className="break-all text-caption text-muted-foreground">{byId.get(member.userId)?.email}</p> : null}
           <p className="text-caption text-muted-foreground">{member.guest ? 'Guest' : member.role === 'admin' ? 'Team admin' : 'Team member'}{member.status === 'invited' ? ' · invited' : ''}{lastAdmin ? ' · Last admin' : ''}</p>
         </div></div>
         <div className="flex flex-wrap items-center gap-2 sm:shrink-0" data-testid="team-member-controls">
@@ -204,7 +223,7 @@ function Projects({ team, projects, canShare }: { team: TeamDetail; projects: Re
   const list = projects.data.data;
   return <section aria-labelledby="team-projects" className="space-y-4">
     <div className="flex flex-wrap items-center gap-3">
-      <div className="min-w-0 flex-1"><h2 id="team-projects" className="font-semibold">Projects shared with {team.name}</h2><p className="text-caption text-muted-foreground">Everyone in the team sees these. Project admins share and unshare them.</p></div>
+      <div className="min-w-0 flex-1"><h2 id="team-projects" className="font-semibold">Projects</h2><p className="text-caption text-muted-foreground">Everyone in the team sees these. Project admins share and unshare them.</p></div>
       {canShare && list.length ? <Button onClick={() => setSharing(true)}><Icon name="plus" />Share a project</Button> : null}
     </div>
     <FormError message={act.error ? errorMessage(act.error) : null} />
