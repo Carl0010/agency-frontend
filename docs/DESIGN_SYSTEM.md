@@ -205,7 +205,7 @@ piece of information. Reuse the semantic type and color tokens above.
 The Kanban header itself is the list drag area; do not add a separate grip.
 Keep title click/rename, keyboard reordering and menu/input interaction working.
 The sidebar uses `sidebar`; the board canvas uses `board-canvas` in both
-themes. Add card below a lane is a ghost button (`hover:bg-hover`), so it doesn't read as another card. Add list uses a `border-hover` outline against the canvas for contrast.
+themes. Add card below a lane is a ghost button (`hover:bg-hover`), so it doesn't read as another card. In dark mode it carries a `border` edge so it can be found on the canvas, and on hover the edge brightens to `border-hover` over `raised`. Add list uses a `border-hover` outline against the canvas for contrast.
 
 Keep list headings and the bottom Add card control outside the list's scrolling
 card area. Long lists scroll internally; users can still identify the list and
@@ -215,6 +215,8 @@ Click Add list to create and focus its real column header instead of opening
 a separate creation form. Empty lists say **No cards yet**; filtered lists with no matches
 say **No matching cards**. Keep one Add card control per list as a separate bordered surface below the
 list panel, with a 12px gap. The form expands inside that separate tile.
+
+In dark mode the content colours (`label-*`) switch to bright tones, as in Asana, and a project's icon tile is the solid colour with an `on-label` glyph; light mode keeps the softer tints. The project editor shows colour and icon as two compact rows of eight swatches.
 
 User-selected label colors appear as dots beside their readable names on a
 neutral chip. Do not put low-contrast text on arbitrary label fills. Card facts

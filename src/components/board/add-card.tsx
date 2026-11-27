@@ -47,7 +47,7 @@ export function AddCard({ listId, boardId, compact = false }: { listId: string; 
         onClick={() => setOpen(true)}
         data-testid="add-card-end"
         data-tour="add-card"
-        className={`tap shrink-0 text-left text-label font-medium text-secondary-foreground ${compact ? 'min-h-8 rounded-md px-2 py-1 hover:bg-primary-subtle active:bg-primary-muted' : 'min-h-10 rounded-lg px-3 py-2 hover:bg-hover hover:text-foreground active:bg-muted'}`}
+        className={`tap shrink-0 text-left text-label font-medium text-secondary-foreground ${compact ? 'min-h-8 rounded-md px-2 py-1 hover:bg-primary-subtle active:bg-primary-muted' : 'min-h-10 rounded-lg border border-transparent px-3 py-2 transition-[background-color,border-color,color] duration-150 hover:bg-hover hover:text-foreground active:bg-muted dark:border-border dark:hover:border-border-hover dark:hover:bg-raised'}`}
       >
         <span className="inline-flex items-center gap-2"><Icon name="plus" />Add card</span>
       </button>

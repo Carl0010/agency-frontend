@@ -78,6 +78,8 @@
   --color-label-purple: #9270b0;
   --color-label-pink: #bd7196;
   --color-label-brown: #8c694c;
+  /* Glyphs drawn on a solid content colour (a project's icon tile in dark mode). */
+  --color-on-label: #16181b;
   --color-avatar-1: #93483f;
   --color-avatar-2: #805c24;
   --color-avatar-3: #3c7050;
@@ -140,6 +142,17 @@ html[data-theme='dark'] {
   --color-highlight-foreground: #ffe9a7;
   --color-overlay: #000000;
   /* Dark shadows barely show, so the hairline (a faint light edge) is what separates the layers. */
+  /* Content colours go bright on dark, as in Asana: muted mid-tones turned to mud on the dark board. */
+  --color-label-grey: #c4c7cb;
+  --color-label-red: #ff8576;
+  --color-label-orange: #ff9f4b;
+  --color-label-yellow: #ffd721;
+  --color-label-green: #82d990;
+  --color-label-teal: #6ad8bc;
+  --color-label-blue: #8db8ff;
+  --color-label-purple: #b8acff;
+  --color-label-pink: #fc96bf;
+  --color-label-brown: #e0a87e;
   --shadow-md: 0 3px 10px -3px rgb(0 0 0 / 0.4), 0 0 0 1px rgb(255 255 255 / 0.05);
   --shadow-lg: 0 12px 32px -8px rgb(0 0 0 / 0.6), 0 0 0 1px rgb(255 255 255 / 0.08);
   --shadow-xl: 0 24px 60px -16px rgb(0 0 0 / 0.7), 0 0 0 1px rgb(255 255 255 / 0.08);

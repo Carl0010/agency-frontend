@@ -7,6 +7,9 @@
 @import 'tailwindcss';
 @import '../styles/tokens.css';
 
+/* `dark:` follows the theme the user picked (html[data-theme]), not the OS setting. */
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
+
 @layer base {
   html, body { height: 100%; }
   html { color-scheme: light; }

@@ -7,7 +7,7 @@ import { Button, Field, Input, Select } from '@/components/ui';
 import { FULL_SCREEN_ON_PHONE } from '@/components/ui-dialog';
 import { FormError } from '@/components/auth-card';
 import { api, errorMessage } from '@/lib/api';
-import { PROJECT_DOT } from '@/lib/content-colors';
+import { PROJECT_DOT, PROJECT_ICON_BG } from '@/lib/content-colors';
 import { formText } from '@/lib/form';
 import { channelsKey } from '@/lib/unread';
 import { PROJECT_STATUSES, projectStatus } from '@/lib/project-status';
@@ -72,16 +72,17 @@ export function ProjectEditor({ project, onClose, onSaved }: {
       <Field label="Project name"><Input autoFocus name="name" required maxLength={120} defaultValue={project?.name} /></Field>
       <Field label="Status"><Select name="status" defaultValue={projectStatus(project?.status).value} options={PROJECT_STATUSES.map((status) => ({ value: status.value, label: status.label, icon: <StatusDot tone={status.tone} /> }))} /></Field>
       <div className="flex items-center gap-3 rounded-lg border border-border bg-background p-3"><ProjectIcon project={{ color, icon }} /><span className="text-label text-muted-foreground">Project icon preview</span></div>
-      <fieldset><legend className="mb-2 text-label font-medium">Project icon</legend><div className="grid grid-cols-4 gap-2">
-        {PROJECT_ICONS.map((name) => <label key={name} className={`tap relative flex cursor-pointer flex-col items-center gap-1 rounded-lg border p-2 text-caption ${icon === name ? 'border-ring bg-primary-subtle text-primary-text' : 'border-border hover:bg-hover'}`}>
-          <input type="radio" name="icon" value={name} aria-label={name} checked={icon === name} onChange={() => setIcon(name)} className="peer absolute inset-0 opacity-0" /><Icon name={name} /><span className="capitalize">{name}</span><span className="pointer-events-none absolute inset-0 rounded-lg peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-ring" />
+      {/* Colour and icon in two compact rows of eight, as in Asana's "Set color & icon". */}
+      <fieldset><legend className="mb-2 text-label font-medium text-secondary-foreground">Project color</legend><div className="grid w-fit grid-cols-8 gap-1.5">
+        {Object.entries(PROJECT_DOT).map(([value, background]) => <label key={value} title={value} className={`relative inline-flex size-8 cursor-pointer items-center justify-center rounded-md ${color === value ? 'ring-2 ring-ring ring-offset-2 ring-offset-surface' : 'hover:ring-2 hover:ring-border-hover hover:ring-offset-2 hover:ring-offset-surface'} ${background}`}>
+          <input type="radio" name="color" value={value} aria-label={value} checked={color === value} onChange={() => setColor(value)} className="peer absolute inset-0 z-10 size-full cursor-pointer opacity-0" />
+          {color === value ? <Icon name="check" className="size-4 text-on-label" /> : null}
+          <span className="pointer-events-none absolute inset-0 rounded-md peer-focus-visible:outline-2 peer-focus-visible:outline-offset-4 peer-focus-visible:outline-ring" />
         </label>)}
       </div></fieldset>
-      <fieldset><legend className="mb-2 text-label font-medium text-secondary-foreground">Project color</legend><div className="flex flex-wrap gap-2">
-        {Object.entries(PROJECT_DOT).map(([value, background]) => <label key={value} title={value} className={`tap relative inline-flex size-10 cursor-pointer items-center justify-center rounded-lg border ${color === value ? 'border-ring bg-primary-subtle' : 'border-border bg-background hover:bg-hover'}`}>
-          <input type="radio" name="color" value={value} aria-label={value} checked={color === value} onChange={() => setColor(value)} className="peer absolute inset-0 z-10 size-full cursor-pointer opacity-0" />
-          <span className={`size-5 rounded-md ${background}`} /><span className="pointer-events-none absolute inset-0 rounded-lg peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-ring" />
-          {color === value ? <Icon name="check" className="absolute bottom-0 right-0 size-3 rounded-full bg-surface text-foreground" /> : null}
+      <fieldset><legend className="mb-2 text-label font-medium text-secondary-foreground">Project icon</legend><div className="grid w-fit grid-cols-8 gap-1.5">
+        {PROJECT_ICONS.map((name) => <label key={name} title={name} className={`relative inline-flex size-8 cursor-pointer items-center justify-center rounded-md ${icon === name ? `${PROJECT_ICON_BG[color] ?? PROJECT_ICON_BG.slate} text-foreground ring-2 ring-ring ring-offset-2 ring-offset-surface dark:text-on-label` : 'text-secondary-foreground hover:bg-hover hover:text-foreground'}`}>
+          <input type="radio" name="icon" value={name} aria-label={name} checked={icon === name} onChange={() => setIcon(name)} className="peer absolute inset-0 z-10 size-full cursor-pointer opacity-0" /><Icon name={name} className="size-4" /><span className="pointer-events-none absolute inset-0 rounded-md peer-focus-visible:outline-2 peer-focus-visible:outline-offset-4 peer-focus-visible:outline-ring" />
         </label>)}
       </div></fieldset>
       {!project ? <TeamPicker workspaceId={ws.id} disabled={save.isPending} /> : null}
