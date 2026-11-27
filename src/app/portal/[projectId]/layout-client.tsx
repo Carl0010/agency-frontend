@@ -1,0 +1,109 @@
+'use client';
+
+import { LoadingSkeleton } from '@/components/skeleton';
+
+import { useQuery } from '@tanstack/react-query';
+import Link from 'next/link';
+import { useParams, usePathname, useRouter } from 'next/navigation';
+import type { ReactNode } from 'react';
+import { AccountMenu } from '@/components/account-menu';
+import { Button, GuestChip, Select } from '@/components/ui';
+import { ProjectIcon } from '@/components/projects/project-icon';
+import { api, errorMessage } from '@/lib/api';
+import { PortalContext, portalProjectsKey } from '@/lib/portal';
+import type { Page, PortalProject, Workspace } from '@/lib/types';
+import { WorkspaceContext } from '@/lib/workspace';
+
+/**
+ * Guest view header (§3.6): the agency's name, the project, a `Guest` chip
+ * with the access level, a switcher listing only granted projects (AC13),
+ * and exactly two tabs — Board and Shared.
+ */
+export default function PortalProjectLayout({ children }: { children: ReactNode }) {
+  const { projectId } = useParams<{ projectId: string }>();
+  const pathname = usePathname();
+  const router = useRouter();
+  const projects = useQuery({ queryKey: portalProjectsKey, queryFn: () => api.get<Page<PortalProject>>('/portal/projects') });
+  const project = projects.data?.data.find((p) => p.id === projectId.toLowerCase());
+  // The guest's own, redacted view of the workspace (no plan, no setup state).
+  const ws = useQuery({
+    queryKey: ['workspace-by-id', project?.workspaceId],
+    queryFn: () => api.get<Workspace>(`/workspaces/${project?.workspaceId}`),
+    enabled: Boolean(project),
+  });
+
+  if (projects.isPending) return <LoadingSkeleton variant="cards" className="p-4 sm:p-6" />;
+  if (projects.error || ws.error) return <main role="alert" className="space-y-3 p-8 text-center"><p>{errorMessage(projects.error ?? ws.error)}</p><Button variant="secondary" onClick={() => { void projects.refetch(); void ws.refetch(); }}>Try again</Button></main>;
+  if (!project) {
+    return (
+      <main className="mx-auto max-w-md p-8 text-center" data-testid="portal-not-found">
+        <h1 className="text-lg font-semibold">You don&apos;t have access to this project</h1>
+        <p className="mt-2 text-sm text-secondary-foreground">It does not exist, or it is no longer shared with you.</p>
+        <Link className="mt-4 inline-block text-sm text-primary" href="/portal">
+          Your projects
+        </Link>
+      </main>
+    );
+  }
+  if (ws.isPending || !ws.data) return <LoadingSkeleton variant="cards" className="p-4 sm:p-6" />;
+
+  const base = `/portal/${project.id}`;
+  const tabs = [
+    { href: base, label: 'Board', current: pathname === base || pathname.startsWith(`${base}/c/`) },
+    { href: `${base}/chat`, label: 'Shared', current: pathname.startsWith(`${base}/chat`) },
+  ];
+  const others = projects.data?.data ?? [];
+
+  return (
+    <WorkspaceContext.Provider value={ws.data}>
+      <PortalContext.Provider value={{ project, projects: others }}>
+        <div className="flex h-full flex-col" data-testid="portal-layout">
+          <header className="flex shrink-0 flex-wrap items-center gap-x-3 gap-y-1 border-b border-border bg-surface px-3 py-2">
+            <span className="flex h-7 w-7 items-center justify-center rounded bg-inverse text-xs font-bold text-inverse-foreground" aria-hidden>
+              {project.workspaceName.slice(0, 1).toUpperCase()}
+            </span>
+            <span className="text-sm font-semibold text-secondary-foreground" data-testid="portal-agency">
+              {project.workspaceName}
+            </span>
+            <span className="text-muted-foreground">/</span>
+            <ProjectIcon project={project} />
+            <div className="min-w-0">
+              <h1 className="truncate font-semibold">{project.name}</h1>
+            </div>
+            <GuestChip access={project.access} />
+            {others.length > 1 ? (
+              <label className="flex items-center gap-1 text-sm text-secondary-foreground">
+                <span className="sr-only">Switch project</span>
+                <Select
+                  className="w-56"
+                  value={project.id}
+                  onChange={(id) => router.push(`/portal/${id}`)}
+                  options={others.map((p) => ({
+                    value: p.id,
+                    label: others.some((o) => o.workspaceId !== p.workspaceId) ? `${p.workspaceName} — ${p.name}` : p.name,
+                  }))}
+                />
+              </label>
+            ) : null}
+            <nav className="flex gap-1 text-sm" aria-label="Project sections">
+              {tabs.map((t) => (
+                <Link
+                  key={t.href}
+                  href={t.href}
+                  aria-current={t.current ? 'page' : undefined}
+                  className={`tap flex items-center rounded px-2 ${t.current ? 'bg-subtle font-medium' : 'text-secondary-foreground hover:bg-background'}`}
+                >
+                  {t.label}
+                </Link>
+              ))}
+            </nav>
+            <div className="ml-auto flex items-center gap-2">
+              <AccountMenu variant="avatar" />
+            </div>
+          </header>
+          <div className="min-h-0 flex-1">{children}</div>
+        </div>
+      </PortalContext.Provider>
+    </WorkspaceContext.Provider>
+  );
+}
