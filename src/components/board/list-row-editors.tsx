@@ -4,7 +4,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useId, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { Icon } from '@/components/icon';
 import { DuePill } from '@/components/due-pill';
-import { Avatar, Button, Input } from '@/components/ui';
+import { Avatar, Button, DatePicker, Input } from '@/components/ui';
 import { useToast } from '@/components/toast';
 import { api, errorMessage } from '@/lib/api';
 import { cardPath, useCardPeople } from '@/lib/cards';
@@ -48,7 +48,7 @@ export function RowDue({ card, cardKey, now, compact = false }: { card: CardTile
       const dueAt = draft ? new Date(draft).toISOString() : null;
       void mutation.save(() => api.patch<CardTile>(cardPath(card.id, card.projectId), { dueAt, dueCompletedAt: dueAt && done ? card.dueCompletedAt ?? new Date().toISOString() : null })).then((saved) => { if (saved) close(); });
     }}>
-      <label className="block space-y-1 text-label"><span>Due date</span><Input data-autofocus type="datetime-local" value={draft} onChange={(event) => setDraft(event.target.value)} disabled={mutation.isPending} /></label>
+      <DatePicker label="Due date" placeholder="Set a due date" withTime defaultTime="17:00" value={draft || null} onChange={(value) => setDraft(value ?? '')} disabled={mutation.isPending} />
       {draft ? <label className="tap flex items-center gap-2 text-label"><input type="checkbox" checked={done} onChange={(event) => setDone(event.target.checked)} disabled={mutation.isPending} />Mark due date complete</label> : null}
       {mutation.error ? <p role="alert" className="text-caption text-danger-text">{errorMessage(mutation.error)}</p> : null}
       <div className="flex flex-wrap items-center gap-2 border-t border-border pt-3">

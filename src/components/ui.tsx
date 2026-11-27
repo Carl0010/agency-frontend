@@ -37,11 +37,12 @@ export function Textarea({ className = '', ...props }: TextareaHTMLAttributes<HT
  * Pickers, toggles and shortcut keys come from Quiet Pro, Agency's design system package
  * (@carl0010/quiet-pro). Choose by list size: RadioGroup for 2–5 visible choices, Select for a fixed
  * list (a styled menu with typeahead; `name` and `required` work in forms), Combobox when people would
- * rather type, MultiCombobox for several values.
+ * rather type, MultiCombobox for several values. DatePicker for any day or day and time (values match
+ * native date inputs: "YYYY-MM-DD" or "YYYY-MM-DDTHH:mm").
  */
 export {
-  Checkbox, Combobox, Kbd, MultiCombobox, RadioGroup, Select, Switch,
-  type CheckboxProps, type ComboboxProps, type KbdProps, type ListOption, type MultiComboboxProps, type RadioGroupProps, type SelectProps, type SwitchProps,
+  Checkbox, Combobox, DatePicker, Kbd, MultiCombobox, RadioGroup, Select, Switch,
+  type CheckboxProps, type ComboboxProps, type DatePickerProps, type KbdProps, type ListOption, type MultiComboboxProps, type RadioGroupProps, type SelectProps, type SwitchProps,
 } from '@carl0010/quiet-pro';
 
 export function Panel({ className = '', ...props }: HTMLAttributes<HTMLDivElement>) {
