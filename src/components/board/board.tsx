@@ -30,6 +30,7 @@ import { useBoardArrivals } from '@/lib/arrival';
 import { useDragAutoScroll } from '@/lib/drag-scroll';
 import { useShowArrivals, withArrivals } from '@/lib/board-display';
 import { ProjectActions } from '@/components/project-chrome';
+import { ProjectHeaderMenu } from '@/components/projects/project-header-menu';
 import { ProjectIcon } from '@/components/projects/project-icon';
 import { ProjectStatusMenu } from '@/components/projects/project-status';
 import { useToast } from '@/components/toast';
@@ -242,8 +243,10 @@ export function BoardScreen({ boardId, projectId }: { boardId: string; projectId
           <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-2.5">
             <ProjectIcon project={{ color: project.data?.color ?? shown.project.color, icon: project.data?.icon ?? shown.project.icon }} />
             <h1 className="min-w-0 truncate text-body-lg font-semibold leading-6 sm:text-lg" data-testid="board-title">
-              {shown.project.name}
+              {project.data?.name ?? shown.project.name}
             </h1>
+            {project.data ? <ProjectHeaderMenu project={project.data} /> : null}
+            {project.data?.archivedAt ? <span data-testid="project-archived" className="shrink-0 rounded-full border border-border bg-subtle px-2 py-0.5 text-caption font-medium text-muted-foreground">Archived</span> : null}
             {project.data ? <ProjectStatusMenu project={project.data} compact /> : null}
             {showArrivals ? <span className="hidden md:inline"><ProjectArrivalLine projectId={projectId} /></span> : null}
           </div>
