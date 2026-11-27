@@ -9,7 +9,8 @@ export const FULL_SCREEN_ON_PHONE = 'max-sm:h-dvh max-sm:max-h-none max-sm:w-ful
 
 /**
  * A modal dialog. `size="compact"` keeps it a small centred box on phones too, for a single
- * question or field; the default fills a phone's screen.
+ * question or field; the default fills a phone's screen. Mark the field to type in first with
+ * `data-autofocus`: React's autoFocus runs before the dialog opens, so it loses to the close button.
  */
 export function Dialog({ title, children, onClose, size = 'full' }: { title: string; children: ReactNode; onClose: () => void; size?: 'full' | 'compact' }) {
   const ref = useRef<HTMLDialogElement>(null);
@@ -17,6 +18,8 @@ export function Dialog({ title, children, onClose, size = 'full' }: { title: str
     const element = ref.current!;
     const previous = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     element.showModal();
+    // showModal() focuses the first focusable element (the close button); a field marked data-autofocus wins.
+    element.querySelector<HTMLElement>('[data-autofocus]')?.focus({ preventScroll: true });
     return () => { element.close(); if (previous?.isConnected) previous.focus({ preventScroll: true }); };
   }, []);
   return <dialog ref={ref} aria-label={title} onCancel={(event) => { event.preventDefault(); onClose(); }}

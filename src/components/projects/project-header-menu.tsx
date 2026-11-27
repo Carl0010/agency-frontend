@@ -128,7 +128,7 @@ function DeleteProjectDialog({ project, onClose, onDeleted }: { project: Project
       </p>
       <FormError message={error} />
       <Field label={`Type ${project.name} to confirm`}>
-        <Input autoFocus name="confirmName" autoComplete="off" spellCheck={false} value={typed} onChange={(event) => setTyped(event.target.value)} />
+        <Input data-autofocus name="confirmName" autoComplete="off" spellCheck={false} value={typed} onChange={(event) => setTyped(event.target.value)} />
       </Field>
       <DialogActions>
         <Button variant="secondary" disabled={pending} onClick={onClose}>Cancel</Button>

@@ -203,7 +203,7 @@ function InviteGuestDialog({ team, act, onClose }: { team: TeamDetail; act: Writ
       event.preventDefault(); const data = new FormData(event.currentTarget);
       act.mutate(() => api.post(`/teams/${team.id}/guests`, { email: formText(data, 'email'), access: data.get('access') }), { onSuccess: onClose });
     }}>
-      <Field label="Guest email"><Input name="email" type="email" required maxLength={254} placeholder="guest@example.com" autoFocus /></Field>
+      <Field label="Guest email"><Input name="email" type="email" required maxLength={254} placeholder="guest@example.com" data-autofocus /></Field>
       <Field label="Access"><Select name="access" aria-label="Team guest access" defaultValue="comment" className="w-full" options={GUEST_ACCESS} /></Field>
       <DialogActions><Button type="button" variant="ghost" onClick={onClose}>Cancel</Button><Button type="submit" disabled={act.isPending || invitesBlocked}>Invite guest to team</Button></DialogActions>
     </form>
