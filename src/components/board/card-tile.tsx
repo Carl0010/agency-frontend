@@ -36,7 +36,7 @@ export function CardTileView({ card, now, dragging, guest = false }: { card: Til
   const hasMeta = card.dueAt || card.checklistTotal || card.commentCount || card.attachmentCount || card.assignees.length || (!guest && others > 0);
   return (
     <div
-      className={`rounded-lg border border-border bg-surface px-3 py-2.5 shadow-sm transition-[background-color,border-color,box-shadow] ${dragging ? 'rotate-1 shadow-xl ring-2 ring-ring' : 'hover:border-border-hover hover:bg-raised hover:shadow-md'}`}
+      className={`rounded-lg border border-border bg-surface px-3 py-2.5 shadow-sm transition-[background-color,border-color,box-shadow] ${dragging ? 'rotate-1 shadow-xl ring-2 ring-ring' : 'hover:border-input hover:bg-raised hover:shadow-md dark:hover:border-border-hover'}`}
     >
       {card.labels.length ? (
         <div className="mb-1.5 flex flex-wrap gap-1" role="list" aria-label="Labels">
