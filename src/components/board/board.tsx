@@ -238,7 +238,7 @@ export function BoardScreen({ boardId, projectId }: { boardId: string; projectId
     <div data-testid="board-canvas" className="flex h-full bg-board-canvas">
       <div className="flex min-w-0 flex-1 flex-col">
         {/* The essentials only: name, status, Share. The rest is in the ⋯ menu and the Filters panel. */}
-        <div data-testid="board-project-header" className="flex shrink-0 items-center gap-2 border-b border-border bg-surface px-3 py-1.5 sm:gap-3 sm:px-4 sm:py-2">
+        <div data-testid="board-project-header" className="flex shrink-0 items-center gap-2 border-b border-border bg-chrome px-3 py-1.5 sm:gap-3 sm:px-4 sm:py-2">
           <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-2.5">
             <ProjectIcon project={{ color: project.data?.color ?? shown.project.color, icon: project.data?.icon ?? shown.project.icon }} />
             <h1 className="min-w-0 truncate text-body-lg font-semibold leading-6 sm:text-lg" data-testid="board-title">

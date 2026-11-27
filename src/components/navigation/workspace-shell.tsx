@@ -54,7 +54,7 @@ export function WorkspaceShell({ children }: { children: ReactNode }) {
   return (
     <div className="flex h-dvh min-w-0 flex-col overflow-hidden">
       <a href="#workspace-content" className="sr-only z-50 rounded-md bg-surface p-3 text-primary focus:not-sr-only focus:fixed focus:left-4 focus:top-4">Skip to content</a>
-      <header aria-label="Application bar" data-testid="workspace-header" className="grid h-14 shrink-0 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 border-b border-border bg-surface px-3 sm:gap-4 sm:px-5 lg:grid-cols-[1fr_minmax(20rem,36rem)_1fr] lg:border-b-0">
+      <header aria-label="Application bar" data-testid="workspace-header" className="grid h-14 shrink-0 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 border-b border-border bg-chrome px-3 sm:gap-4 sm:px-5 lg:grid-cols-[1fr_minmax(20rem,36rem)_1fr] lg:border-b-0">
         <div className="flex min-w-0 items-center gap-3 lg:gap-2">
           <Button variant="ghost" size="icon" className="lg:hidden" aria-label="Open navigation" aria-expanded={open} aria-haspopup="dialog" data-tour={projectId ? 'shared-channel' : undefined} onClick={() => setOpen(true)}><Icon name="menu" className="size-5" /></Button>
           <Button variant="ghost" size="icon" className="hidden lg:-ml-3.5 lg:inline-flex lg:size-11" aria-label={sidebarVisible ? 'Close sidebar' : 'Open sidebar'} aria-expanded={sidebarVisible} aria-controls="desktop-sidebar" onClick={() => setSidebarVisible((visible) => !visible)}><Icon name="menu" className="size-5" /></Button>
@@ -67,20 +67,20 @@ export function WorkspaceShell({ children }: { children: ReactNode }) {
         <div aria-hidden="true" />
       </header>
       {/* The row shares the L's surface so the panel's rounded corner shows it, not the page background. */}
-      <div className="flex min-h-0 min-w-0 flex-1 lg:bg-surface">
-        <aside aria-label="Module rail" className="hidden w-14 shrink-0 bg-surface lg:block">
+      <div className="flex min-h-0 min-w-0 flex-1 lg:bg-chrome">
+        <aside aria-label="Module rail" className="hidden w-14 shrink-0 bg-chrome lg:block">
           <ModuleRail activeModule={activeModule} />
         </aside>
         {/* The app bar and rail form one L-shaped frame; the panel inside it rounds its top-left corner. */}
         <div className="workspace-frame flex min-h-0 min-w-0 flex-1">
-          <aside id="desktop-sidebar" aria-label="Workspace sidebar" aria-hidden={!sidebarVisible} inert={!sidebarVisible} data-open={sidebarVisible} className="workspace-sidebar-panel hidden shrink-0 bg-background lg:block">
+          <aside id="desktop-sidebar" aria-label="Workspace sidebar" aria-hidden={!sidebarVisible} inert={!sidebarVisible} data-open={sidebarVisible} className="workspace-sidebar-panel hidden shrink-0 bg-sidebar lg:block">
             <div className="workspace-sidebar-content h-full w-64 border-r border-border">
               <WorkspaceSidebar data={data} projectId={projectId} activeModule={activeModule} />
             </div>
           </aside>
           <NavigationDrawer open={open} onClose={close}>
             <div className="flex h-full min-w-0">
-              <div className="w-14 shrink-0 border-r border-border bg-surface"><ModuleRail activeModule={activeModule} onNavigate={close} /></div>
+              <div className="w-14 shrink-0 border-r border-border bg-chrome"><ModuleRail activeModule={activeModule} onNavigate={close} /></div>
               <div className="min-w-0 flex-1"><WorkspaceSidebar data={data} projectId={projectId} activeModule={activeModule} onNavigate={close} onClose={close} /></div>
             </div>
           </NavigationDrawer>

@@ -66,9 +66,12 @@ several products need belongs in Quiet Pro, not here.
 
 | Role / utility | Source (light / dark) | Use |
 | --- | --- | --- |
-| `bg-background` | Quiet Pro `--bg` | App canvas and quiet navigation rail |
-| `bg-board-canvas` | Agency `#FCFDFE` / `#111315` | Board work area: lighter than the sidebar in light mode, one step up in dark; pair with foreground/secondary/muted text |
-| `bg-lane` | Quiet Pro `--surface-3` / `--bg` | Board lanes and group columns. Always below the cards in them: grey under white cards in light, darker than the canvas in dark |
+| `bg-background` | Quiet Pro `--bg` | App canvas: the lowest layer |
+| `bg-chrome` | Quiet Pro `--surface-2` / `--surface-1` | App bar, module rail and the board's project header |
+| `bg-sidebar` | Quiet Pro `--bg` / `--surface-1` | Workspace sidebar and the phone navigation drawer: level with the chrome in dark, so the page is the one dark well |
+| `bg-board-canvas` | Agency `#FCFDFE` / Quiet Pro `--bg` | Board work area; pair with foreground/secondary/muted text |
+| `bg-lane` | Quiet Pro `--surface-3` / `--surface-1` | Board lanes and group columns. Always below the cards in them: a grey well under white cards in light, one step above the canvas and one below the cards in dark |
+| `hover:bg-raised` | Quiet Pro `--surface-2` / `--surface-3` | A card under the pointer: lifts one step in dark, with `border-hover` and `shadow-md` |
 | `bg-surface` | Quiet Pro `--surface-2` | Cards, panels, dialogs, main headers |
 | `bg-popover` | Quiet Pro `--surface-overlay` | Menus, popovers, select lists, the command palette, person cards, tour. One step above the dialog or card it opens from (lighter in dark; shadow and hairline in light) |
 | `bg-field` | Quiet Pro `--field` | Inputs, selects, textareas and checkbox boxes. Sunken in dark so a field reads as a field inside a card or dialog |
@@ -116,7 +119,10 @@ control/focus boundaries at least 3:1 on their actual adjacent background.
 ### Elevation
 
 Each layer that floats is one step above what it opens from: board lane → card → dialog →
-popover. In dark mode a higher layer is lighter (`lane` < `surface` < `popover`) and carries a faint
+popover. In dark mode a higher layer is lighter, in visible steps rather than hairline ones:
+`board-canvas`/`background` < `chrome`, `sidebar`, `lane` < `surface` (cards, outlined with `border`)
+< `popover`. Never put a lane below the canvas it sits on, or cards look sunk. The contrast spec
+checks each step. A floating layer also carries a faint
 light hairline in its shadow; in light mode cards, dialogs and popovers stay white and are told apart
 by `shadow-lg`/`shadow-xl`, which also carry a 1px hairline. So a Select opened inside a dialog
 always shows its own edge in both themes. Toasts use `bg-inverse`: near-black in light, a raised grey
@@ -198,8 +204,8 @@ piece of information. Reuse the semantic type and color tokens above.
 
 The Kanban header itself is the list drag area; do not add a separate grip.
 Keep title click/rename, keyboard reordering and menu/input interaction working.
-The sidebar retains `background`; the board canvas uses `board-canvas` in both
-themes. Add list uses a `border-hover` outline against the canvas for contrast.
+The sidebar uses `sidebar`; the board canvas uses `board-canvas` in both
+themes. Add card below a lane is a ghost button (`hover:bg-hover`), so it doesn't read as another card. Add list uses a `border-hover` outline against the canvas for contrast.
 
 Keep list headings and the bottom Add card control outside the list's scrolling
 card area. Long lists scroll internally; users can still identify the list and

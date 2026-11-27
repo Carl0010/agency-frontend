@@ -73,6 +73,8 @@ describe.each(['light', 'dark'])('%s readable design token combinations', (theme
     ['foreground', 'popover'], ['secondary-foreground', 'popover'], ['muted-foreground', 'popover'],
     ['foreground', 'field'], ['muted-foreground', 'field'],
     ['foreground', 'lane'], ['secondary-foreground', 'lane'], ['muted-foreground', 'lane'],
+    ['foreground', 'chrome'], ['muted-foreground', 'chrome'], ['secondary-foreground', 'sidebar'], ['muted-foreground', 'sidebar'],
+    ['foreground', 'raised'], ['muted-foreground', 'raised'],
     ['primary-foreground', 'primary'], ['primary-foreground', 'primary-hover'],
     ['primary-foreground', 'primary-active'], ['primary', 'surface'],
     ['primary-text', 'primary-subtle'], ['primary-text', 'primary-muted'],
@@ -85,6 +87,18 @@ describe.each(['light', 'dark'])('%s readable design token combinations', (theme
   ])('%s on %s has at least 4.5:1 contrast', (foreground, background) => {
     expect(contrast(foreground, background)).toBeGreaterThanOrEqual(4.5);
   });
+
+  if (theme === 'dark') {
+    // Dark elevation is lightness: each layer must be a visible step above the one it sits on,
+    // or cards melt into lanes and lanes into the page.
+    it.each([['lane', 'board-canvas'], ['sidebar', 'background'], ['surface', 'lane'], ['popover', 'surface'], ['raised', 'surface']])(
+      '%s sits a visible step above %s', (upper, lower) => {
+        expect(luminance(upper)).toBeGreaterThan(luminance(lower));
+        expect(contrast(upper, lower)).toBeGreaterThanOrEqual(1.08);
+      },
+    );
+    it('card edges show on their lane', () => { expect(contrast('border', 'lane')).toBeGreaterThanOrEqual(1.4); });
+  }
 
   it.each([['input', 'surface'], ['input', 'field'], ['ring', 'surface'], ['ring', 'popover'], ['ring', 'field'], ['ring', 'background'], ['ring', 'board-canvas'], ['border-hover', 'board-canvas']])(
     '%s remains distinguishable on %s at 3:1', (control, background) => {
