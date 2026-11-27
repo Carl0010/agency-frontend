@@ -26,4 +26,8 @@ describe('Projects screen status filter', () => {
     expect(statusParam('cancelled')).toBe('cancelled');
     expect(statusParam('all')).toBeNull();
   });
+  it('Archived sends no status, so archived projects of every status show', () => {
+    expect(statusFilter('archived')).toBe('archived');
+    expect(statusParam('archived')).toBeNull();
+  });
 });

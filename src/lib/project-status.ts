@@ -17,11 +17,15 @@ export function projectStatus(value: string | undefined | null) {
   return PROJECT_STATUSES.find((status) => status.value === value) ?? PROJECT_STATUSES[1]!;
 }
 
-/** The Projects screen filter: Open is the default and every choice is answered by the API. */
-export type StatusFilter = 'open' | 'completed' | 'cancelled' | 'all';
+/**
+ * The Projects screen filter: Open is the default and every choice is answered by the API.
+ * Archived asks for the archive too (`archived=true`) and keeps only the archived projects.
+ */
+export type StatusFilter = 'open' | 'completed' | 'cancelled' | 'all' | 'archived';
 export const STATUS_FILTERS: { value: StatusFilter; label: string }[] = [
   { value: 'open', label: 'Open' }, { value: 'completed', label: 'Completed' },
   { value: 'cancelled', label: 'Cancelled' }, { value: 'all', label: 'All' },
+  { value: 'archived', label: 'Archived' },
 ];
 
 export function statusFilter(value: string | null): StatusFilter {
@@ -30,7 +34,7 @@ export function statusFilter(value: string | null): StatusFilter {
 
 /** `status=` query value for a filter, or null for All (no parameter). */
 export function statusParam(filter: StatusFilter): string | null {
-  if (filter === 'all') return null;
+  if (filter === 'all' || filter === 'archived') return null;
   return filter === 'open' ? OPEN_STATUSES.join(',') : filter;
 }
 

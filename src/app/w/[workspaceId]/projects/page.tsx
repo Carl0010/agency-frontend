@@ -31,7 +31,7 @@ export default function ProjectsPage() {
   const team = params.get('team') ?? '';
   const status = statusFilter(params.get('status'));
   const [query, setQuery] = useState(() => params.get('q') ?? '');
-  const apiQuery = [team ? `team=${encodeURIComponent(team)}` : '', statusParam(status) ? `status=${statusParam(status)}` : ''].filter(Boolean).join('&');
+  const apiQuery = [team ? `team=${encodeURIComponent(team)}` : '', statusParam(status) ? `status=${statusParam(status)}` : '', status === 'archived' ? 'archived=true' : ''].filter(Boolean).join('&');
   const projects = useQuery({ queryKey: ['projects', ws.id, { team, status }], queryFn: ({ signal }) => api.get<Page<Project>>(`/workspaces/${ws.id}/projects${apiQuery ? `?${apiQuery}` : ''}`, signal) });
   const list = projects.data?.data ?? [];
   const people = useQueries({ queries: list.map((project) => ({ queryKey: ['assignable', project.id], queryFn: ({ signal }: { signal: AbortSignal }) => api.get<Page<Assignable>>(`/projects/${project.id}/assignable`, signal), staleTime: 30_000 })) });
@@ -43,7 +43,8 @@ export default function ProjectsPage() {
     router.replace(`/w/${ws.id}/projects${text ? `?${text}` : ''}`, { scroll: false });
   };
   const teamName = teams.data?.data.find((item) => item.id === team)?.name;
-  const rows = list.map((project, index) => ({ project, people: people[index] })).filter(({ project }) => fold(project.name).includes(fold(query)));
+  const rows = list.map((project, index) => ({ project, people: people[index] }))
+    .filter(({ project }) => (status === 'archived' ? Boolean(project.archivedAt) : true) && fold(project.name).includes(fold(query)));
 
   return <main className="ui-page">
     <PageHeader title="Projects" actions={<>
@@ -78,11 +79,12 @@ export default function ProjectsPage() {
               : members?.isError ? null
               : <span aria-label="Loading people" className="flex -space-x-1.5">{[0, 1].map((n) => <span key={n} className="size-[26px] animate-pulse rounded-full bg-muted ring-2 ring-surface motion-reduce:animate-none" />)}</span>}
           </span>
-          <span role="cell" className="flex"><ProjectStatusPill project={project} compact /></span>
+          <span role="cell" className="flex">{project.archivedAt ? <span className="rounded-full border border-border bg-subtle px-2 py-0.5 text-caption font-medium text-muted-foreground">Archived</span> : <ProjectStatusPill project={project} compact />}</span>
           <span role="cell" className="relative z-10 flex justify-end"><ProjectMenu project={project} /></span>
         </div>)}
       </div>
       : query ? <EmptyState icon="search" title="No projects match" description={`Nothing is named like “${query}”.`} action={<Button variant="secondary" onClick={() => go({ q: '' })}>Clear search</Button>} />
+      : status === 'archived' ? <EmptyState icon="projects" title="No archived projects" description="Archive a project from the menu next to its name. It stays here until someone restores or deletes it." action={<Button variant="secondary" onClick={() => go({ status: '' })}>Show open projects</Button>} />
       : status === 'completed' || status === 'cancelled' ? <EmptyState icon="projects" title={`No ${status} projects`} description="Projects appear here when their status is set, until someone archives them." action={<Button variant="secondary" onClick={() => go({ status: 'all' })}>Show all projects</Button>} />
       : team ? <EmptyState icon="projects" title={`No projects shared with ${teamName ?? 'this team'}`} description="A project admin can share projects with the team." action={<Button variant="secondary" onClick={() => go({ team: '' })}>Show all projects</Button>} />
       : <EmptyState title="No projects shared with you yet" description="Ask a project admin to share a project or add you to a team, or create your own project." action={<div className="flex flex-wrap justify-center gap-2"><Button onClick={() => setCreating(true)}>Create project</Button><Button variant="secondary" onClick={() => { void qc.invalidateQueries({ queryKey: ['projects', ws.id] }); void teams.refetch(); }}>Refresh projects</Button></div>} />}
