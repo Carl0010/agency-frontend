@@ -26,7 +26,7 @@ export function ProjectMenu({ project, onNavigate }: { project: Project; onNavig
       const rect = event.currentTarget.getBoundingClientRect();
       setPosition({ left: Math.max(8, Math.min(rect.right - 224, window.innerWidth - 232)), top: Math.min(rect.bottom + 4, window.innerHeight - 200) });
     }}><Icon name="more" /></Button>
-    <div ref={popover} id={id} popover="auto" role="group" aria-label={`${project.name} actions`} style={position} className="fixed m-0 w-56 rounded-xl border border-border bg-surface p-1.5 text-foreground shadow-lg">
+    <div ref={popover} id={id} popover="auto" role="group" aria-label={`${project.name} actions`} style={position} className="fixed m-0 w-56 rounded-xl border border-border bg-popover p-1.5 text-foreground shadow-lg">
       <p className="truncate px-3 py-2 text-caption font-medium text-muted-foreground">{project.name}</p>
       <Link href={board} onClick={() => { dismiss(); onNavigate?.(); }} className="ui-nav-link tap"><Icon name="board" />Open board</Link>
       <ProjectStarButton project={project} />

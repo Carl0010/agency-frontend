@@ -27,7 +27,7 @@ export function RowAssignees({ card, cardKey, compact = false }: { card: CardTil
         {people.isPending ? <p className="p-2 text-label text-muted-foreground">Loading people…</p> : people.error ? <div role="alert" className="space-y-2 p-2 text-label text-danger-text"><p>{errorMessage(people.error)}</p><Button variant="secondary" size="sm" onClick={() => void people.refetch()}>Retry people</Button></div> : members.length ? members.map((member) => {
           const selected = card.assignees.some((person) => person.id === member.userId);
           return <button key={member.userId} type="button" aria-label={member.name} aria-pressed={selected} disabled={mutation.isPending} onClick={() => void mutation.save(() => selected ? api.del<CardTile>(cardPath(card.id, card.projectId, `/assignees/${member.userId}`)) : api.post<CardTile>(cardPath(card.id, card.projectId, `/assignees/${member.userId}`)))}
-            className={`tap flex min-h-9 w-full items-center gap-2 rounded-md px-2 py-1 text-left text-label disabled:opacity-50 ${selected ? 'bg-primary-subtle text-primary-text' : 'hover:bg-subtle'}`}>
+            className={`tap flex min-h-9 w-full items-center gap-2 rounded-md px-2 py-1 text-left text-label disabled:opacity-50 ${selected ? 'bg-primary-subtle text-primary-text' : 'hover:bg-hover'}`}>
             <Avatar person={{ id: member.userId, name: member.name, avatarUrl: member.avatarUrl }} size={24} /><span className="min-w-0 flex-1 break-words">{member.name}</span>{selected ? <Icon name="check" /> : null}
           </button>;
         }) : <p className="p-2 text-label text-muted-foreground">No active members available.</p>}
@@ -90,7 +90,7 @@ function RowPopover({ label, title, trigger: contents, children, onOpen }: { lab
   }, [open]);
   return <>
     <button ref={trigger} type="button" aria-label={label} aria-haspopup="dialog" aria-expanded={open} popoverTarget={id} className="tap inline-flex min-w-0 max-w-full items-center gap-1.5 rounded-md px-1 text-left text-label hover:bg-muted">{contents}</button>
-    <div ref={panel} id={id} role="dialog" aria-modal="false" aria-label={title} popover="auto" onToggle={(event) => { const opening = event.newState === 'open'; setOpen(opening); if (opening) onOpen(); }} style={position} className="fixed inset-auto m-0 w-80 max-w-[calc(100vw-1.5rem)] overflow-y-auto overscroll-contain rounded-xl border border-border bg-surface p-0 text-foreground shadow-lg">
+    <div ref={panel} id={id} role="dialog" aria-modal="false" aria-label={title} popover="auto" onToggle={(event) => { const opening = event.newState === 'open'; setOpen(opening); if (opening) onOpen(); }} style={position} className="fixed inset-auto m-0 w-80 max-w-[calc(100vw-1.5rem)] overflow-y-auto overscroll-contain rounded-xl border border-border bg-popover p-0 text-foreground shadow-lg">
       <div className="flex items-center gap-2 border-b border-border px-3 py-2"><h3 className="min-w-0 flex-1 truncate text-label font-semibold">{title}</h3><Button variant="ghost" size="icon" aria-label="Close editor" onClick={dismiss}><Icon name="close" /></Button></div>
       {children(dismiss)}
     </div>

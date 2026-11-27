@@ -98,7 +98,7 @@ export function ProjectStatusMenu({ project, compact = false }: { project: Proje
     </button>
     <div ref={popover} id={id} popover="auto" role="menu" aria-label="Project status" style={position} onKeyDown={onKeyDown}
       onToggle={(event) => { if (event.newState === 'open') (items().find((item) => item.getAttribute('aria-checked') === 'true') ?? items()[0])?.focus(); }}
-      className="fixed m-0 w-52 rounded-xl border border-border bg-surface p-1.5 text-foreground shadow-lg">
+      className="fixed m-0 w-52 rounded-xl border border-border bg-popover p-1.5 text-foreground shadow-lg">
       {PROJECT_STATUSES.map((status) => <button key={status.value} type="button" role="menuitemradio" aria-checked={status.value === current} tabIndex={-1}
         className="ui-nav-link tap w-full" onClick={() => choose(status.value)}>
         <span aria-hidden="true" className={`size-2 shrink-0 rounded-full ${TONES[status.tone].dot}`} /><span className="flex-1 text-left">{status.label}</span>

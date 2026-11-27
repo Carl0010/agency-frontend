@@ -224,7 +224,7 @@ export default function RichEditor({
       {toolbar && editor ? toolbarTarget ? createPortal(<Toolbar editor={editor} actions={actions} inline />, toolbarTarget) : <Toolbar editor={editor} actions={actions} /> : null}
       <EditorContent editor={editor} className="min-h-0 flex-1 overflow-y-auto" />
       {menu?.items.length ? (
-        <ul role="listbox" aria-label="Mention a teammate" data-testid="mention-options" className="absolute bottom-full left-0 z-30 mb-1 w-64 rounded-md border border-border bg-surface py-1 shadow-lg">
+        <ul role="listbox" aria-label="Mention a teammate" data-testid="mention-options" className="absolute bottom-full left-0 z-30 mb-1 w-64 rounded-md border border-border bg-popover py-1 shadow-lg">
           {menu.items.map((m, i) => (
             <li
               key={m.userId}
@@ -279,7 +279,7 @@ function Toolbar({ editor, actions, inline = false }: { editor: Editor; actions?
             onKeyDown={(e) => { if (e.key === 'Escape') { e.stopPropagation(); setLinking(null); editor.commands.focus(); } }}
             className="ui-input min-h-8 flex-1 py-1 text-label" />
           <button type="submit" className="ui-button tap min-h-8 bg-primary px-2.5 text-primary-foreground">Apply</button>
-          {active.Link ? <button type="button" onClick={() => applyLink('')} className="ui-button tap min-h-8 px-2.5 text-secondary-foreground hover:bg-subtle">Remove</button> : null}
+          {active.Link ? <button type="button" onClick={() => applyLink('')} className="ui-button tap min-h-8 px-2.5 text-secondary-foreground hover:bg-hover">Remove</button> : null}
         </form>
       ) : null}
     </div>

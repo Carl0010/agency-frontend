@@ -123,7 +123,7 @@ export function MentionInput({
       />
       {active && members.error ? <p role="alert" className="text-label text-danger-text">{errorMessage(members.error)} <Button variant="ghost" onClick={() => void members.refetch()}>Retry mentions</Button></p> : null}
       {options.length ? (
-        <ul role="listbox" aria-label="Mention a teammate" data-testid="mention-options" className="absolute bottom-full left-0 z-30 mb-1 w-64 rounded-md border border-border bg-surface py-1 shadow-lg">
+        <ul role="listbox" aria-label="Mention a teammate" data-testid="mention-options" className="absolute bottom-full left-0 z-30 mb-1 w-64 rounded-md border border-border bg-popover py-1 shadow-lg">
           {options.map((m, i) => (
             <li
               key={m.userId}

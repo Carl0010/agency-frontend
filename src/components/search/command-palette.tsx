@@ -105,7 +105,7 @@ export function CommandPalette() {
 
   return (
     <div className="fixed inset-0 z-[90] flex items-start justify-center bg-overlay/30 p-4 pt-[10vh]" role="dialog" aria-modal="true" aria-label="Search" onMouseDown={() => setOpen(false)}>
-      <div className="w-full max-w-xl overflow-hidden rounded-lg bg-surface shadow-2xl" onMouseDown={(e) => e.stopPropagation()} data-testid="command-palette">
+      <div className="w-full max-w-xl overflow-hidden rounded-lg border border-border bg-popover shadow-xl" onMouseDown={(e) => e.stopPropagation()} data-testid="command-palette">
         <input
           ref={input}
           value={q}

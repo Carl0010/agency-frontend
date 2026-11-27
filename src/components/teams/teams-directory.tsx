@@ -26,7 +26,7 @@ export function TeamsDirectory() {
     {teams.error ? <Button variant="secondary" onClick={() => void teams.refetch()}>Retry teams</Button> : null}
     {teams.isPending ? <LoadingSkeleton variant="rows" label="Loading teams" /> : null}
     {teams.data && !active.length ? <EmptyState title="No teams yet" description={admin ? 'Create teams in Admin console → Teams, then share projects with them.' : 'When an admin creates a team, it appears here.'} icon="people"
-      action={admin ? <Link href={`/w/${ws.id}/settings/teams`} className="ui-button tap border border-input bg-surface text-foreground shadow-sm hover:border-border-hover hover:bg-subtle">Create a team</Link> : undefined} /> : null}
+      action={admin ? <Link href={`/w/${ws.id}/settings/teams`} className="ui-button tap border border-input bg-surface text-foreground shadow-sm hover:border-border-hover hover:bg-hover">Create a team</Link> : undefined} /> : null}
     {active.length ? <TeamsList teams={active} hrefFor={(team) => `/w/${ws.id}/teams/${team.id}`} /> : null}
   </main>;
 }

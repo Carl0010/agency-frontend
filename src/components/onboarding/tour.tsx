@@ -120,7 +120,7 @@ export function CoachMarks() {
       role="dialog"
       aria-label={`Tour: ${step.title}`}
       data-testid="coach-mark"
-      className="fixed z-50 w-72 rounded-lg border border-primary-border bg-surface p-3 shadow-lg"
+      className="fixed z-50 w-72 rounded-lg border border-primary-border bg-popover p-3 shadow-lg"
       style={{ top: place.top, left: place.left }}
     >
       <p className="text-xs font-medium text-primary">{step.counted ? `Step ${counted} of ${COUNTED}` : 'Getting started'}</p>

@@ -179,7 +179,7 @@ function CardActionsMenu({ card, onArchive, onCopyLink }: { card: Detail; onArch
           const rect = event.currentTarget.getBoundingClientRect();
           setPosition({ top: rect.bottom + 4, left: Math.max(8, Math.min(rect.right - 208, window.innerWidth - 216)) });
         }}
-        className="tap inline-flex size-8 shrink-0 items-center justify-center rounded-md text-secondary-foreground hover:bg-subtle"><Icon name="more" /></button>
+        className="tap inline-flex size-8 shrink-0 items-center justify-center rounded-md text-secondary-foreground hover:bg-hover"><Icon name="more" /></button>
       <div ref={menu} id={id} popover="auto" role="menu" aria-label="Card actions" style={position}
         onToggle={(event) => { if (event.newState === 'open') items()[0]?.focus(); }}
         onKeyDown={(event) => {
@@ -188,7 +188,7 @@ function CardActionsMenu({ card, onArchive, onCopyLink }: { card: Detail; onArch
           if (next === undefined) return;
           event.preventDefault(); all[(next + all.length) % all.length]?.focus();
         }}
-        className="fixed m-0 w-52 rounded-xl border border-border bg-surface p-1.5 text-foreground shadow-lg">
+        className="fixed m-0 w-52 rounded-xl border border-border bg-popover p-1.5 text-foreground shadow-lg">
         {canPlace ? <button type="button" role="menuitem" tabIndex={-1} disabled={readOnly} className="ui-nav-link tap w-full disabled:opacity-50" onClick={() => pick(() => setPlacing('add'))}><Icon name="plus" />Add to project</button> : null}
         {canPlace && seesHome ? <button type="button" role="menuitem" tabIndex={-1} disabled={readOnly} className="ui-nav-link tap w-full disabled:opacity-50" onClick={() => pick(() => setPlacing('move'))}><Icon name="arrow" />Move to project</button> : null}
         <button type="button" role="menuitem" tabIndex={-1} className="ui-nav-link tap w-full" onClick={() => pick(onCopyLink)}><Icon name="attachment" />Copy link</button>
@@ -243,12 +243,12 @@ function Popover({ label, empty = false, children }: { label: string; empty?: bo
   const [open, setOpen] = useState(false);
   return (
     <div className="relative inline-block">
-      <button type="button" aria-label={label} aria-expanded={open} onClick={() => setOpen((o) => !o)} className="tap inline-flex h-7 items-center gap-1 rounded-md px-1.5 text-label text-muted-foreground hover:bg-subtle hover:text-foreground">
+      <button type="button" aria-label={label} aria-expanded={open} onClick={() => setOpen((o) => !o)} className="tap inline-flex h-7 items-center gap-1 rounded-md px-1.5 text-label text-muted-foreground hover:bg-hover hover:text-foreground">
         <Icon name="plus" className="size-3.5" />
         {empty ? <span>Add</span> : null}
       </button>
       {open ? (
-        <div className="absolute left-0 z-30 mt-1 w-64 rounded-md border border-border bg-surface p-2 shadow-lg" onKeyDown={(e) => e.key === 'Escape' && (e.stopPropagation(), setOpen(false))}>
+        <div className="absolute left-0 z-30 mt-1 w-64 rounded-md border border-border bg-popover p-2 shadow-lg" onKeyDown={(e) => e.key === 'Escape' && (e.stopPropagation(), setOpen(false))}>
           {children(() => setOpen(false))}
         </div>
       ) : null}
@@ -331,7 +331,7 @@ function NewLabelDialog({ name, onClose, onCreated }: { name: string; onClose: (
           <legend className="mb-2 text-label font-medium">Colour</legend>
           <div className="flex flex-wrap gap-2">
             {LABEL_COLORS.map((value) => (
-              <label key={value} title={value} className={`tap relative inline-flex size-10 cursor-pointer items-center justify-center rounded-lg border ${color === value ? 'border-ring bg-primary-subtle' : 'border-border bg-background hover:bg-subtle'}`}>
+              <label key={value} title={value} className={`tap relative inline-flex size-10 cursor-pointer items-center justify-center rounded-lg border ${color === value ? 'border-ring bg-primary-subtle' : 'border-border bg-background hover:bg-hover'}`}>
                 <input type="radio" name="color" value={value} aria-label={value} checked={color === value} onChange={() => setColor(value)} className="peer absolute inset-0 z-10 size-full cursor-pointer opacity-0" />
                 <span className={`size-5 rounded-full ${LABEL_BG[value] ?? 'bg-disabled-foreground'}`} />
                 <span className="pointer-events-none absolute inset-0 rounded-lg peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-ring" />

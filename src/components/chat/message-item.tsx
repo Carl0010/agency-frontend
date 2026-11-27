@@ -158,12 +158,12 @@ export function MessageItem({
       {deleted || editing ? null : (
         <div className="absolute -top-3 right-3 hidden gap-0.5 rounded-md border border-border bg-surface p-0.5 text-xs shadow-sm group-focus-within:flex group-hover:flex" role="toolbar" aria-label="Message actions">
           {!inThread && onOpenThread ? (
-            <button type="button" className="rounded px-2 py-1 hover:bg-subtle" onClick={() => onOpenThread(message.id)}>
+            <button type="button" className="rounded px-2 py-1 hover:bg-hover" onClick={() => onOpenThread(message.id)}>
               Reply in thread
             </button>
           ) : null}
           {mine ? (
-            <button type="button" className="rounded px-2 py-1 hover:bg-subtle" onClick={() => setEditing(true)}>
+            <button type="button" className="rounded px-2 py-1 hover:bg-hover" onClick={() => setEditing(true)}>
               Edit
             </button>
           ) : null}
@@ -172,7 +172,7 @@ export function MessageItem({
               Delete
             </button>
           ) : null}
-          <button type="button" className="rounded px-2 py-1 hover:bg-subtle" onClick={() => void copyLink()}>
+          <button type="button" className="rounded px-2 py-1 hover:bg-hover" onClick={() => void copyLink()}>
             Copy link
           </button>
         </div>

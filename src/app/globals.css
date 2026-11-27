@@ -19,14 +19,14 @@
   h1, h2, h3 { letter-spacing: -0.025em; text-wrap: balance; }
   p { text-wrap: pretty; }
   time, kbd, [data-testid='comment-count'], [data-testid='checklist-badge'] { font-variant-numeric: tabular-nums; }
-  :focus-visible { outline: 2px solid var(--color-ring); outline-offset: 3px; }
+  :focus-visible { outline: 2px solid var(--color-ring); outline-offset: 2px; }
   button:not(:disabled), [role='button']:not([aria-disabled='true']), a, input, select, textarea {
     transition: background-color 150ms var(--ease-ui), color 150ms var(--ease-ui), border-color 150ms var(--ease-ui), box-shadow 150ms var(--ease-ui);
   }
   button:not(:disabled), [role='button']:not([aria-disabled='true']) { cursor: pointer; }
   button:disabled, input:disabled, select:disabled, textarea:disabled { cursor: not-allowed; }
   input:not([type='checkbox'], [type='radio'], [type='hidden']), select, textarea {
-    background-color: var(--color-surface);
+    background-color: var(--color-field);
     color: var(--color-foreground);
     border-color: var(--color-input);
     border-radius: var(--radius-md);
@@ -43,13 +43,14 @@
   }
   .ui-button:disabled { opacity: 0.5; }
   .ui-input {
-    @apply min-h-9 w-full rounded-md border border-input bg-surface px-3 py-2 text-body shadow-sm;
+    @apply min-h-9 w-full rounded-md border border-input bg-field px-3 py-2 text-body shadow-sm;
   }
   .ui-input:hover:not(:disabled) { border-color: var(--color-border-hover); }
-  .ui-input:focus { border-color: var(--color-ring); box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-ring) 14%, transparent); outline: none; }
+  /* Same focus as Quiet Pro fields: a 2px accent edge and a halo that also shows in dark mode. */
+  .ui-input:focus { border-color: var(--color-ring); box-shadow: 0 0 0 1px var(--color-ring), 0 0 0 4px color-mix(in oklab, var(--color-ring) 24%, transparent); outline: none; }
   .ui-input:disabled { background: var(--color-subtle); color: var(--color-disabled-foreground); }
   .ui-input[aria-invalid='true'] { border-color: var(--color-danger); }
-  .ui-input[aria-invalid='true']:focus { box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-danger) 14%, transparent); }
+  .ui-input[aria-invalid='true']:focus { box-shadow: 0 0 0 1px var(--color-danger), 0 0 0 4px color-mix(in oklab, var(--color-danger) 24%, transparent); }
   /* Quiet Pro controls at Agency's density and radius. */
   .qp-input { height: auto; min-height: 2.625rem; border-radius: var(--radius-md); }
   .qp-select-sm { min-height: 2.25rem; }
@@ -61,11 +62,11 @@
   .ui-panel { @apply rounded-xl border border-border bg-surface; }
   /* Workspace content uses the full width beside the navigation, with modest gutters. */
   .ui-page { @apply w-full px-4 py-5 sm:px-6 sm:py-6; }
-  .ui-nav-link { @apply flex min-h-8 items-center gap-2 rounded-md px-2.5 py-1 text-label text-secondary-foreground hover:bg-subtle hover:text-foreground; }
+  .ui-nav-link { @apply flex min-h-8 items-center gap-2 rounded-md px-2.5 py-1 text-label text-secondary-foreground hover:bg-hover hover:text-foreground; }
   .ui-nav-link[aria-current='page'] { @apply bg-primary-subtle font-medium text-primary-text; }
-  .ui-module-link { @apply flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-secondary-foreground hover:bg-subtle hover:text-foreground active:bg-muted focus-visible:outline-offset-1; }
+  .ui-module-link { @apply flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-secondary-foreground hover:bg-hover hover:text-foreground active:bg-muted focus-visible:outline-offset-1; }
   .ui-module-link[aria-current='location'] { @apply bg-primary-subtle text-primary-text; }
-  .ui-tab { @apply inline-flex min-h-8 items-center justify-center gap-2 rounded-md px-3 py-1 text-label text-secondary-foreground hover:bg-subtle; }
+  .ui-tab { @apply inline-flex min-h-8 items-center justify-center gap-2 rounded-md px-3 py-1 text-label text-secondary-foreground hover:bg-hover; }
   .ui-tab[aria-current='page'], .ui-tab[aria-selected='true'] { @apply bg-primary-subtle font-medium text-primary-text; }
 }
 

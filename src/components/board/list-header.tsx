@@ -104,7 +104,7 @@ export function ListHeader({ list, count, boardId, leading, drag, startEditing =
       const rect = event.currentTarget.getBoundingClientRect();
       setPosition({ top: Math.max(8, Math.min(rect.bottom + 4, window.innerHeight - 128)), left: Math.max(8, Math.min(rect.right - 160, window.innerWidth - 168)) });
     }} className="tap inline-flex min-h-9 w-8 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-muted active:bg-surface"><Icon name="more" /></button>
-    <div data-no-list-drag ref={menu} id={menuId} popover="auto" role="group" aria-label={`Actions for ${list.name}`} style={position} className="fixed m-0 w-40 rounded-lg border border-border bg-surface p-1 text-sm text-foreground shadow-lg">
+    <div data-no-list-drag ref={menu} id={menuId} popover="auto" role="group" aria-label={`Actions for ${list.name}`} style={position} className="fixed m-0 w-40 rounded-lg border border-border bg-popover p-1 text-sm text-foreground shadow-lg">
       <button type="button" className="ui-nav-link tap w-full" onClick={() => { menu.current?.hidePopover(); setEditing(true); }}>Rename</button>
       {project?.access === 'admin' && arrivalSettings.data ? <button type="button" className="ui-nav-link tap w-full" onClick={() => void toggleDone()}>{done ? 'Unmark done list' : 'Mark as done list'}</button> : null}
       <button type="button" className="ui-nav-link tap w-full text-danger-text" onClick={() => void archive()}>Archive list</button>

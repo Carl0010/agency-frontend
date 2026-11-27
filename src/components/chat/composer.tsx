@@ -118,7 +118,7 @@ export function Composer({
         <div className="min-w-0 flex-1">
           <MentionInput value={body} onChange={setBody} onSubmit={() => void send()} label={label} placeholder={placeholder} enterToSend rows={2} onTyping={typing} />
         </div>
-        <button type="button" aria-label="Attach files" onClick={() => input.current?.click()} className="tap rounded px-2 text-muted-foreground hover:bg-subtle">
+        <button type="button" aria-label="Attach files" onClick={() => input.current?.click()} className="tap rounded px-2 text-muted-foreground hover:bg-hover">
           <Icon name="attachment" />
         </button>
         <button

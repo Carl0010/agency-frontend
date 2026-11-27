@@ -47,7 +47,7 @@ export default function ProjectsPage() {
 
   return <main className="ui-page">
     <PageHeader title="Projects" actions={<>
-      <Link href={`/w/${ws.id}/import`} title="Import from Trello" className="ui-button tap text-secondary-foreground hover:bg-subtle"><Icon name="import" /><span className="sr-only sm:not-sr-only">Import from Trello</span></Link><Button onClick={() => setCreating(true)}><Icon name="plus" />New project</Button>
+      <Link href={`/w/${ws.id}/import`} title="Import from Trello" className="ui-button tap text-secondary-foreground hover:bg-hover"><Icon name="import" /><span className="sr-only sm:not-sr-only">Import from Trello</span></Link><Button onClick={() => setCreating(true)}><Icon name="plus" />New project</Button>
     </>} />
     <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center">
       <div className="relative sm:w-96">
@@ -57,7 +57,7 @@ export default function ProjectsPage() {
       <Select aria-label="Project status" value={status} onChange={(value) => go({ status: value === 'open' ? '' : value })} options={STATUS_FILTERS} className="sm:w-40" />
       {team ? <span className="inline-flex w-fit items-center gap-1 rounded-full border border-border bg-surface py-0.5 pl-3 pr-1 text-label">
         Shared with {teamName ?? 'a team'}
-        <button type="button" aria-label="Show all projects" onClick={() => go({ team: '' })} className="tap inline-flex items-center justify-center rounded-full text-muted-foreground hover:bg-subtle hover:text-foreground"><Icon name="close" className="size-3.5" /></button>
+        <button type="button" aria-label="Show all projects" onClick={() => go({ team: '' })} className="tap inline-flex items-center justify-center rounded-full text-muted-foreground hover:bg-hover hover:text-foreground"><Icon name="close" className="size-3.5" /></button>
       </span> : null}
     </div>
 
@@ -67,7 +67,7 @@ export default function ProjectsPage() {
         <div role="row" className="hidden grid-cols-[minmax(0,2fr)_minmax(0,1fr)_8rem_2.75rem] gap-4 border-b border-border bg-subtle px-4 py-2 text-caption font-medium text-muted-foreground sm:grid">
           <span role="columnheader">Name</span><span role="columnheader">Members</span><span role="columnheader">Status</span><span role="columnheader"><span className="sr-only">Actions</span></span>
         </div>
-        {rows.map(({ project, people: members }) => <div key={project.id} role="row" data-testid="project-row" className="relative grid grid-cols-[minmax(0,1fr)_auto_2.75rem] items-center gap-x-3 gap-y-2 border-b border-border px-4 py-2.5 last:border-b-0 hover:bg-subtle sm:min-h-14 sm:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_8rem_2.75rem] sm:gap-x-4">
+        {rows.map(({ project, people: members }) => <div key={project.id} role="row" data-testid="project-row" className="relative grid grid-cols-[minmax(0,1fr)_auto_2.75rem] items-center gap-x-3 gap-y-2 border-b border-border px-4 py-2.5 last:border-b-0 hover:bg-hover sm:min-h-14 sm:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_8rem_2.75rem] sm:gap-x-4">
           <span role="cell" className="flex min-w-0 items-center gap-3">
             <ProjectIcon project={project} />
             {/* The stretched link opens the board from anywhere in the row; avatars and the menu sit above it. */}

@@ -71,7 +71,7 @@ export function PersonAvatar({ person, email, size = 28 }: { person: PersonLike;
     </button>
     {place ? createPortal(<div id={id} role="tooltip" data-testid="person-card" onPointerEnter={mouse(openNow)} onPointerLeave={mouse(closeSoon)}
       style={{ top: place.top, left: place.left, width: CARD_WIDTH }}
-      className={`fixed z-50 flex items-center gap-3 rounded-xl border border-border bg-surface p-4 shadow-lg ${place.above ? '-translate-y-full' : ''}`}>
+      className={`fixed z-50 flex items-center gap-3 rounded-xl border border-border bg-popover p-4 shadow-lg ${place.above ? '-translate-y-full' : ''}`}>
       <Avatar person={ref} size={48} plain />
       <div className="min-w-0 flex-1">
         <p className="truncate font-semibold">{person.name}</p>

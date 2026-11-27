@@ -396,7 +396,7 @@ function ThreadPane({
     <aside aria-label="Thread" data-testid="thread-pane" className="flex w-full flex-col border-l border-border bg-surface md:w-96 md:shrink-0">
       <header className="flex items-center justify-between border-b border-border-subtle px-3 py-2">
         <h2 className="font-semibold">Thread</h2>
-        <button type="button" aria-label="Close thread" onClick={onClose} className="tap rounded px-2 text-muted-foreground hover:bg-subtle">
+        <button type="button" aria-label="Close thread" onClick={onClose} className="tap rounded px-2 text-muted-foreground hover:bg-hover">
           ✕
         </button>
       </header>

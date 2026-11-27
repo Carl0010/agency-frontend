@@ -28,7 +28,7 @@ export function ProjectMenu({ projectId, boardId, canEdit, cardHref }: { project
         const rect = event.currentTarget.getBoundingClientRect();
         setPosition({ top: rect.bottom + 4, left: Math.max(8, Math.min(rect.right - 208, window.innerWidth - 216)) });
       }}
-      className="tap inline-flex size-9 shrink-0 items-center justify-center rounded-md text-secondary-foreground hover:bg-subtle"><Icon name="more" /></button>
+      className="tap inline-flex size-9 shrink-0 items-center justify-center rounded-md text-secondary-foreground hover:bg-hover"><Icon name="more" /></button>
     <div ref={menu} id={id} popover="auto" role="menu" aria-label="Project options" style={position}
       onToggle={(event) => { if (event.newState === 'open') items()[0]?.focus(); }}
       onKeyDown={(event) => {
@@ -37,7 +37,7 @@ export function ProjectMenu({ projectId, boardId, canEdit, cardHref }: { project
         if (next === undefined) return;
         event.preventDefault(); all[(next + all.length) % all.length]?.focus();
       }}
-      className="fixed m-0 w-52 rounded-xl border border-border bg-surface p-1.5 text-foreground shadow-lg">
+      className="fixed m-0 w-52 rounded-xl border border-border bg-popover p-1.5 text-foreground shadow-lg">
       <button type="button" role="menuitem" tabIndex={-1} className="ui-nav-link tap w-full" onClick={() => open('archived')}><Icon name="inbox" />Archived cards</button>
       <button type="button" role="menuitem" tabIndex={-1} className="ui-nav-link tap w-full" onClick={() => open('arrival')}><Icon name="clock" />Arrival settings</button>
     </div>
@@ -53,7 +53,7 @@ function ArchivedCards({ boardId, cardHref, onOpen }: { boardId: string; cardHre
   if (!archived.data.data.length) return <p className="text-label text-muted-foreground">No archived cards.</p>;
   return <ul className="-mx-2 max-h-96 space-y-0.5 overflow-y-auto">
     {archived.data.data.map((card) => <li key={card.id}>
-      <Link href={cardHref(card.id)} onClick={onOpen} className="tap flex items-center gap-2 rounded-md px-2 py-1.5 text-label hover:bg-subtle">
+      <Link href={cardHref(card.id)} onClick={onOpen} className="tap flex items-center gap-2 rounded-md px-2 py-1.5 text-label hover:bg-hover">
         <span className="shrink-0 font-mono text-caption text-muted-foreground">{cardRef(card)}</span><span className="min-w-0 truncate">{card.title}</span>
       </Link>
     </li>)}

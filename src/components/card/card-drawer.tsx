@@ -129,7 +129,7 @@ function Drawer({ cardId, projectId, boardHref, open }: DrawerProps & { open: bo
           <Icon name="board" />
         </Button>
         {/* The URL records presentation, including after reload or sharing. */}
-        <a href={`${boardHref}/c/${cardId}?${expandedParams}`} aria-label="Open card as full page" title="Open card as full page" className="ui-button tap size-9 px-0 text-secondary-foreground hover:bg-subtle">
+        <a href={`${boardHref}/c/${cardId}?${expandedParams}`} aria-label="Open card as full page" title="Open card as full page" className="ui-button tap size-9 px-0 text-secondary-foreground hover:bg-hover">
           <Icon name="expand" />
         </a>
         <Button variant="ghost" size="icon" aria-label="Close card" title="Close card (Escape)" onClick={close}>
