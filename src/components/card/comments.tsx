@@ -289,6 +289,7 @@ function CommentComposer({ cardId, projectId, inDrawer, filesWithComment, onPost
           placeholder="Write a comment… use @ to mention"
           mentionable={people.data?.data ?? []}
           toolbar={expanded}
+          scroll={expanded}
           actions={<ToolButton label="Attach files" icon="attachment" disabled={busy} onClick={() => file.current?.click()} />}
           className={expanded ? 'h-64 max-sm:h-auto max-sm:flex-1' : 'h-10 overflow-hidden'}
         />
