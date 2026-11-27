@@ -8,9 +8,14 @@
   --color-background: var(--bg);
   --color-board-canvas: #fcfdfe;
   --color-surface: var(--surface-2);
-  /* Elevation: board lane < card < dialog < popover. Menus and select lists float one step above
-     the dialog or card they open from (lighter in dark, shadow and hairline in light). */
+  /* Elevation, lowest first: page and board canvas < chrome (app bar, rail, sidebar) and board
+     lanes < cards, panels and dialogs < menus and popovers. In dark each step is a visible
+     lightness step; in light the lane is a grey well and cards are white with a hairline. */
+  --color-chrome: var(--surface-2);
+  --color-sidebar: var(--bg);
   --color-lane: var(--surface-3);
+  /* A card under the pointer: one step up, so it lifts off its lane. */
+  --color-raised: var(--surface-2);
   --color-popover: var(--surface-overlay);
   --color-field: var(--field);
   --color-hover: var(--surface-hover);
@@ -107,9 +112,13 @@
 
 /* Keep status fills and content colors stable; adapt surfaces, text and controls. */
 html[data-theme='dark'] {
-  --color-board-canvas: #111315;
-  /* Lanes sit below the canvas so cards rise out of them, as in light mode. */
-  --color-lane: var(--bg);
+  /* The ladder, as in Asana's dark board: the page is darkest, chrome and lanes one step up,
+     cards one more step with a visible edge, menus above that. */
+  --color-board-canvas: var(--bg);
+  --color-chrome: var(--surface-1);
+  --color-sidebar: var(--surface-1);
+  --color-lane: var(--surface-1);
+  --color-raised: var(--surface-3);
   /* A raised grey with white text: the light theme's near-black toast vanished on a dark page. */
   --color-inverse: #3a3f46;
   --color-muted: #282c30;

@@ -41,7 +41,7 @@ export function ListColumn({ list, cards, board, now, cardHref, dndDisabled, sta
           disabled: dndDisabled,
         }} />
         <div ref={drop.setNodeRef} data-testid="list-cards" className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto overscroll-contain px-2.5 pb-1 sm:px-3">
-          {cards.length === 0 ? <p data-testid="list-empty-state" className="flex min-h-24 shrink-0 items-center justify-center rounded-lg border border-dashed border-border px-3 py-6 text-center text-caption text-muted-foreground">{list.cards.length ? 'No matching cards' : 'No cards yet'}</p> : null}
+          {cards.length === 0 ? <p data-testid="list-empty-state" className="flex min-h-20 shrink-0 items-center justify-center rounded-lg border border-dashed border-border-subtle px-3 py-5 text-center text-caption text-muted-foreground">{list.cards.length ? 'No matching cards' : 'No cards yet'}</p> : null}
           <SortableContext items={cards.map((c) => c.id)} strategy={verticalListSortingStrategy}>
             {cards.map((c) => (
               <SortableCard key={c.id} card={c} now={now} href={cardHref(c.id)} disabled={dndDisabled} />

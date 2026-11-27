@@ -35,7 +35,7 @@
     "typescript-eslint": "^8.71.2"
   },
   "dependencies": {
-    "@carl0010/quiet-pro": "file:vendor/carl0010-quiet-pro-0.7.0.tgz",
+    "@carl0010/quiet-pro": "file:vendor/carl0010-quiet-pro-0.8.0.tgz",
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",

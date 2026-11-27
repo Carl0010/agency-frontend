@@ -53,7 +53,7 @@ export function NavigationDrawer({ children, open, onClose }: { children: ReactN
     onKeyDown={containFocus}
     onCancel={(event) => { event.preventDefault(); onClose(); }}
     onClick={(event) => { if (event.target === event.currentTarget) onClose(); }}
-    className="navigation-drawer fixed inset-y-0 left-0 m-0 h-dvh max-h-none w-[min(20rem,calc(100vw-2rem))] max-w-none overflow-hidden border-r border-border bg-background p-0 text-foreground shadow-xl backdrop:bg-overlay/40">
+    className="navigation-drawer fixed inset-y-0 left-0 m-0 h-dvh max-h-none w-[min(20rem,calc(100vw-2rem))] max-w-none overflow-hidden border-r border-border bg-sidebar p-0 text-foreground shadow-xl backdrop:bg-overlay/40">
     {children}
   </dialog>;
 }
