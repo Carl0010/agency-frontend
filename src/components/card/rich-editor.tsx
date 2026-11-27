@@ -89,6 +89,7 @@ export default function RichEditor({
   toolbar = true,
   toolbarTarget,
   actions,
+  scroll = true,
   className = '',
 }: {
   ref?: Ref<RichEditorHandle>;
@@ -111,6 +112,8 @@ export default function RichEditor({
   toolbarTarget?: HTMLElement | null;
   /** Extra toolbar buttons on the right, such as Attach. */
   actions?: ReactNode;
+  /** Let the text scroll inside its box. Off for a one-line collapsed box, which would otherwise show a scrollbar. */
+  scroll?: boolean;
   className?: string;
 }) {
   const people = useRef(mentionable);
@@ -222,7 +225,7 @@ export default function RichEditor({
   return (
     <div className={`relative flex min-h-0 flex-col ${className}`}>
       {toolbar && editor ? toolbarTarget ? createPortal(<Toolbar editor={editor} actions={actions} inline />, toolbarTarget) : <Toolbar editor={editor} actions={actions} /> : null}
-      <EditorContent editor={editor} className="min-h-0 flex-1 overflow-y-auto" />
+      <EditorContent editor={editor} className={`min-h-0 flex-1 ${scroll ? 'overflow-y-auto' : 'overflow-hidden'}`} />
       {menu?.items.length ? (
         <ul role="listbox" aria-label="Mention a teammate" data-testid="mention-options" className="absolute bottom-full left-0 z-30 mb-1 w-64 rounded-md border border-border bg-popover py-1 shadow-lg">
           {menu.items.map((m, i) => (

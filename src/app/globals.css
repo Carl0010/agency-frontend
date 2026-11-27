@@ -217,6 +217,13 @@
 
 html[data-theme='dark'] { color-scheme: dark; }
 
+/* Thin scrollbars in the theme's own colours, so panels and the board don't show the browser's
+   heavy grey bar, above all in dark mode. */
+@layer base {
+  html { scrollbar-color: color-mix(in oklab, var(--color-muted-foreground) 45%, transparent) transparent; }
+  * { scrollbar-width: thin; }
+}
+
 /* Keep loading geometry steady; motion changes only the decorative shapes. */
 .skeleton-shape { animation: skeleton-breathe 1.8s ease-in-out infinite; }
 @keyframes skeleton-breathe { 0%, 100% { opacity: .55; } 50% { opacity: 1; } }
