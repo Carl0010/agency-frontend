@@ -66,7 +66,7 @@ export function PortalBoard({ project }: { project: PortalProject }) {
             key={l.id}
             aria-label={l.name}
             data-testid="portal-list"
-            className={`w-full shrink-0 flex-col rounded-lg bg-subtle p-2 sm:flex sm:w-72 ${i === active ? 'flex' : 'hidden'}`}
+            className={`w-full shrink-0 flex-col rounded-lg bg-lane p-2 sm:flex sm:w-72 ${i === active ? 'flex' : 'hidden'}`}
           >
             <h2 className="mb-2 flex items-center justify-between px-1 text-sm font-semibold text-secondary-foreground">
               {l.name}

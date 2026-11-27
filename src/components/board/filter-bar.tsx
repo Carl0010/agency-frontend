@@ -86,7 +86,7 @@ export function FilterBar({ filters, onChange, members, labels, leading, options
     </div>
     <div ref={popover} id={id} popover="auto" role="dialog" aria-modal="false" aria-labelledby={`${id}-title`} aria-describedby={`${id}-hint`} data-testid="filter-panel"
       onToggle={(event) => setOpen(event.newState === 'open')}
-      style={position} className="fixed inset-auto m-0 w-96 max-w-[calc(100vw-1.5rem)] overflow-y-auto overscroll-contain rounded-xl border border-border bg-surface p-0 text-foreground shadow-lg">
+      style={position} className="fixed inset-auto m-0 w-96 max-w-[calc(100vw-1.5rem)] overflow-y-auto overscroll-contain rounded-xl border border-border bg-popover p-0 text-foreground shadow-lg">
       <header className="flex items-start gap-3 border-b border-border px-4 py-3">
         <div className="min-w-0 flex-1"><h2 id={`${id}-title`} className="text-body font-semibold">View and filters</h2><p id={`${id}-hint`} className="mt-0.5 text-caption text-muted-foreground">{active ? 'Filters are on — clear them to drag cards in Kanban.' : 'Changes apply as you select.'}</p></div>
         <Button ref={close} variant="ghost" size="icon" aria-label="Close filters" onClick={dismiss}><Icon name="close" /></Button>
@@ -98,7 +98,7 @@ export function FilterBar({ filters, onChange, members, labels, leading, options
             {members.length ? members.map((member) => {
               const selected = filters.assignees.includes(member.userId);
               return <button key={member.userId} type="button" aria-pressed={selected} aria-label={`Assigned to ${member.name}`} onClick={() => onChange((current) => ({ ...current, assignees: toggle(current.assignees, member.userId) }))}
-                className={`tap flex min-h-10 w-full items-center gap-2.5 rounded-lg px-2 py-1.5 text-left text-label ${selected ? 'bg-primary-subtle text-primary-text' : 'text-secondary-foreground hover:bg-subtle'}`}>
+                className={`tap flex min-h-10 w-full items-center gap-2.5 rounded-lg px-2 py-1.5 text-left text-label ${selected ? 'bg-primary-subtle text-primary-text' : 'text-secondary-foreground hover:bg-hover'}`}>
                 <Avatar person={{ id: member.userId, name: member.name, avatarUrl: member.avatarUrl }} size={24} /><span className="min-w-0 flex-1 break-words">{member.name}</span><SelectionMark selected={selected} />
               </button>;
             }) : <p className="py-2 text-label text-muted-foreground">No active members available.</p>}
@@ -109,7 +109,7 @@ export function FilterBar({ filters, onChange, members, labels, leading, options
             {labels.length ? labels.map((label) => {
               const selected = filters.labels.includes(label.id);
               return <button key={label.id} type="button" aria-pressed={selected} onClick={() => onChange((current) => ({ ...current, labels: toggle(current.labels, label.id) }))}
-                className={`tap flex min-h-10 w-full items-center gap-2.5 rounded-lg px-2 py-1.5 text-left text-label ${selected ? 'bg-primary-subtle text-primary-text' : 'text-secondary-foreground hover:bg-subtle'}`}>
+                className={`tap flex min-h-10 w-full items-center gap-2.5 rounded-lg px-2 py-1.5 text-left text-label ${selected ? 'bg-primary-subtle text-primary-text' : 'text-secondary-foreground hover:bg-hover'}`}>
                 <span aria-hidden="true" className={`size-2.5 shrink-0 rounded-full ${LABEL_BG[label.color] ?? 'bg-label-grey'}`} /><span className="min-w-0 flex-1 break-words">{label.name}</span><SelectionMark selected={selected} />
               </button>;
             }) : <p className="py-2 text-label text-muted-foreground">No labels in this workspace yet.</p>}
@@ -120,7 +120,7 @@ export function FilterBar({ filters, onChange, members, labels, leading, options
             options={[{ value: '', label: 'Any time' }, { value: 'overdue', label: 'Overdue' }, { value: 'week', label: 'Due this week' }, { value: 'none', label: 'No due date' }]} />
         </label>
       </div>
-      <footer className="sticky bottom-0 flex items-center justify-between gap-2 border-t border-border bg-surface px-4 py-3">
+      <footer className="sticky bottom-0 flex items-center justify-between gap-2 border-t border-border bg-popover px-4 py-3">
         <Button variant="ghost" disabled={!count} onClick={() => onChange((current) => ({ ...current, assignees: [], labels: [], due: null }))}>Reset filters</Button><Button onClick={dismiss}>Done</Button>
       </footer>
     </div>
@@ -128,5 +128,5 @@ export function FilterBar({ filters, onChange, members, labels, leading, options
 }
 
 function SelectionMark({ selected }: { selected: boolean }) {
-  return <span aria-hidden="true" className={`inline-flex size-4 shrink-0 items-center justify-center rounded border ${selected ? 'border-primary bg-primary text-primary-foreground' : 'border-input bg-surface'}`}>{selected ? <Icon name="check" className="size-3" /> : null}</span>;
+  return <span aria-hidden="true" className={`inline-flex size-4 shrink-0 items-center justify-center rounded border ${selected ? 'border-primary bg-primary text-primary-foreground' : 'border-input bg-field'}`}>{selected ? <Icon name="check" className="size-3" /> : null}</span>;
 }

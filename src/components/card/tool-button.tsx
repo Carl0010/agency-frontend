@@ -13,7 +13,7 @@ export function ToolButton({ label, icon, pressed, onClick, disabled }: { label:
       disabled={disabled}
       onMouseDown={(e) => e.preventDefault()}
       onClick={onClick}
-      className={`tap inline-grid size-8 place-items-center rounded-md text-secondary-foreground hover:bg-subtle hover:text-foreground disabled:opacity-40 ${pressed ? 'bg-primary-subtle text-primary-text' : ''}`}
+      className={`tap inline-grid size-8 place-items-center rounded-md text-secondary-foreground hover:bg-hover hover:text-foreground disabled:opacity-40 ${pressed ? 'bg-primary-subtle text-primary-text' : ''}`}
     >
       <Icon name={icon} className="size-4" />
     </button>

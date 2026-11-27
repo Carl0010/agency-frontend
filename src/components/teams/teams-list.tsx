@@ -69,7 +69,7 @@ export function TeamsList({ teams, hrefFor, actions }: { teams: Team[]; hrefFor:
       </div>
       {shown.map(({ team, detail }) => {
         const members = detail?.data?.members;
-        return <div key={team.id} role="row" data-testid="team-row" className="relative grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-2 border-b border-border px-4 py-3 last:border-b-0 hover:bg-subtle sm:min-h-16 sm:grid-cols-[minmax(0,2fr)_minmax(0,3fr)_2rem]">
+        return <div key={team.id} role="row" data-testid="team-row" className="relative grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-2 border-b border-border px-4 py-3 last:border-b-0 hover:bg-hover sm:min-h-16 sm:grid-cols-[minmax(0,2fr)_minmax(0,3fr)_2rem]">
           <span role="cell" className="flex min-w-0 items-center gap-3">
             <Avatar person={{ id: team.id, name: team.name, avatarUrl: null }} size={32} plain />
             {/* The stretched link makes the whole row open the team; avatars sit above it. */}

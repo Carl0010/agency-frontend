@@ -260,8 +260,8 @@ export function BoardScreen({ boardId, projectId }: { boardId: string; projectId
         <FilterBar filters={filters} onChange={setFilters} members={activeMembers} labels={labels.data?.data ?? []}
           leading={
             <div role="group" aria-label="Board view" className="inline-flex shrink-0 gap-0.5 rounded-lg border border-border bg-background p-0.5">
-              <button type="button" aria-pressed={view === 'kanban'} aria-label="Kanban" onClick={() => setView('kanban')} className={`ui-button tap min-h-8 gap-1.5 px-2.5 ${view === 'kanban' ? 'bg-surface text-foreground shadow-sm' : 'text-muted-foreground hover:bg-subtle'}`}><Icon name="board" /><span className="hidden sm:inline">Kanban</span></button>
-              <button type="button" aria-pressed={view === 'list'} aria-label="List" onClick={() => setView('list')} className={`ui-button tap min-h-8 gap-1.5 px-2.5 ${view === 'list' ? 'bg-surface text-foreground shadow-sm' : 'text-muted-foreground hover:bg-subtle'}`}><Icon name="list" /><span className="hidden sm:inline">List</span></button>
+              <button type="button" aria-pressed={view === 'kanban'} aria-label="Kanban" onClick={() => setView('kanban')} className={`ui-button tap min-h-8 gap-1.5 px-2.5 ${view === 'kanban' ? 'bg-surface text-foreground shadow-sm' : 'text-muted-foreground hover:bg-hover'}`}><Icon name="board" /><span className="hidden sm:inline">Kanban</span></button>
+              <button type="button" aria-pressed={view === 'list'} aria-label="List" onClick={() => setView('list')} className={`ui-button tap min-h-8 gap-1.5 px-2.5 ${view === 'list' ? 'bg-surface text-foreground shadow-sm' : 'text-muted-foreground hover:bg-hover'}`}><Icon name="list" /><span className="hidden sm:inline">List</span></button>
             </div>
           }
           options={<>
@@ -308,7 +308,7 @@ export function BoardScreen({ boardId, projectId }: { boardId: string; projectId
                 <CardTileView card={activeCard} now={now} dragging />
               </div>
             ) : activeList ? (
-              <div className="w-80 rounded-xl border border-border bg-subtle p-4 text-sm font-semibold shadow-lg">{activeList.name}</div>
+              <div className="w-80 rounded-xl border border-border bg-lane p-4 text-sm font-semibold shadow-lg">{activeList.name}</div>
             ) : null}
           </DragOverlay>
         </DndContext>}

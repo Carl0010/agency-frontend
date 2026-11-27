@@ -275,7 +275,7 @@ function CommentComposer({ cardId, projectId, inDrawer, filesWithComment, onPost
         {expanded ? (
           <div className="flex items-center justify-between border-b border-border px-3 py-2 sm:hidden">
             <p className="text-body font-semibold">Comment</p>
-            <button type="button" aria-label="Close comment box" onClick={() => setExpanded(false)} className="tap inline-grid place-items-center rounded-md text-secondary-foreground hover:bg-subtle"><Icon name="close" /></button>
+            <button type="button" aria-label="Close comment box" onClick={() => setExpanded(false)} className="tap inline-grid place-items-center rounded-md text-secondary-foreground hover:bg-hover"><Icon name="close" /></button>
           </div>
         ) : null}
         <RichEditor

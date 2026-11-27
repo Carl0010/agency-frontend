@@ -149,7 +149,7 @@ function ChecklistItemRow({ item, run }: { item: Checklist['items'][number]; run
   const [editing, setEditing] = useState(false);
   const sortable = useSortable({ id: item.id });
   return (
-    <li data-testid="checklist-item" ref={sortable.setNodeRef} style={sortableStyle(sortable)} className={`group/item flex items-center gap-1 rounded-md pr-1 hover:bg-subtle ${sortable.isDragging ? 'relative z-10 bg-surface shadow-lg ring-1 ring-border' : ''}`}>
+    <li data-testid="checklist-item" ref={sortable.setNodeRef} style={sortableStyle(sortable)} className={`group/item flex items-center gap-1 rounded-md pr-1 hover:bg-hover ${sortable.isDragging ? 'relative z-10 bg-surface shadow-lg ring-1 ring-border' : ''}`}>
       <DragHandle sortable={sortable} label={`Reorder ${item.text}`} group="group-hover/item:opacity-100" />
       <label className="tap inline-grid shrink-0 cursor-pointer place-items-center rounded-md px-1">
         <input

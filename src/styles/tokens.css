@@ -8,6 +8,12 @@
   --color-background: var(--bg);
   --color-board-canvas: #fcfdfe;
   --color-surface: var(--surface-2);
+  /* Elevation: board lane < card < dialog < popover. Menus and select lists float one step above
+     the dialog or card they open from (lighter in dark, shadow and hairline in light). */
+  --color-lane: var(--surface-3);
+  --color-popover: var(--surface-overlay);
+  --color-field: var(--field);
+  --color-hover: var(--surface-hover);
   --color-subtle: var(--surface-3);
   --color-muted: #e8eaec;
   --color-foreground: var(--text);
@@ -81,8 +87,9 @@
   --radius-2xl: 1rem;
   --shadow-sm: 0 1px 2px rgb(15 18 24 / 0.04);
   --shadow-md: 0 3px 10px -3px rgb(15 18 24 / 0.12);
-  --shadow-lg: 0 12px 32px -8px rgb(15 18 24 / 0.18), 0 2px 6px rgb(15 18 24 / 0.04);
-  --shadow-xl: 0 24px 60px -16px rgb(15 18 24 / 0.25);
+  /* Floating layers carry a 1px hairline so a menu over a white dialog keeps its edge. */
+  --shadow-lg: 0 12px 32px -8px rgb(15 18 24 / 0.2), 0 2px 6px -2px rgb(15 18 24 / 0.08), 0 0 0 1px rgb(15 18 24 / 0.06);
+  --shadow-xl: 0 24px 60px -16px rgb(15 18 24 / 0.28), 0 0 0 1px rgb(15 18 24 / 0.06);
   --text-caption: 0.75rem;
   --text-caption--line-height: 1rem;
   --text-label: 0.8125rem;
@@ -101,6 +108,10 @@
 /* Keep status fills and content colors stable; adapt surfaces, text and controls. */
 html[data-theme='dark'] {
   --color-board-canvas: #111315;
+  /* Lanes sit below the canvas so cards rise out of them, as in light mode. */
+  --color-lane: var(--bg);
+  /* A raised grey with white text: the light theme's near-black toast vanished on a dark page. */
+  --color-inverse: #3a3f46;
   --color-muted: #282c30;
   --color-disabled-foreground: #71757a;
   --color-border-hover: #94999e;
@@ -119,7 +130,8 @@ html[data-theme='dark'] {
   --color-highlight: #56451b;
   --color-highlight-foreground: #ffe9a7;
   --color-overlay: #000000;
-  --shadow-md: 0 3px 10px -3px rgb(0 0 0 / 0.3);
-  --shadow-lg: 0 12px 32px -8px rgb(0 0 0 / 0.45);
-  --shadow-xl: 0 24px 60px -16px rgb(0 0 0 / 0.55);
+  /* Dark shadows barely show, so the hairline (a faint light edge) is what separates the layers. */
+  --shadow-md: 0 3px 10px -3px rgb(0 0 0 / 0.4), 0 0 0 1px rgb(255 255 255 / 0.05);
+  --shadow-lg: 0 12px 32px -8px rgb(0 0 0 / 0.6), 0 0 0 1px rgb(255 255 255 / 0.08);
+  --shadow-xl: 0 24px 60px -16px rgb(0 0 0 / 0.7), 0 0 0 1px rgb(255 255 255 / 0.08);
 }

@@ -34,7 +34,7 @@ export function ListColumn({ list, cards, board, now, cardHref, dndDisabled, sta
       data-list-id={list.id}
       className={`flex max-h-full min-h-0 w-[85vw] max-w-80 shrink-0 snap-center flex-col gap-2 sm:w-80 sm:gap-3 ${sortable.isDragging ? 'opacity-40' : ''} ${className}`}
     >
-      <div data-testid="list-surface" className="flex min-h-0 flex-1 flex-col rounded-xl border border-border bg-subtle pb-3">
+      <div data-testid="list-surface" className="flex min-h-0 flex-1 flex-col rounded-xl border border-border bg-lane pb-3">
         <ListHeader startEditing={startEditing} onEditingFinished={onEditingFinished} list={list} count={cards.length} boardId={board.id} drag={{
           attributes: sortable.attributes, listeners: sortable.listeners,
           setActivatorNodeRef: sortable.setActivatorNodeRef, isDragging: sortable.isDragging,

@@ -68,8 +68,12 @@ several products need belongs in Quiet Pro, not here.
 | --- | --- | --- |
 | `bg-background` | Quiet Pro `--bg` | App canvas and quiet navigation rail |
 | `bg-board-canvas` | Agency `#FCFDFE` / `#111315` | Board work area: lighter than the sidebar in light mode, one step up in dark; pair with foreground/secondary/muted text |
-| `bg-surface` | Quiet Pro `--surface-2` | Cards, forms, dialogs, popovers, main headers |
-| `bg-subtle` | Quiet Pro `--surface-3` | Board lanes, code, hover rows and options |
+| `bg-lane` | Quiet Pro `--surface-3` / `--bg` | Board lanes and group columns. Always below the cards in them: grey under white cards in light, darker than the canvas in dark |
+| `bg-surface` | Quiet Pro `--surface-2` | Cards, panels, dialogs, main headers |
+| `bg-popover` | Quiet Pro `--surface-overlay` | Menus, popovers, select lists, the command palette, person cards, tour. One step above the dialog or card it opens from (lighter in dark; shadow and hairline in light) |
+| `bg-field` | Quiet Pro `--field` | Inputs, selects, textareas and checkbox boxes. Sunken in dark so a field reads as a field inside a card or dialog |
+| `hover:bg-hover` | Quiet Pro `--surface-hover` | Translucent hover for rows, menu items, ghost and secondary buttons. Works on every surface; never use `hover:bg-subtle`, which vanishes on lanes and menus |
+| `bg-subtle` | Quiet Pro `--surface-3` | Opaque quiet fills: chips, counts, code, table headers |
 | `bg-muted` | Agency `#E8EAEC` / `#282C30` | Neutral selected/pressed surfaces, chips |
 | `text-foreground` | Quiet Pro `--text` | Titles, content, primary values |
 | `text-secondary-foreground` | Quiet Pro `--text-muted` | Supporting labels and navigation |
@@ -108,6 +112,15 @@ The base pairs are checked with WCAG relative luminance calculations:
 These checks validate the defined opaque token pairs. They do not certify every
 page, opacity combination or user-supplied image. Keep text at least 4.5:1 and
 control/focus boundaries at least 3:1 on their actual adjacent background.
+
+### Elevation
+
+Each layer that floats is one step above what it opens from: board lane → card → dialog →
+popover. In dark mode a higher layer is lighter (`lane` < `surface` < `popover`) and carries a faint
+light hairline in its shadow; in light mode cards, dialogs and popovers stay white and are told apart
+by `shadow-lg`/`shadow-xl`, which also carry a 1px hairline. So a Select opened inside a dialog
+always shows its own edge in both themes. Toasts use `bg-inverse`: near-black in light, a raised grey
+in dark.
 
 ### Content color exceptions
 
@@ -271,7 +284,9 @@ including metadata bounds and access to list headings and bottom actions.
   spacing, color and typography for each feature.
 - Use `ui-nav-link` and `ui-tab` with `aria-current`/`aria-selected`. Selection
   is visible through surface and weight, not text color alone.
-- All keyboard-operable elements have a visible focus ring. Default shared
+- All keyboard-operable elements have a visible focus ring: a 2px accent outline 2px away, with a
+  transparent gap so it reads the same on cards, dialogs and menus. Fields focus with a 2px accent
+  edge and a soft halo. Default shared
   controls are 36px high; compact controls are 32px. Mobile `.tap` targets are 44px.
   Filled buttons (primary, danger) are 40px tall on phones with an invisible 2px
   `::after` margin above and below, so they still take 44px of touch. Buttons use

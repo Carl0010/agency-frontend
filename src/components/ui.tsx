@@ -16,8 +16,8 @@ export function Button({
 }) {
   const styles = {
     primary: 'bg-primary text-primary-foreground shadow-sm hover:bg-primary-hover active:bg-primary-active',
-    secondary: 'border border-input bg-surface text-foreground shadow-sm hover:border-border-hover hover:bg-subtle active:bg-muted',
-    ghost: 'text-secondary-foreground hover:bg-subtle hover:text-foreground active:bg-muted',
+    secondary: 'border border-input bg-surface text-foreground shadow-sm hover:border-border-hover hover:bg-hover active:bg-muted',
+    ghost: 'text-secondary-foreground hover:bg-hover hover:text-foreground active:bg-muted',
     danger: 'bg-danger text-inverse-foreground hover:bg-danger-hover active:bg-danger-active',
   }[variant];
   const sizes = { default: '', sm: 'min-h-8 px-2.5', icon: 'size-9 p-0' }[size];

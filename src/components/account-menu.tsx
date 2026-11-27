@@ -54,8 +54,8 @@ export function AccountMenu({ variant = 'row', subtitle, settingsHref, onNavigat
     <button type="button" popoverTarget={id} aria-haspopup="menu" aria-label={`${user.name}, open menu`} data-testid="account-menu"
       onClick={(event) => { anchor.current = event.currentTarget.getBoundingClientRect(); }}
       className={variant === 'row'
-        ? 'tap flex w-full items-center gap-2.5 rounded-md px-1 py-1 text-left hover:bg-subtle'
-        : 'tap flex items-center gap-1 rounded-full p-0.5 hover:bg-subtle'}>
+        ? 'tap flex w-full items-center gap-2.5 rounded-md px-1 py-1 text-left hover:bg-hover'
+        : 'tap flex items-center gap-1 rounded-full p-0.5 hover:bg-hover'}>
       <Avatar person={{ ...user, active: true }} size={variant === 'row' ? 30 : 28} />
       {variant === 'row' ? <>
         <span className="min-w-0 flex-1"><span className="block truncate text-label font-medium">{user.name}</span>{subtitle ? <span className="block text-caption capitalize text-muted-foreground">{subtitle}</span> : null}</span>
@@ -64,7 +64,7 @@ export function AccountMenu({ variant = 'row', subtitle, settingsHref, onNavigat
     </button>
     <div ref={menu} id={id} popover="auto" role="menu" aria-label={`Signed in as ${user.name}`} style={style} onKeyDown={onKeyDown}
       onToggle={(event) => { if (event.newState === 'open') { place(); items()[0]?.focus(); } }}
-      className="fixed m-0 min-w-52 rounded-xl border border-border bg-surface p-1.5 text-foreground shadow-lg">
+      className="fixed m-0 min-w-52 rounded-xl border border-border bg-popover p-1.5 text-foreground shadow-lg">
       <p className="truncate px-2.5 pb-1.5 pt-1 text-caption text-muted-foreground">{user.email}</p>
       {settingsHref ? <Link role="menuitem" tabIndex={-1} href={settingsHref} className="ui-nav-link tap w-full"
         onClick={() => { menu.current?.hidePopover(); onNavigate?.(); }}><Icon name="person" />Your settings</Link> : null}
