@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useState, type FormEvent } from 'react';
 import { countLabel, Snippet, TYPE_LABEL } from '@/components/search/snippet';
-import { Button, Combobox, Input, Select } from '@/components/ui';
+import { Button, Combobox, DatePicker, Input, Select } from '@/components/ui';
 import { api, errorMessage } from '@/lib/api';
 import { timeAgo } from '@/lib/time';
 import type { Member, Page, Project, SearchResult, SearchType } from '@/lib/types';
@@ -99,12 +99,8 @@ function SearchScreen() {
           options={(members.data?.data ?? []).filter((m) => m.status !== 'invited').map((m) => ({ value: m.userId, label: m.name }))}
           emptyText="No matching people"
         />
-        <label className="flex items-center gap-1">
-          From <Input type="date" value={from ?? ''} onChange={(e) => set({ from: e.target.value || null })} className="w-auto" />
-        </label>
-        <label className="flex items-center gap-1">
-          To <Input type="date" value={to ?? ''} onChange={(e) => set({ to: e.target.value || null })} className="w-auto" />
-        </label>
+        <DatePicker aria-label="From" placeholder="From any date" size="sm" className="w-44" value={from ?? null} max={to ?? undefined} onChange={(v) => set({ from: v })} />
+        <DatePicker aria-label="To" placeholder="To any date" size="sm" className="w-44" value={to ?? null} min={from ?? undefined} onChange={(v) => set({ to: v })} />
         <label className="tap flex items-center gap-2">
           <input type="checkbox" checked={params.get('archived') === '1'} onChange={(e) => set({ archived: e.target.checked ? '1' : null })} />
           Include archived cards

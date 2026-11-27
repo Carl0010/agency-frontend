@@ -1,8 +1,8 @@
 'use client';
 
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useRef, useState, type FormEvent } from 'react';
-import { Button, Checkbox, Combobox, Input } from '@/components/ui';
+import { useState, type FormEvent } from 'react';
+import { Button, Checkbox, Combobox, DatePicker } from '@/components/ui';
 import { useToast } from '@/components/toast';
 import { api, errorMessage } from '@/lib/api';
 import { useArrivalSettings, type ArrivalSettings, type Calendar, type CalendarCountry } from '@/lib/arrival';
@@ -16,7 +16,6 @@ export function ArrivalSettingsForm({ projectId, canEdit }: { projectId: string;
   const qc = useQueryClient();
   const toast = useToast();
   const [saving, setSaving] = useState(false);
-  const target = useRef<HTMLInputElement>(null);
   async function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
@@ -30,8 +29,7 @@ export function ArrivalSettingsForm({ projectId, canEdit }: { projectId: string;
   return <div className="space-y-4 text-label">
     <p className="text-secondary-foreground">Agency estimates when each card will be done from how quickly your team finishes cards. Set a target date to see whether the project is on track. Turn estimates on for the board under Filters → Show arrival estimates.</p>
     {settings.isPending ? <p>Loading arrival settings…</p> : settings.error ? <p role="alert" className="text-danger-text">{errorMessage(settings.error)}</p> : <form key={`${settings.data.targetDate}:${settings.data.guestCardArrivals}`} onSubmit={(e) => void save(e)} className="space-y-3">
-      <label className="block">Target date<Input ref={target} type="date" name="targetDate" defaultValue={settings.data.targetDate ?? ''} disabled={!canEdit || saving} className="mt-1 w-full" /></label>
-      {canEdit ? <Button variant="ghost" size="sm" disabled={saving} onClick={() => { if (target.current) target.current.value = ''; }}>Clear target date</Button> : null}
+      <DatePicker label="Target date" name="targetDate" placeholder="No target date" defaultValue={settings.data.targetDate ?? null} disabled={!canEdit || saving} />
       <Checkbox name="guestCardArrivals" defaultChecked={settings.data.guestCardArrivals} disabled={!canEdit || saving} label="Show clients each card's arrival time" />
       {canEdit ? <Button type="submit" disabled={saving}>{saving ? 'Saving…' : 'Save settings'}</Button> : null}
     </form>}

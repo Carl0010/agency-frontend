@@ -12,7 +12,7 @@ import { useWriteAvailability } from '@/components/billing/billing-notices';
 import { ArrivalChip } from '@/components/arrival';
 import { ReplanAction } from '@/components/arrival-actions';
 import { useToast } from '@/components/toast';
-import { Avatar, Button, Checkbox, Field as FormField, Input, LABEL_BG, MultiCombobox, Select } from '@/components/ui';
+import { Avatar, Button, Checkbox, DatePicker, Field as FormField, Input, LABEL_BG, MultiCombobox, Select } from '@/components/ui';
 import { Dialog, DialogActions } from '@/components/ui-dialog';
 import { FormError } from '@/components/auth-card';
 import { api, errorMessage } from '@/lib/api';
@@ -351,21 +351,32 @@ function NewLabelDialog({ name, onClose, onCreated }: { name: string; onClose: (
   );
 }
 
+/** The due date and time, picked from a calendar. Saves once, when the calendar closes; clearing it also clears Done. */
+function DueDate({ card, onSave }: { card: Detail; onSave: (patch: { dueAt?: string | null; dueCompletedAt?: string | null }) => Promise<void> }) {
+  const saved = toLocalInput(card.dueAt) || null;
+  const [draft, setDraft] = useState<string | null>(saved);
+  // Read when the calendar closes, which can come straight after a change, before the next render.
+  const latest = useRef(saved);
+  useEffect(() => { setDraft(saved); latest.current = saved; }, [saved]);
+  return (
+    <div className="w-60 max-w-full">
+      <DatePicker aria-label="Due date" placeholder="Set a due date" size="sm" withTime defaultTime="17:00" value={draft}
+        onChange={(v) => { latest.current = v; setDraft(v); }}
+        onOpenChange={(open) => {
+          if (open) return;
+          const dueAt = latest.current ? new Date(latest.current).toISOString() : null;
+          if (dueAt === card.dueAt) return;
+          void onSave(dueAt ? { dueAt } : { dueAt: null, dueCompletedAt: null });
+        }} />
+    </div>
+  );
+}
+
 function Due({ card, now, onSave }: { card: Detail; now: Date; onSave: (patch: { dueAt?: string | null; dueCompletedAt?: string | null }) => Promise<void> }) {
   return (
     <div className="flex flex-wrap items-center gap-2">
       <DuePill dueAt={card.dueAt} dueCompletedAt={card.dueCompletedAt} now={now} />
-      <input
-        type="datetime-local"
-        aria-label="Due date"
-        defaultValue={toLocalInput(card.dueAt)}
-        key={card.dueAt ?? 'none'}
-        onBlur={(e) => {
-          const v = e.target.value ? new Date(e.target.value).toISOString() : null;
-          if (v !== card.dueAt) void onSave({ dueAt: v });
-        }}
-        className="tap rounded-md border border-input px-1 py-0.5 text-sm"
-      />
+      <DueDate card={card} onSave={onSave} />
       {card.dueAt ? (
         <>
           <label className="tap flex items-center gap-1 text-sm">

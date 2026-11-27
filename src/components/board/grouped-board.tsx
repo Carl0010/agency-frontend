@@ -7,7 +7,7 @@ import { useEffect, useRef, useState } from 'react';
 import { FormError } from '@/components/auth-card';
 import { Icon } from '@/components/icon';
 import { useToast } from '@/components/toast';
-import { Button, Field, Input } from '@/components/ui';
+import { Button, DatePicker } from '@/components/ui';
 import { Dialog } from '@/components/ui-dialog';
 import { api, errorMessage } from '@/lib/api';
 import { assigneeChange, boardGroups, dueWindowOf, localDayAt, pickedDateEnd, previewAssignment, previewReschedule, type Assignable, type CardGroup, type Grouping, type RescheduleTarget } from '@/lib/board-grouping';
@@ -125,8 +125,8 @@ function GroupCard({ card, groupId, groupName, view, now, href, disabled }: { ca
 function LaterDate({ timezone, pending, onClose, onSave }: { timezone: string; pending: boolean; onClose: () => void; onSave: (picked: string) => Promise<void> }) {
   const [date, setDate] = useState(''); const [error, setError] = useState<string | null>(null);
   return <Dialog title="Choose a later due date" size="compact" onClose={() => { if (!pending) onClose(); }}><form className="space-y-4" onSubmit={(event) => {
-    event.preventDefault(); const due = pickedDateEnd(date, timezone);
+    event.preventDefault(); if (!date) { setError('Choose a date.'); return; } const due = pickedDateEnd(date, timezone);
     if (due < localDayAt(new Date(), timezone, 8)) { setError('Choose a date after the next 7 days.'); return; }
     setError(null); void onSave(due.toISOString());
-  }}><p className="text-label text-muted-foreground">Choose a date after the next 7 days, in {timezone}. Your card stays in place until you save.</p><Field label="Later due date"><Input type="date" required value={date} onChange={(event) => setDate(event.target.value)} disabled={pending} /></Field><FormError message={error} /><div className="flex justify-end gap-2"><Button variant="secondary" onClick={onClose} disabled={pending}>Cancel</Button><Button type="submit" disabled={pending}>Reschedule card</Button></div></form></Dialog>;
+  }}><p className="text-label text-muted-foreground">Choose a date after the next 7 days, in {timezone}. Your card stays in place until you save.</p><DatePicker label="Later due date" value={date || null} onChange={(value) => setDate(value ?? '')} disabled={pending} /><FormError message={error} /><div className="flex justify-end gap-2"><Button variant="secondary" onClick={onClose} disabled={pending}>Cancel</Button><Button type="submit" disabled={pending}>Reschedule card</Button></div></form></Dialog>;
 }
