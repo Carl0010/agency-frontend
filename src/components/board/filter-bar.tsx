@@ -65,7 +65,7 @@ export function FilterBar({ filters, onChange, members, labels, leading, options
   useLayoutEffect(() => { if (open) close.current?.focus({ preventScroll: true }); }, [open]);
   useLayoutEffect(() => { if (searching) searchInput.current?.focus({ preventScroll: true }); }, [searching]);
 
-  return <div data-testid="board-toolbar" className="shrink-0 border-b border-border bg-surface px-3 py-1.5 sm:px-4 sm:py-2">
+  return <div data-testid="board-toolbar" className="shrink-0 border-b border-border bg-chrome px-3 py-1.5 sm:px-4 sm:py-2">
     <div className="flex items-center gap-2 sm:gap-4">
       {leading ? <div className={`shrink-0 ${searchShown ? 'hidden sm:block' : ''}`}>{leading}</div> : null}
       <div data-testid="board-filter-controls" className="ml-auto flex min-w-0 flex-1 items-center justify-end gap-2">
