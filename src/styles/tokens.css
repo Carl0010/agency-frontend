@@ -78,6 +78,13 @@
   --color-label-purple: #9270b0;
   --color-label-pink: #bd7196;
   --color-label-brown: #8c694c;
+  --color-label-amber: #c8913a;
+  --color-label-lime: #86a33c;
+  --color-label-aqua: #3f9fae;
+  --color-label-orchid: #a465b3;
+  --color-label-magenta: #b5609f;
+  --color-label-peach: #c98a72;
+  --color-label-stone: #8b9096;
   /* Glyphs drawn on a solid content colour (a project's icon tile in dark mode). */
   --color-on-label: #16181b;
   --color-avatar-1: #93483f;
@@ -153,6 +160,13 @@ html[data-theme='dark'] {
   --color-label-purple: #b8acff;
   --color-label-pink: #fc96bf;
   --color-label-brown: #e0a87e;
+  --color-label-amber: #f7bd51;
+  --color-label-lime: #c3e684;
+  --color-label-aqua: #93f0d9;
+  --color-label-orchid: #e39ef2;
+  --color-label-magenta: #ffbeff;
+  --color-label-peach: #ffc6bd;
+  --color-label-stone: #aaaaaa;
   --shadow-md: 0 3px 10px -3px rgb(0 0 0 / 0.4), 0 0 0 1px rgb(255 255 255 / 0.05);
   --shadow-lg: 0 12px 32px -8px rgb(0 0 0 / 0.6), 0 0 0 1px rgb(255 255 255 / 0.08);
   --shadow-xl: 0 24px 60px -16px rgb(0 0 0 / 0.7), 0 0 0 1px rgb(255 255 255 / 0.08);
