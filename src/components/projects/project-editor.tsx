@@ -81,7 +81,7 @@ export function ProjectEditor({ project, onClose, onSaved }: {
         </label>)}
       </div></fieldset>
       <fieldset><legend className="mb-2 text-label font-medium text-secondary-foreground">Project icon</legend><div className="grid w-fit grid-cols-8 gap-1.5">
-        {PROJECT_ICONS.map((name) => <label key={name} title={name} className={`relative inline-flex size-8 cursor-pointer items-center justify-center rounded-md ${icon === name ? `${PROJECT_ICON_BG[color] ?? PROJECT_ICON_BG.slate} text-foreground ring-2 ring-ring ring-offset-2 ring-offset-surface dark:text-on-label` : 'text-secondary-foreground hover:bg-hover hover:text-foreground'}`}>
+        {PROJECT_ICONS.map((name) => <label key={name} title={name} className={`relative inline-flex size-8 cursor-pointer items-center justify-center rounded-md ${icon === name ? `${PROJECT_ICON_BG[color] ?? PROJECT_ICON_BG.slate} ring-2 ring-ring ring-offset-2 ring-offset-surface` : 'text-secondary-foreground hover:bg-hover hover:text-foreground'}`}>
           <input type="radio" name="icon" value={name} aria-label={name} checked={icon === name} onChange={() => setIcon(name)} className="peer absolute inset-0 z-10 size-full cursor-pointer opacity-0" /><Icon name={name} className="size-4" /><span className="pointer-events-none absolute inset-0 rounded-md peer-focus-visible:outline-2 peer-focus-visible:outline-offset-4 peer-focus-visible:outline-ring" />
         </label>)}
       </div></fieldset>

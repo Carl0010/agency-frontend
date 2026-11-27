@@ -67,26 +67,29 @@
   --color-highlight-foreground: #644517;
   --color-overlay: #0f1216;
 
-  /* User-selected content colors are distinct from brand and status roles. */
-  --color-label-grey: #7c877f;
-  --color-label-red: #c65a54;
-  --color-label-orange: #c77e37;
-  --color-label-yellow: #d0aa3f;
-  --color-label-green: #4b9560;
-  --color-label-teal: #3c938d;
-  --color-label-blue: #548bc0;
-  --color-label-purple: #9270b0;
-  --color-label-pink: #bd7196;
-  --color-label-brown: #8c694c;
-  --color-label-amber: #c8913a;
-  --color-label-lime: #86a33c;
-  --color-label-aqua: #3f9fae;
-  --color-label-orchid: #a465b3;
-  --color-label-magenta: #b5609f;
-  --color-label-peach: #c98a72;
-  --color-label-stone: #8b9096;
-  /* Glyphs drawn on a solid content colour (a project's icon tile in dark mode). */
+  /* User-selected content colors are distinct from brand and status roles. In light they are clear,
+     saturated tones (as in Asana's light theme): the old muted mid-tones read as faded on white. */
+  --color-label-grey: #7f8892;
+  --color-label-red: #e5534b;
+  --color-label-orange: #e8803a;
+  --color-label-yellow: #e9b52f;
+  --color-label-green: #3fa865;
+  --color-label-teal: #22a094;
+  --color-label-blue: #4479d6;
+  --color-label-purple: #8466dc;
+  --color-label-pink: #df5f9c;
+  --color-label-brown: #9c6c47;
+  --color-label-amber: #ee9a2e;
+  --color-label-lime: #86b532;
+  --color-label-aqua: #2aaec2;
+  --color-label-orchid: #ac5ed6;
+  --color-label-magenta: #cf4fac;
+  --color-label-peach: #ec9273;
+  --color-label-stone: #949aa1;
+  /* Dark glyphs drawn on a light solid content colour (yellow, lime and the like, and every tile in dark). */
   --color-on-label: #16181b;
+  /* White glyphs on the deeper light-theme content colours (red, blue, purple and the like). */
+  --color-on-label-deep: #ffffff;
   --color-avatar-1: #93483f;
   --color-avatar-2: #805c24;
   --color-avatar-3: #3c7050;
@@ -99,7 +102,7 @@
   --radius-lg: 0.5rem;
   --radius-xl: 0.75rem;
   --radius-2xl: 1rem;
-  --shadow-sm: 0 1px 2px rgb(15 18 24 / 0.04);
+  --shadow-sm: 0 1px 2px rgb(15 18 24 / 0.07);
   --shadow-md: 0 3px 10px -3px rgb(15 18 24 / 0.12);
   /* Floating layers carry a 1px hairline so a menu over a white dialog keeps its edge. */
   --shadow-lg: 0 12px 32px -8px rgb(15 18 24 / 0.2), 0 2px 6px -2px rgb(15 18 24 / 0.08), 0 0 0 1px rgb(15 18 24 / 0.06);

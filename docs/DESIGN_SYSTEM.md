@@ -71,7 +71,7 @@ several products need belongs in Quiet Pro, not here.
 | `bg-sidebar` | Quiet Pro `--bg` / `--surface-1` | Workspace sidebar and the phone navigation drawer: level with the chrome in dark, so the page is the one dark well |
 | `bg-board-canvas` | Agency `#FCFDFE` / Quiet Pro `--bg` | Board work area; pair with foreground/secondary/muted text |
 | `bg-lane` | Quiet Pro `--surface-3` / `--surface-1` | Board lanes and group columns. Always below the cards in them: a grey well under white cards in light, one step above the canvas and one below the cards in dark |
-| `hover:bg-raised` | Quiet Pro `--surface-2` / `--surface-3` | A card under the pointer: lifts one step in dark, with `border-hover` and `shadow-md` |
+| `hover:bg-raised` | Quiet Pro `--surface-2` / `--surface-3` | A card under the pointer: lifts one step in dark, with `border-hover` and `shadow-md`; in light its edge only firms to `input`, since `border-hover` is near-black there |
 | `bg-surface` | Quiet Pro `--surface-2` | Cards, panels, dialogs, main headers |
 | `bg-popover` | Quiet Pro `--surface-overlay` | Menus, popovers, select lists, the command palette, person cards, tour. One step above the dialog or card it opens from (lighter in dark; shadow and hairline in light) |
 | `bg-field` | Quiet Pro `--field` | Inputs, selects, textareas and checkbox boxes. Sunken in dark so a field reads as a field inside a card or dialog |
@@ -216,7 +216,7 @@ a separate creation form. Empty lists say **No cards yet**; filtered lists with 
 say **No matching cards**. Keep one Add card control per list as a separate bordered surface below the
 list panel, with a 12px gap. The form expands inside that separate tile.
 
-In dark mode the content colours (`label-*`) switch to bright tones, as in Asana, and a project's icon tile is the solid colour with an `on-label` glyph; light mode keeps the softer tints. The project editor shows colour and icon as two compact rows of eight swatches.
+Content colours (`label-*`) are clear, saturated tones in light mode and switch to brighter ones in dark, as in Asana. A project's icon tile is the solid colour in both themes: a white glyph on the deeper light tones, an `on-label` glyph on the light ones (yellow, lime, orange, amber, aqua, peach, stone) and on every tile in dark. The project editor shows colour and icon as two compact rows of eight swatches.
 
 User-selected label colors appear as dots beside their readable names on a
 neutral chip. Do not put low-contrast text on arbitrary label fills. Card facts

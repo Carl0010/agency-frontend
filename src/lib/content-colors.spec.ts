@@ -11,8 +11,16 @@ describe('project colours', () => {
     expect(Object.keys(PROJECT_DOT)).toEqual(API_PROJECT_COLORS);
   });
 
-  it('gives every colour an icon tile, solid in dark mode', () => {
+  it('gives every colour a solid icon tile with a dark glyph in dark mode', () => {
     expect(Object.keys(PROJECT_ICON_BG)).toEqual(API_PROJECT_COLORS);
-    for (const value of API_PROJECT_COLORS) expect(PROJECT_ICON_BG[value]).toMatch(/ dark:bg-label-\w+$/);
+    for (const value of API_PROJECT_COLORS) {
+      expect(PROJECT_ICON_BG[value]).toMatch(/^bg-label-\w+ /);
+      expect(PROJECT_ICON_BG[value]).not.toContain('/');
+      expect(PROJECT_ICON_BG[value]).toMatch(/(^| |dark:)text-on-label$/);
+    }
+  });
+
+  it('keeps the tile and glyph on the same content colour as the dot', () => {
+    for (const value of API_PROJECT_COLORS) expect(PROJECT_ICON_BG[value]?.split(' ')[0]).toBe(PROJECT_DOT[value]);
   });
 });
