@@ -15,6 +15,7 @@ import { SetupChip } from '@/components/onboarding/setup-chip';
 import { TrialPill } from '@/components/billing/billing-notices';
 import { Button } from '@/components/ui';
 import type { Channel, Project, Team } from '@/lib/types';
+import { orderByRecent, useRecentProjects } from '@/lib/recent-projects';
 import { useWorkspace } from '@/lib/workspace';
 import { AccountMenu } from '@/components/account-menu';
 import { MODULE_LABELS, MY_WORK_PATH, PERSONAL_SETTINGS_PATH, TEAMS_PATH, type WorkspaceModule } from './workspace-modules';
@@ -72,29 +73,7 @@ export function WorkspaceSidebar({ data, projectId, activeModule, onNavigate, on
       </div>
 
       <div className="min-h-0 flex-1 overflow-y-auto px-3 pb-4 pt-4">
-        {activeModule === 'projects' ? <>
-          <nav aria-label="Project navigation" className="space-y-1">
-            <Link href={`${base}/projects`} onClick={onNavigate} aria-current={pathname === `${base}/projects` ? 'page' : undefined} className="ui-nav-link tap">
-              <Icon name="projects" /><span>Projects</span><span className="ml-auto text-caption text-muted-foreground">{data.pending ? '—' : data.projects.length}</span>
-            </Link>
-            <Link href={`${base}/import`} onClick={onNavigate} aria-current={pathname.startsWith(`${base}/import`) ? 'page' : undefined} className="ui-nav-link tap"><Icon name="import" />Import</Link>
-          </nav>
-
-          <nav aria-label="Projects" className="mt-6">
-            <div className="mb-2 flex items-center justify-between px-2.5 text-caption font-medium text-muted-foreground"><span>Projects</span><Button variant="ghost" size="icon" aria-label="Add project" onClick={() => setCreating(true)}><Icon name="plus" /></Button></div>
-            {data.pending ? <LoadingSkeleton label="Loading projects" count={3} className="px-2" /> : null}
-            {data.error ? <div role="alert" className="space-y-2 rounded-md border border-danger-border bg-danger-subtle p-2.5 text-caption text-danger-text"><p>{data.error}</p><Button variant="secondary" size="sm" onClick={data.retry}>Try again</Button></div> : null}
-            {!data.pending && !data.error && data.projects.length === 0 ? <p className="px-2.5 py-2 text-caption text-muted-foreground">Projects shared with you will appear here.</p> : null}
-            {data.starred.length ? <section aria-label="Starred" className="mb-5"><h3 className="mb-2 px-2.5 text-caption font-medium text-muted-foreground">Starred</h3><ul className="space-y-1">{data.starred.map((project) => <SidebarProject key={project.id} project={project} data={data} currentId={projectId} expanded={false} showClosed onNavigate={onNavigate} />)}</ul></section> : null}
-            {data.teams.map((team) => {
-              const projects = data.projects.filter((project) => project.teamIds?.includes(team.id));
-              if (!projects.length) return null;
-              return <section key={team.id} aria-label={`${team.name} projects`} className="mb-5"><h3 className="mb-2 px-2.5 text-caption font-medium text-muted-foreground"><Link href={`${base}/projects?team=${encodeURIComponent(team.id)}`} onClick={onNavigate} className="tap block truncate rounded-md hover:text-foreground">{team.name}</Link></h3><ul className="space-y-1">{projects.map((project) => <SidebarProject key={project.id} project={project} data={data} currentId={projectId} expanded={data.teams.find((item) => project.teamIds?.includes(item.id))?.id === team.id} onNavigate={onNavigate} />)}</ul></section>;
-            })}
-            {data.projects.some((project) => !data.teams.some((team) => project.teamIds?.includes(team.id))) ? <section aria-label="Other projects"><h3 className="mb-2 px-2.5 text-caption font-medium text-muted-foreground">Other projects</h3><ul className="space-y-1">{data.projects.filter((project) => !data.teams.some((team) => project.teamIds?.includes(team.id))).map((project) => <SidebarProject key={project.id} project={project} data={data} currentId={projectId} expanded onNavigate={onNavigate} />)}</ul></section> : null}
-          </nav>
-
-        </> : null}
+        {activeModule === 'projects' ? <ProjectsNav data={data} projectId={projectId} base={base} pathname={pathname} onNavigate={onNavigate} onAdd={() => setCreating(true)} /> : null}
         {activeModule === 'teams' ? <TeamsNav teams={data.teams} pending={data.pending} base={base} pathname={pathname} onNavigate={onNavigate} /> : null}
         {activeModule === 'admin' ? <nav aria-label="Admin console" className="space-y-1">
           <p className="mb-2 px-2.5 text-caption font-medium text-muted-foreground">Organization</p>
@@ -133,25 +112,37 @@ export function WorkspaceSidebar({ data, projectId, activeModule, onNavigate, on
 }
 
 
-function SidebarProject({ project, data, currentId, expanded, showClosed = false, onNavigate }: { project: Project; data: SidebarData; currentId?: string; expanded: boolean; showClosed?: boolean; onNavigate?: () => void }) {
+/**
+ * The Projects module, like Asana's: your starred projects, then the rest by when you last opened
+ * them in this browser. Only projects; a project's board and channels are tabs in its own header.
+ */
+function ProjectsNav({ data, projectId, base, pathname, onNavigate, onAdd }: { data: SidebarData; projectId?: string; base: string; pathname: string; onNavigate?: () => void; onAdd: () => void }) {
+  const ws = useWorkspace();
+  const recent = useRecentProjects(ws.id, projectId);
+  const starredIds = new Set(data.starred.map((project) => project.id));
+  const rest = orderByRecent(data.projects.filter((project) => !starredIds.has(project.id)), recent);
+  const heading = 'mb-1.5 px-2.5 text-caption font-medium text-muted-foreground';
+  return <nav aria-label="Projects" className="space-y-5">
+    <div className="flex items-center justify-between gap-2">
+      <Link href={`${base}/projects`} onClick={onNavigate} aria-current={pathname === `${base}/projects` ? 'page' : undefined} className="ui-nav-link tap min-w-0 flex-1"><Icon name="projects" /><span>Projects</span><span className="ml-auto text-caption text-muted-foreground">{data.pending ? '—' : data.projects.length}</span></Link>
+      <Button variant="ghost" size="icon" aria-label="Add project" onClick={onAdd}><Icon name="plus" /></Button>
+    </div>
+    {data.pending ? <LoadingSkeleton label="Loading projects" count={3} className="px-2" /> : null}
+    {data.error ? <div role="alert" className="space-y-2 rounded-md border border-danger-border bg-danger-subtle p-2.5 text-caption text-danger-text"><p>{data.error}</p><Button variant="secondary" size="sm" onClick={data.retry}>Try again</Button></div> : null}
+    {!data.pending && !data.error && data.projects.length === 0 && data.starred.length === 0 ? <p className="px-2.5 text-caption text-muted-foreground">Projects shared with you will appear here.</p> : null}
+    {data.starred.length ? <section aria-label="Starred"><h3 className={heading}>Starred</h3><ul className="space-y-0.5">{data.starred.map((project) => <SidebarProject key={project.id} project={project} data={data} currentId={projectId} showClosed onNavigate={onNavigate} />)}</ul></section> : null}
+    {rest.length ? <section aria-label="Recent"><h3 className={heading}>Recent</h3><ul className="space-y-0.5">{rest.map((project) => <SidebarProject key={project.id} project={project} data={data} currentId={projectId} onNavigate={onNavigate} />)}</ul></section> : null}
+  </nav>;
+}
+
+function SidebarProject({ project, data, currentId, showClosed = false, onNavigate }: { project: Project; data: SidebarData; currentId?: string; showClosed?: boolean; onNavigate?: () => void }) {
   const status = projectStatus(project.status).value;
   // In progress is the norm; mark the other open statuses, and closed ones where they can appear (Starred).
   const marked = status !== 'in_progress' && (showClosed || OPEN_STATUSES.includes(status));
-  const ws = useWorkspace(); const pathname = usePathname();
+  const ws = useWorkspace();
   const current = project.id === currentId;
-  const projectBase = `/w/${ws.id}/p/${project.id}`;
-  const sections: { label: string; path: string; icon: IconName; kind?: 'shared' | 'internal' }[] = [
-    { label: 'Board', path: `/b/${project.defaultBoardId}`, icon: 'board' },
-    { label: 'Shared', path: '/chat', icon: 'comment', kind: 'shared' },
-    { label: 'Team', path: '/team', icon: 'lock', kind: 'internal' },
-  ];
   return <li>
-    <div className="flex items-center gap-1"><Link href={`${projectBase}/b/${project.defaultBoardId}`} onClick={onNavigate} aria-current={current ? 'location' : undefined} data-testid="rail-project" className={`ui-nav-link tap min-w-0 flex-1 ${current ? 'bg-subtle font-medium text-foreground' : ''}`}><ProjectIcon project={project} /><span className="min-w-0 flex-1 truncate">{project.name}</span>{marked ? <ProjectStatusPill project={project} className="px-1.5" /> : null}{data.channels.some((channel) => channel.projectId === project.id && channel.unreadCount > 0) ? <UnreadDot label={`Unread messages in ${project.name}`} /> : null}</Link><ProjectMenu project={project} onNavigate={onNavigate} /></div>
-    {current && expanded ? <ul aria-label="Project sections" className="my-1 ml-3 border-l border-border pl-3">{sections.map((section) => {
-      const selected = section.kind ? pathname.startsWith(projectBase + section.path) : pathname.startsWith(`${projectBase}/b/`);
-      const unread = section.kind && !selected && data.channels.some((channel) => channel.projectId === project.id && channel.kind === section.kind && channel.unreadCount > 0);
-      return <li key={section.label}><Link href={projectBase + section.path} onClick={onNavigate} aria-current={selected ? 'page' : undefined} data-tour={section.kind === 'shared' ? 'shared-channel' : undefined} className="ui-nav-link tap"><Icon name={section.icon} className="size-3.5" /><span>{section.label}</span>{section.kind === 'internal' ? <span data-testid="internal-badge" className="ml-auto rounded-sm bg-muted px-1 text-caption text-muted-foreground">Internal</span> : null}{unread ? <UnreadDot label={`Unread in ${section.label}`} /> : null}</Link></li>;
-    })}</ul> : null}
+    <div className="flex items-center gap-1"><Link href={`/w/${ws.id}/p/${project.id}/b/${project.defaultBoardId}`} onClick={onNavigate} aria-current={current ? 'location' : undefined} data-testid="rail-project" className={`ui-nav-link tap min-w-0 flex-1 ${current ? 'bg-subtle font-medium text-foreground' : ''}`}><ProjectIcon project={project} /><span className="min-w-0 flex-1 truncate">{project.name}</span>{marked ? <ProjectStatusPill project={project} className="px-1.5" /> : null}{data.channels.some((channel) => channel.projectId === project.id && channel.unreadCount > 0) ? <UnreadDot label={`Unread messages in ${project.name}`} /> : null}</Link><ProjectMenu project={project} onNavigate={onNavigate} /></div>
   </li>;
 }
 

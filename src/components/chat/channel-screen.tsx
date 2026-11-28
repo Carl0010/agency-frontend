@@ -4,6 +4,8 @@ import { LoadingSkeleton } from '@/components/skeleton';
 
 import { useQuery } from '@tanstack/react-query';
 import { ProjectActions } from '@/components/project-chrome';
+import { ProjectIcon } from '@/components/projects/project-icon';
+import { ProjectTabs } from '@/components/projects/project-tabs';
 import { api } from '@/lib/api';
 import type { ChannelKind, Project } from '@/lib/types';
 import { useWorkspace } from '@/lib/workspace';
@@ -21,13 +23,14 @@ export function ChannelScreen({ projectId, kind }: { projectId: string; kind: Ch
   return (
     <div className="flex h-full">
       <div className="flex min-w-0 flex-1 flex-col">
-        <div className="flex flex-wrap items-center gap-2 border-b border-border bg-surface px-3 py-2">
-          <div className="min-w-0">
-            <h1 className="truncate text-lg font-semibold">{project.data.name}</h1>
+        <div className="flex flex-wrap items-center gap-2 border-b border-border bg-chrome px-3 py-1.5 sm:gap-2.5 sm:px-4 sm:py-2">
+          <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-2.5">
+            <ProjectIcon project={project.data} />
+            <h1 className="min-w-0 truncate text-body-lg font-semibold leading-6 sm:text-lg">{project.data.name}</h1>
+            <span aria-hidden="true" className="mx-0.5 hidden h-5 w-px bg-border sm:block" />
+            <ProjectTabs project={project.data} />
           </div>
-          <div className="ml-2">
-            <ProjectActions projectId={projectId} />
-          </div>
+          <ProjectActions projectId={projectId} />
         </div>
         <ChannelPane
           projectId={projectId}

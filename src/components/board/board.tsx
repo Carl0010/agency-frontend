@@ -33,6 +33,7 @@ import { ProjectActions } from '@/components/project-chrome';
 import { ProjectHeaderMenu } from '@/components/projects/project-header-menu';
 import { ProjectIcon } from '@/components/projects/project-icon';
 import { ProjectStatusMenu } from '@/components/projects/project-status';
+import { ProjectTabs } from '@/components/projects/project-tabs';
 import { useToast } from '@/components/toast';
 import { Avatar, Switch } from '@/components/ui';
 import { api, errorMessage } from '@/lib/api';
@@ -251,6 +252,8 @@ export function BoardScreen({ boardId, projectId }: { boardId: string; projectId
             {project.data ? <ProjectHeaderMenu project={project.data} /> : null}
             {project.data?.archivedAt ? <span data-testid="project-archived" className="shrink-0 rounded-full border border-border bg-subtle px-2 py-0.5 text-caption font-medium text-muted-foreground">Archived</span> : null}
             {project.data ? <ProjectStatusMenu project={project.data} compact /> : null}
+            <span aria-hidden="true" className="mx-0.5 hidden h-5 w-px bg-border sm:block" />
+            <ProjectTabs project={{ id: projectId, defaultBoardId: project.data?.defaultBoardId ?? boardId }} />
             {showArrivals ? <span className="hidden md:inline"><ProjectArrivalLine projectId={projectId} /></span> : null}
           </div>
           <div className="flex shrink-0 items-center gap-1 sm:gap-2">

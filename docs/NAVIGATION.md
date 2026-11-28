@@ -13,19 +13,19 @@ The guest portal keeps its separate navigation and imports none of this shell.
 | Sidebar identity | Identify workspace and selected module | Workspace name and current module label |
 | App bar | Global actions and navigation visibility | Centered 44px search palette trigger, hamburger, Agency home. No theme switch |
 | My work sidebar | The person's own assigned cards | Assigned to me (the page groups them Overdue, Today, Next 7 days, Later, No due date, then a collapsed Done for the last 7 days) |
-| Projects sidebar | Browse shared work and project surfaces | Projects overview, import, team groups, Starred, create button, per-project menu, current project's Board/Shared/internal Team |
+| Projects sidebar | Jump to a project | Projects link (to the overview) and add button, then Starred, then Recent (the rest, most recently opened first, kept per browser). Per-project menu. No team groups, import or nested sections |
 | Inbox sidebar | Browse activity and configure delivery | All notifications and a link to notification preferences (Your settings) |
 | Teams sidebar | Browse teams | All teams, then Your teams and Other teams (active teams only) |
 | Admin console sidebar | Manage the organization | Organization: Members, Teams (create, archive), owner-only Billing |
 | Your settings sidebar | The person's own settings | Notifications, Appearance; Profile and Language shown as "Soon" ([handoff](handoffs/PERSONAL_SETTINGS.md)) |
 | Sidebar footer | Resume setup, understand trial status, account actions | Setup progress, trial link, and the account menu: user identity/role opening Your settings and Log out |
-| Project/page header | Describe and act on the current view | Project title, sharing, collaborators, archive; page-specific primary actions |
+| Project/page header | Describe and act on the current view | Project title, Board/Shared/internal Team tabs, sharing, collaborators, archive; page-specific primary actions |
 | Content toolbars | Manipulate the current content | Kanban/List presentation, card filters, list selection, message/thread controls |
 | Persistent content banners | Show urgent state and recovery actions | Read-only/payment warnings and exports; push permission explanation |
 
 The module rail is global navigation. The neighboring sidebar shows only the
 selected module's destinations. Do not duplicate all workspace settings inside
-the Projects sidebar or repeat Board/Shared/Team tabs above content. Page actions
+the Projects sidebar or nest Board/Shared/Team under projects in the sidebar; those are tabs in the project header. Page actions
 remain local: card creation, dragging, message composition, sharing and
 destructive operations belong beside the content they affect.
 
@@ -81,9 +81,9 @@ and browser history. It is not a second copy of router state or server data.
 
 The selected module uses `aria-current="location"` in the rail. Use
 `aria-current="page"` for the selected destination in the contextual sidebar. The current project
-parent uses `aria-current="location"` and expands its three destinations.
-Card routes and additional boards retain Board as their selected destination.
-Keep the Team link's lock icon and **Internal** label visible.
+uses `aria-current="location"` in the sidebar. The project header tabs mark the
+current section with `aria-current="page"`; card routes and additional boards keep
+Board selected. The Team tab keeps its lock icon and an **Internal** label for screen readers.
 
 Project and channel unread dots are live. `WorkspaceShell` owns one
 `useWorkspaceChannels` subscription and passes data into both navigation
@@ -201,13 +201,11 @@ stay visible and preserve form input. The API decides authorization and billing.
 
 Saved icons and personal stars use the live API; see
 [the personalization record](handoffs/PROJECT_PERSONALIZATION.md). Starred reads
-the complete personal collection, separately from team groups. Projects shared
-with several teams can appear under each, with one expanded set of active project
-sections. Projects without a visible team group remain under Other projects.
-
-Team groups and Other projects list open projects only (`?status=planned,in_progress,on_hold`),
-so Completed and Cancelled work leaves navigation without being archived; Planned and On hold
-carry a small status marker. Starred keeps every status and marks any that is not In progress.
+the complete personal collection. Recent lists every other open project once
+(`?status=planned,in_progress,on_hold`), most recently opened first, then by name;
+the order lives in this browser's storage. Completed and Cancelled work leaves
+Recent without being archived; Planned and On hold carry a small status marker.
+Starred keeps every status and marks any that is not In progress.
 The project header's status pill is a menu for members; see
 [the project status record](handoffs/PROJECT_STATUS.md). Guest surfaces never show status.
 

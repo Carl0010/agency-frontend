@@ -56,7 +56,7 @@ export function WorkspaceShell({ children }: { children: ReactNode }) {
       <a href="#workspace-content" className="sr-only z-50 rounded-md bg-surface p-3 text-primary focus:not-sr-only focus:fixed focus:left-4 focus:top-4">Skip to content</a>
       <header aria-label="Application bar" data-testid="workspace-header" className="grid h-14 shrink-0 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 border-b border-border bg-chrome px-3 sm:gap-4 sm:px-5 lg:grid-cols-[1fr_minmax(20rem,36rem)_1fr] lg:border-b-0">
         <div className="flex min-w-0 items-center gap-3 lg:gap-2">
-          <Button variant="ghost" size="icon" className="lg:hidden" aria-label="Open navigation" aria-expanded={open} aria-haspopup="dialog" data-tour={projectId ? 'shared-channel' : undefined} onClick={() => setOpen(true)}><Icon name="menu" className="size-5" /></Button>
+          <Button variant="ghost" size="icon" className="lg:hidden" aria-label="Open navigation" aria-expanded={open} aria-haspopup="dialog" onClick={() => setOpen(true)}><Icon name="menu" className="size-5" /></Button>
           <Button variant="ghost" size="icon" className="hidden lg:-ml-3.5 lg:inline-flex lg:size-11" aria-label={sidebarVisible ? 'Close sidebar' : 'Open sidebar'} aria-expanded={sidebarVisible} aria-controls="desktop-sidebar" onClick={() => setSidebarVisible((visible) => !visible)}><Icon name="menu" className="size-5" /></Button>
           <Link href={`/w/${ws.id}/projects`} aria-label="Agency home" className="hidden min-w-0 items-center gap-2.5 rounded-md sm:flex"><BrandMark /><span className="truncate text-body font-semibold">Agency</span></Link>
         </div>
