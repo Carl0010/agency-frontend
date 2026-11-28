@@ -175,14 +175,25 @@ test('inbox and notification preferences render', async ({ browser }) => {
   const grid = page.getByTestId('preferences-grid');
   await expect(grid.getByLabel('Mentions in-app (always on)')).toBeVisible();
   await expect(page.getByLabel('Mentions in-app (always on)')).toBeDisabled();
+  // Calm defaults: nothing emails at once, only mentions and assignments push, the daily summary is on.
+  await expect(page.getByLabel('Mentions email')).not.toBeChecked();
+  await expect(page.getByLabel('Mentions push')).toBeChecked();
+  await expect(page.getByLabel('New messages push')).not.toBeChecked();
   await Promise.all([
     page.waitForResponse((r) => r.url().includes('/notifications/preferences') && r.request().method() === 'PUT'),
     page.getByLabel('New messages email').click(),
   ]);
-  await expect(page.getByLabel('New messages email')).not.toBeChecked();
+  await expect(page.getByLabel('New messages email')).toBeChecked();
+  const summary = page.getByTestId('daily-summary').getByRole('switch');
+  await expect(summary).toHaveAttribute('aria-checked', 'true');
+  await Promise.all([
+    page.waitForResponse((r) => r.url().includes('/notifications/daily-summary') && r.request().method() === 'PUT'),
+    summary.click(),
+  ]);
   await page.reload();
-  await expect(page.getByLabel('New messages email')).not.toBeChecked();
-  await expect(page.getByLabel('Mentions email')).toBeChecked();
+  await expect(page.getByLabel('New messages email')).toBeChecked();
+  await expect(page.getByLabel('Mentions email')).not.toBeChecked();
+  await expect(page.getByTestId('daily-summary').getByRole('switch')).toHaveAttribute('aria-checked', 'false');
 });
 
 /** signupToBoard in a caller-supplied context (so init scripts apply from the first page). */
