@@ -8,9 +8,9 @@ import { useTeams } from '@/lib/teams';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
 import { AuthCard, FormError } from '@/components/auth-card';
-import { Button, Field, Input, Select } from '@/components/ui';
+import { Button, Field, Input, RadioGroup, Select } from '@/components/ui';
 import { api, ApiError, errorMessage } from '@/lib/api';
-import { formText } from '@/lib/form';
+import { BLANK_START, nameForStart, startDescription } from '@/lib/first-project';
 import { rememberWorkspace } from '@/lib/landing';
 import { useSession } from '@/lib/session';
 import type { Page, Project, Seats, TemplateSummary, Workspace } from '@/lib/types';
@@ -64,7 +64,13 @@ export default function OnboardingPage() {
   const advance = async (from: Step, patch: Record<string, unknown> = {}) => {
     const next = Math.min(4, from + 1) as Step;
     await api.patch(`/workspaces/${ws.id}/onboarding`, { ...patch, step: next });
-    await refresh();
+    const fresh = await refresh();
+    // A template picked with the first project already filled the board: skip "Bring your work over".
+    if (next === 4 && fresh.setup?.stepsDone[3]) {
+      const project = fresh.setup.projectId ? await api.get<Project>(`/projects/${fresh.setup.projectId}`) : null;
+      await finish((f) => (project ? `/w/${f.id}/p/${project.id}/b/${project.defaultBoardId}` : `/w/${f.id}/projects`));
+      return;
+    }
     setStep(next);
   };
   const skip = (from: Step) => advance(from, { skip: from });
@@ -197,14 +203,27 @@ function WorkspaceStep({ ws, header, footer, onDone, onSkip }: StepProps & { onD
 }
 
 // ---------------------------------------------------------------------------
-// Step 2 — first project (AC22)
+// Step 2 — first project (AC22), started blank or from a template (AC24)
 // ---------------------------------------------------------------------------
 
 function ProjectStep({ ws, header, footer, onDone, onSkip }: StepProps & { onDone: () => Promise<void>; onSkip: () => Promise<void> }) {
   const teams = useTeams(ws.id);
+  const qc = useQueryClient();
+  const templates = useQuery({ queryKey: ['templates'], queryFn: () => api.get<Page<TemplateSummary>>('/onboarding/templates') });
+  const list = templates.data?.data ?? [];
+  const [start, setStart] = useState<string>(BLANK_START);
+  const [name, setName] = useState('');
+  const [autoName, setAutoName] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const existing = ws.setup?.projectId ?? null;
+
+  const choose = (value: string) => {
+    setStart(value);
+    const next = nameForStart(name, autoName, value, list);
+    setName(next.name);
+    setAutoName(next.auto);
+  };
 
   async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -214,10 +233,19 @@ function ProjectStep({ ws, header, footer, onDone, onSkip }: StepProps & { onDon
     try {
       if (!existing) {
         // One transaction on the server: project, board, three lists, both channels.
-        await api.post<Project>(`/workspaces/${ws.id}/projects`, {
-          name: formText(form, 'name'),
+        const project = await api.post<Project>(`/workspaces/${ws.id}/projects`, {
+          name: name.trim(),
           teamIds: form.getAll('teamIds').map(String),
         });
+        if (start !== BLANK_START) {
+          try {
+            await api.post(`/projects/${project.id}/template`, { templateId: start });
+          } catch (err) {
+            // The project is made; the last step still offers the templates.
+            await qc.invalidateQueries({ queryKey: ['workspaces'] });
+            throw err;
+          }
+        }
       }
       await onDone();
     } catch (err) {
@@ -226,8 +254,13 @@ function ProjectStep({ ws, header, footer, onDone, onSkip }: StepProps & { onDon
     }
   }
 
+  const options = [
+    { value: BLANK_START, label: 'Blank board', description: 'To do, In progress and Done, ready for your own cards.' },
+    ...list.map((t) => ({ value: t.id, label: t.name, description: startDescription(t) })),
+  ];
+
   return (
-    <AuthCard title="Your first project" footer={footer}>
+    <AuthCard title="Your first project" footer={footer} wide>
       {header}
       <form onSubmit={(e) => void onSubmit(e)} className="space-y-4">
         <FormError message={error} />
@@ -235,13 +268,23 @@ function ProjectStep({ ws, header, footer, onDone, onSkip }: StepProps & { onDon
           <p className="rounded-md bg-success-subtle px-3 py-2 text-sm text-success-text">Your first project is set up.</p>
         ) : (
           <>
-            <Field label="Project name" hint="e.g. “Acme — Q4 site rebuild”">
-              <Input name="name" required maxLength={120} />
+            <RadioGroup legend="Start with" name="start" value={start} onChange={choose} disabled={busy} options={options} />
+            <Field label="Project name" hint="e.g. “Acme — Q4 site rebuild”. You can rename it any time.">
+              <Input
+                name="name"
+                value={name}
+                onChange={(e) => {
+                  setName(e.target.value);
+                  setAutoName(null);
+                }}
+                required
+                maxLength={120}
+              />
             </Field>
             <TeamPicker workspaceId={ws.id} disabled={busy} />
           </>
         )}
-        <StepButtons busy={busy || (!existing && (teams.isPending || Boolean(teams.error)))} label={existing ? 'Continue' : 'Create project'} onSkip={onSkip} />
+        <StepButtons busy={busy || (!existing && (teams.isPending || Boolean(teams.error)))} label={existing ? 'Continue' : 'Create project'} onSkip={onSkip} disabled={!existing && !name.trim()} />
       </form>
     </AuthCard>
   );
@@ -437,7 +480,7 @@ function WorkStep({
           </button>
           <button type="button" className={card} disabled={busy !== null} onClick={() => setPicking(true)}>
             <span className="font-medium">Start from a template</span>
-            <span className="text-sm text-secondary-foreground">Project onboarding, Design sprint or Website build — with example cards.</span>
+            <span className="text-sm text-secondary-foreground">Client onboarding, Design sprint or Website build, with example cards.</span>
           </button>
           <button type="button" className={card} disabled={busy !== null} onClick={() => void startEmpty()}>
             <span className="font-medium">Start empty</span>
