@@ -80,7 +80,7 @@ export function CardDetail({ cardId, projectId, layout = 'page' }: { cardId: str
   );
   const copyLink = () => {
     void navigator.clipboard
-      // The card on its own board, so the link works from My work too.
+      // The card on its own board, so the link works from My tasks too.
       .writeText(`${window.location.origin}${cardUrl(ws.id, c, c.id, new URLSearchParams(window.location.search).get('full') === 'true' ? '?full=true' : '')}`)
       .then(() => toast('Link copied.', 'info'))
       .catch(() => toast('Could not copy the link.'));

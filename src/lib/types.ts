@@ -271,12 +271,27 @@ export interface CardTile {
   placementCount?: number;
 }
 
-/** A card on My work: assigned to the viewer, shown in a project they see, with that project and list named. */
-export interface MyWorkCard extends CardTile {
+/** One of the person's My tasks sections (D-034). Recently assigned (`recent`) is always there. */
+export interface MyTaskSection {
+  id: string;
+  name: string;
+  kind: 'recent' | 'custom';
+  position: number;
+}
+
+/** A card on My tasks: assigned to the viewer, with its project and list named and the section they keep it in. */
+export interface MyTaskCard extends CardTile {
   projectName: string;
   projectIcon: string;
   projectColor: string;
   listName: string;
+  sectionId: string;
+  sectionPosition: number;
+}
+
+export interface MyTasks {
+  sections: MyTaskSection[];
+  cards: MyTaskCard[];
 }
 
 /** One project a card is in, as the viewer can see it. */

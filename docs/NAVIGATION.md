@@ -9,10 +9,10 @@ The guest portal keeps its separate navigation and imports none of this shell.
 
 | Surface | Responsibility | Contents |
 | --- | --- | --- |
-| Module rail | Switch high-level areas | My work, Projects, Inbox with live unread count, Teams, and Admin console for workspace owners and admins |
+| Module rail | Switch high-level areas | My tasks, Projects, Inbox with live unread count, Teams, and Admin console for workspace owners and admins |
 | Sidebar identity | Identify workspace and selected module | Workspace name and current module label |
 | App bar | Global actions and navigation visibility | Centered 44px search palette trigger, hamburger, Agency home. No theme switch |
-| My work sidebar | The person's own assigned cards | Assigned to me (the page groups them Overdue, Today, Next 7 days, Later, No due date, then a collapsed Done for the last 7 days) |
+| My tasks sidebar | The person's private board of assigned cards | My tasks. The page is a private board: Recently assigned, Do today, Do next week, Do later, plus sections the person adds, renames, orders and deletes (Recently assigned can't be deleted). Kanban, List and Calendar views, board filters without Assignee, and Show completed for the last 7 days. No sharing, members, archive or icon. `/my-work` links redirect here |
 | Projects sidebar | Jump to a project | Projects link (to the overview) and add button, then Starred, then Recent (the rest, most recently opened first, kept per browser). Per-project menu. No team groups, import or nested sections |
 | Inbox sidebar | Browse activity and configure delivery | All notifications and a link to notification preferences (Your settings) |
 | Teams sidebar | Browse teams | All teams, then Your teams and Other teams (active teams only) |

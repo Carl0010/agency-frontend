@@ -50,7 +50,25 @@ const announcements: Announcements = {
 
 /** A month of the board's cards on their due days, in the viewer's profile timezone. */
 export function CalendarView({ board, filters, now, timezone, cardHref }: { board: Board; filters: BoardFilters; now: Date; timezone: string; cardHref: (id: string) => string }) {
-  const qc = useQueryClient(); const toast = useToast(); const ws = useWorkspace(); const { readOnly } = useWriteAvailability(ws);
+  const qc = useQueryClient(); const toast = useToast();
+  async function move(card: CardTile, dueAt: string) {
+    const before = qc.getQueryData<Board>(['board', board.id])?.lists.flatMap((list) => list.cards).find((c) => c.id === card.id) ?? card;
+    applyTile(qc, { ...before, dueAt });
+    try {
+      applyTile(qc, await api.patch<CardTile>(cardPath(before.id, board.projectId), { dueAt }));
+    } catch (error) {
+      applyTile(qc, before);
+      toast(`Couldn't move the card: ${errorMessage(error)}`);
+    } finally {
+      void qc.invalidateQueries({ queryKey: ['board', board.id] });
+    }
+  }
+  return <MonthCalendar cards={board.lists.flatMap((list) => list.cards)} filters={filters} now={now} timezone={timezone} cardHref={cardHref} onMove={move} />;
+}
+
+/** A month of cards on their due days; dragging a card to another day calls `onMove` with its new due time. */
+export function MonthCalendar({ cards: all, filters, now, timezone, cardHref, onMove }: { cards: CardTile[]; filters: BoardFilters; now: Date; timezone: string; cardHref: (id: string) => string; onMove: (card: CardTile, dueAt: string) => Promise<void> }) {
+  const ws = useWorkspace(); const { readOnly } = useWriteAvailability(ws);
   const router = useRouter(); const pathname = usePathname(); const params = useSearchParams();
   const [active, setActive] = useState<Lifted | null>(null);
   const [pending, setPending] = useState(false);
@@ -61,7 +79,7 @@ export function CalendarView({ board, filters, now, timezone, cardHref }: { boar
   const month = parseMonth(params.get('month'), now, timezone);
   const current = parseMonth(null, now, timezone);
   const today = localDateKey(now, timezone);
-  const cards = board.lists.flatMap((list) => list.cards).filter((card) => !filtering || matchesFilters(card, filters, now));
+  const cards = all.filter((card) => !filtering || matchesFilters(card, filters, now));
   const days = cardsByDay(cards, timezone);
   const undated = cards.filter((card) => !card.dueAt).length;
   const weeks = monthGrid(month);
@@ -78,18 +96,10 @@ export function CalendarView({ board, filters, now, timezone, cardHref }: { boar
   const sensors = useSensors(useSensor(MouseSensor, { activationConstraint: { distance: 6 } }), useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 8 } }), useSensor(KeyboardSensor, { coordinateGetter: dayCoordinates, keyboardCodes: { start: ['Space'], end: ['Space'], cancel: ['Escape'] } }));
 
   async function move(source: Lifted, date: string) {
-    const before = qc.getQueryData<Board>(['board', board.id])?.lists.flatMap((list) => list.cards).find((card) => card.id === source.card.id);
-    if (!before?.dueAt) return;
-    const dueAt = moveDueToDay(before.dueAt, date, timezone);
-    setPending(true); applyTile(qc, { ...before, dueAt });
-    try {
-      applyTile(qc, await api.patch<CardTile>(cardPath(before.id, board.projectId), { dueAt }));
-    } catch (error) {
-      applyTile(qc, before);
-      toast(`Couldn't move the card: ${errorMessage(error)}`);
-    } finally {
-      setPending(false); void qc.invalidateQueries({ queryKey: ['board', board.id] });
-    }
+    const card = all.find((c) => c.id === source.card.id) ?? source.card;
+    if (!card.dueAt) return;
+    setPending(true);
+    try { await onMove(card, moveDueToDay(card.dueAt, date, timezone)); } finally { setPending(false); }
   }
 
   return <div data-testid="calendar-view" className="flex min-h-0 flex-1 flex-col overflow-auto p-3 sm:p-4">

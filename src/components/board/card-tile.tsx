@@ -3,7 +3,7 @@
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { usePathname, useRouter } from 'next/navigation';
-import { useEffect, useRef, type KeyboardEvent } from 'react';
+import { useEffect, useRef, type KeyboardEvent, type ReactNode } from 'react';
 import { Icon } from '@/components/icon';
 import { ArrivalChip } from '@/components/arrival';
 import { ReplanAction } from '@/components/arrival-actions';
@@ -27,7 +27,7 @@ export function AlsoInProjects({ card }: { card: Pick<Tile, 'placementCount'> })
  * reference (WEBS-1) and the arrival estimate live in the card's details; estimates show here only
  * when the board asks for them.
  */
-export function CardTileView({ card, now, dragging, guest = false }: { card: Tile; now: Date; dragging?: boolean; guest?: boolean }) {
+export function CardTileView({ card, now, dragging, guest = false, context }: { card: Tile; now: Date; dragging?: boolean; guest?: boolean; /** A line above the title, such as the project on My tasks. */ context?: ReactNode }) {
   // Guests receive estimates only when the project shares them, so the setting decides for them.
   const showArrivals = useShowArrivals() || guest;
   const shown = card.assignees.slice(0, 3);
@@ -47,6 +47,7 @@ export function CardTileView({ card, now, dragging, guest = false }: { card: Til
           ))}
         </div>
       ) : null}
+      {context}
       <p title={card.title} data-testid="card-tile-title" className="line-clamp-3 break-words text-body font-medium leading-5 text-foreground">{card.title}</p>
       {showArrivals ? <ArrivalChip boardId={card.boardId} cardId={card.id} guest={guest} /> : null}
       {hasMeta ? (
@@ -80,13 +81,13 @@ export function CardTileView({ card, now, dragging, guest = false }: { card: Til
 }
 
 /** A tile that can be dragged with mouse, touch (long-press) or keyboard (Space). Enter or click opens it. */
-export function SortableCard({ card, now, href, disabled }: { card: Tile; now: Date; href: string; disabled?: boolean }) {
+export function SortableCard({ card, now, href, disabled, context, sortData }: { card: Tile; now: Date; href: string; disabled?: boolean; context?: ReactNode; sortData?: Record<string, unknown> }) {
   const router = useRouter();
   const showArrivals = useShowArrivals();
   const selected = usePathname().endsWith(`/c/${card.id}`);
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: card.id,
-    data: { type: 'card', listId: card.listId },
+    data: sortData ?? { type: 'card', listId: card.listId },
     disabled,
   });
   // The click that ends a mouse drag must not also open the card.
@@ -126,7 +127,7 @@ export function SortableCard({ card, now, href, disabled }: { card: Tile; now: D
       aria-controls={selected ? 'card-drawer' : undefined}
       className={`tap shrink-0 cursor-pointer rounded-lg focus-visible:outline-2 focus-visible:outline-ring ${isDragging ? 'opacity-40' : ''} ${selected ? 'ring-2 ring-primary-border' : ''}`}
     >
-      <CardTileView card={card} now={now} />
+      <CardTileView card={card} now={now} context={context} />
     </div>
     {showArrivals ? <ReplanAction boardId={card.boardId} projectId={card.projectId} cardId={card.id} title={card.title} /> : null}
     </div>

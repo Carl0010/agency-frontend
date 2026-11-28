@@ -62,8 +62,8 @@ const boardQueries = (qc: QueryClient) => qc.getQueryCache().findAll({ queryKey:
 export function applyTile(qc: QueryClient, tile: CardTile): void {
   for (const q of boardQueries(qc)) qc.setQueryData<Board>(q.queryKey, (b) => (b ? shareTile(b, tile) : b));
   for (const q of qc.getQueryCache().findAll({ queryKey: ['card', tile.id] })) qc.setQueryData<CardDetail>(q.queryKey, (c) => (c ? mergeDetail(c, tile) : c));
-  // My work carries project and list names the tile lacks: refetch it rather than patch it.
-  void qc.invalidateQueries({ queryKey: ['my-work'] });
+  // My tasks carries project, list and section the tile lacks: refetch it rather than patch it.
+  void qc.invalidateQueries({ queryKey: ['my-tasks'] });
 }
 
 export function applyComment(qc: QueryClient, comment: Comment): void {
