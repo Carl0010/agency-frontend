@@ -1,0 +1,11 @@
+import type { ReactNode } from 'react';
+
+// Built on first visit, then served from the CDN: no server function on later clicks.
+export const dynamicParams = true;
+export function generateStaticParams() {
+  return [];
+}
+
+export default function Layout({ children }: { children: ReactNode }) {
+  return children;
+}

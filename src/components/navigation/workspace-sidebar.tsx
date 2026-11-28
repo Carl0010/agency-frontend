@@ -17,7 +17,7 @@ import { Button } from '@/components/ui';
 import type { Channel, Project, Team } from '@/lib/types';
 import { useWorkspace } from '@/lib/workspace';
 import { AccountMenu } from '@/components/account-menu';
-import { MODULE_LABELS, PERSONAL_SETTINGS_PATH, TEAMS_PATH, type WorkspaceModule } from './workspace-modules';
+import { MODULE_LABELS, MY_WORK_PATH, PERSONAL_SETTINGS_PATH, TEAMS_PATH, type WorkspaceModule } from './workspace-modules';
 
 function UnreadDot({ label }: { label: string }) {
   return <span role="img" aria-label={label} data-testid="unread-dot" className="inline-block size-2 shrink-0 rounded-full bg-primary" />;
@@ -99,6 +99,10 @@ export function WorkspaceSidebar({ data, projectId, activeModule, onNavigate, on
         {activeModule === 'admin' ? <nav aria-label="Admin console" className="space-y-1">
           <p className="mb-2 px-2.5 text-caption font-medium text-muted-foreground">Organization</p>
           {organization.map((item) => <Link key={item.path} href={base + item.path} onClick={onNavigate} aria-current={pathname.startsWith(base + item.path) ? 'page' : undefined} className="ui-nav-link tap"><Icon name={item.icon} />{item.label}</Link>)}
+        </nav> : null}
+        {activeModule === 'my-work' ? <nav aria-label="My work navigation" className="space-y-1">
+          <Link href={base + MY_WORK_PATH} onClick={onNavigate} aria-current="page" className="ui-nav-link tap"><Icon name="check" />Assigned to me</Link>
+          <p className="px-2.5 pt-4 text-caption leading-5 text-muted-foreground">Cards assigned to you in every project you can see, by due date.</p>
         </nav> : null}
         {activeModule === 'inbox' ? <nav aria-label="Inbox navigation" className="space-y-1">
           <p className="mb-2 px-2.5 text-caption font-medium text-muted-foreground">Activity</p>

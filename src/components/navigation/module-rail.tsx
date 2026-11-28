@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { Icon } from '@/components/icon';
 import { NotificationBell } from '@/components/notifications';
 import { useWorkspace } from '@/lib/workspace';
-import { ADMIN_CONSOLE_PATH, canOpenAdminConsole, TEAMS_PATH, type WorkspaceModule } from './workspace-modules';
+import { ADMIN_CONSOLE_PATH, canOpenAdminConsole, MY_WORK_PATH, TEAMS_PATH, type WorkspaceModule } from './workspace-modules';
 
 /** The 56px rail switches modules; the neighboring sidebar owns their details. */
 export function ModuleRail({ activeModule, onNavigate }: { activeModule: WorkspaceModule; onNavigate?: () => void }) {
@@ -13,6 +13,9 @@ export function ModuleRail({ activeModule, onNavigate }: { activeModule: Workspa
   return (
     <div className="flex h-full flex-col" data-testid="module-rail">
       <nav aria-label="Main modules" className="flex min-h-0 flex-1 flex-col items-center gap-2 overflow-y-auto px-1 py-3">
+        <Link href={base + MY_WORK_PATH} onClick={onNavigate} title="My work" aria-current={activeModule === 'my-work' ? 'location' : undefined} className="ui-module-link tap">
+          <Icon name="check" className="size-5" /><span className="sr-only">My work</span>
+        </Link>
         <Link href={`${base}/projects`} onClick={onNavigate} title="Projects" aria-current={activeModule === 'projects' ? 'location' : undefined} className="ui-module-link tap">
           <Icon name="projects" className="size-5" /><span className="sr-only">Projects</span>
         </Link>
