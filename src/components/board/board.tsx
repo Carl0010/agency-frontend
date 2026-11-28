@@ -48,6 +48,7 @@ import { useProjectPeople } from '@/lib/project-people';
 import { ProjectError } from '@/components/projects/project-error';
 import { AddList } from './add-list';
 import { BoardListView } from './list-view';
+import { CalendarView } from './calendar-view';
 import { CardTileView } from './card-tile';
 import { FilterBar } from './filter-bar';
 import { ListColumn } from './list-column';
@@ -132,11 +133,13 @@ export function BoardScreen({ boardId, projectId }: { boardId: string; projectId
     window.history.replaceState(null, '', `${pathname}${next ? `?${next}` : ''}${window.location.hash}`);
   };
   const filtering = isFiltering(filters);
-  const view = params.get('view') === 'list' ? 'list' : 'kanban';
-  const setView = (nextView: 'kanban' | 'list') => {
+  const viewParam = params.get('view');
+  const view = viewParam === 'list' || viewParam === 'calendar' ? viewParam : 'kanban';
+  const setView = (nextView: 'kanban' | 'list' | 'calendar') => {
     setDrag(null); // A cancelled drag preview must never become the other view's data.
     const next = new URLSearchParams(window.location.search);
-    if (nextView === 'list') next.set('view', 'list'); else next.delete('view');
+    if (nextView === 'kanban') next.delete('view'); else next.set('view', nextView);
+    if (nextView !== 'calendar') next.delete('month');
     const query = next.toString();
     router.push(query ? `${pathname}?${query}` : pathname, { scroll: false });
   };
@@ -265,10 +268,11 @@ export function BoardScreen({ boardId, projectId }: { boardId: string; projectId
             <div role="group" aria-label="Board view" className="inline-flex shrink-0 gap-0.5 rounded-lg border border-border bg-background p-0.5">
               <button type="button" aria-pressed={view === 'kanban'} aria-label="Kanban" onClick={() => setView('kanban')} className={`ui-button tap min-h-8 gap-1.5 px-2.5 ${view === 'kanban' ? 'bg-surface text-foreground shadow-sm' : 'text-muted-foreground hover:bg-hover'}`}><Icon name="board" /><span className="hidden sm:inline">Kanban</span></button>
               <button type="button" aria-pressed={view === 'list'} aria-label="List" onClick={() => setView('list')} className={`ui-button tap min-h-8 gap-1.5 px-2.5 ${view === 'list' ? 'bg-surface text-foreground shadow-sm' : 'text-muted-foreground hover:bg-hover'}`}><Icon name="list" /><span className="hidden sm:inline">List</span></button>
+              <button type="button" aria-pressed={view === 'calendar'} aria-label="Calendar" onClick={() => setView('calendar')} className={`ui-button tap min-h-8 gap-1.5 px-2.5 ${view === 'calendar' ? 'bg-surface text-foreground shadow-sm' : 'text-muted-foreground hover:bg-hover'}`}><Icon name="calendar" /><span className="hidden sm:inline">Calendar</span></button>
             </div>
           }
           options={<>
-            <GroupingSelect stacked />
+            {view === 'calendar' ? null : <GroupingSelect stacked />}
             <Switch className="max-sm:min-h-11" checked={showArrivals} onChange={setShowArrivals} label="Show arrival estimates" />
           </>}
         />
@@ -276,7 +280,7 @@ export function BoardScreen({ boardId, projectId }: { boardId: string; projectId
         {/* The weekly question belongs to arrival estimates: it shows only when they are on. */}
         {showArrivals ? <ConfidencePrompt projectId={projectId} /> : null}
 
-        {grouping !== 'list' ? <GroupedBoard key={`${grouping}:${view}`} board={board.data} grouping={grouping} view={view} filters={filters} now={now} timezone={timezone} cardHref={cardHref} /> : view === 'list' ? <BoardListView editingListId={editingListId} onListCreated={onListCreated} onListEditFinished={onListEditFinished} board={shown} filters={filters} now={now} cardHref={cardHref} activeDrag={drag} onDragStart={onDragStart} onDragOver={onDragOver} onDragEnd={onDragEnd} onDragCancel={() => setDrag(null)} /> : <DndContext
+        {view === 'calendar' ? <CalendarView board={board.data} filters={filters} now={now} timezone={timezone} cardHref={cardHref} /> : grouping !== 'list' ? <GroupedBoard key={`${grouping}:${view}`} board={board.data} grouping={grouping} view={view} filters={filters} now={now} timezone={timezone} cardHref={cardHref} /> : view === 'list' ? <BoardListView editingListId={editingListId} onListCreated={onListCreated} onListEditFinished={onListEditFinished} board={shown} filters={filters} now={now} cardHref={cardHref} activeDrag={drag} onDragStart={onDragStart} onDragOver={onDragOver} onDragEnd={onDragEnd} onDragCancel={() => setDrag(null)} /> : <DndContext
           sensors={sensors}
           collisionDetection={collision}
           onDragStart={onDragStart}

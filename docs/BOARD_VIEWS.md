@@ -1,10 +1,32 @@
 # Board views
 
-Implemented: Kanban and List are two presentations of the same member board.
+Implemented: Kanban, List and Calendar are three presentations of the same member board.
 Both read the existing board query and use TanStack Query for server state.
 List grouping retains the server's list and card ordering. Assignee and due-date
 grouping use the published atomic-assignment and reschedule writes described
 below. The guest portal remains separate.
+
+## Calendar
+
+`?view=calendar` is the third presentation beside Kanban and List: a month of the
+board's cards on their due days, in the viewer's profile timezone (`src/lib/calendar.ts`).
+
+- The month is `?month=YYYY-MM`; without it the calendar shows the month that contains
+  today. Previous/next month and **Today** change only that parameter, so reload and
+  history keep the month. Leaving the calendar drops `month`.
+- Weeks start on Sunday. Each day lists its cards, earliest due time first, board order
+  for ties; today's date is marked. Done cards stay, struck through; overdue cards carry
+  a small Overdue tag. Cards with no due date are counted under the grid, not drawn.
+- A card opens in the drawer like any other view; the card URL carries the view and month.
+- Dragging a card to another day sends `PATCH /cards/:id?project=` with `dueAt` moved to
+  that date at the same local time (calendar days, so DST keeps the clock time).
+  Completion is unchanged. The move previews in the shared caches, is restored with a
+  toast on failure, and the board refetches. Keyboard: Space lifts, arrows move a day
+  (left/right) or a week (up/down), Space drops, Escape cancels.
+- Filters apply to the calendar; filtering, read-only workspaces and pending writes
+  disable dragging, as in the other views. Group by does not apply and is hidden.
+- Below 640px the month shows as an agenda: one section per day that has cards.
+- Members only. The guest portal has no calendar.
 
 ## Grouping
 
