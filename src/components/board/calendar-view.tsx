@@ -1,6 +1,6 @@
 'use client';
 
-import { closestCenter, DndContext, DragOverlay, KeyboardSensor, MouseSensor, pointerWithin, TouchSensor, useDraggable, useDroppable, useSensor, useSensors, type KeyboardCoordinateGetter } from '@dnd-kit/core';
+import { closestCenter, DndContext, DragOverlay, KeyboardSensor, MouseSensor, pointerWithin, TouchSensor, useDraggable, useDroppable, useSensor, useSensors, type Announcements, type KeyboardCoordinateGetter } from '@dnd-kit/core';
 import { useIsMutating, useQueryClient } from '@tanstack/react-query';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
@@ -37,6 +37,16 @@ const dayCoordinates: KeyboardCoordinateGetter = (event, { context, currentCoord
 };
 
 type Lifted = { card: CardTile; date: string };
+
+/** Screen readers hear the card's title and the day, not internal ids. */
+const titleOf = (data: unknown) => (data as Lifted | undefined)?.card.title ?? 'Card';
+const dayOf = (data: unknown) => { const date = (data as { date?: string } | undefined)?.date; return date ? dayLabel(date) : null; };
+const announcements: Announcements = {
+  onDragStart: ({ active }) => `Picked up ${titleOf(active.data.current)}.`,
+  onDragOver: ({ active, over }) => { const day = dayOf(over?.data.current); return day ? `${titleOf(active.data.current)} is over ${day}.` : undefined; },
+  onDragEnd: ({ active, over }) => { const day = dayOf(over?.data.current); return day ? `${titleOf(active.data.current)} dropped on ${day}.` : `${titleOf(active.data.current)} put back.`; },
+  onDragCancel: ({ active }) => `${titleOf(active.data.current)} put back.`,
+};
 
 /** A month of the board's cards on their due days, in the viewer's profile timezone. */
 export function CalendarView({ board, filters, now, timezone, cardHref }: { board: Board; filters: BoardFilters; now: Date; timezone: string; cardHref: (id: string) => string }) {
@@ -92,13 +102,13 @@ export function CalendarView({ board, filters, now, timezone, cardHref }: { boar
       </div>
     </div>
 
-    <DndContext sensors={sensors} collisionDetection={(args) => args.pointerCoordinates ? pointerWithin(args) : closestCenter(args)} onDragStart={(event) => setActive(event.active.data.current as Lifted)} onDragCancel={() => setActive(null)} onDragEnd={(event) => {
+    <DndContext sensors={sensors} accessibility={{ announcements }} collisionDetection={(args) => args.pointerCoordinates ? pointerWithin(args) : closestCenter(args)} onDragStart={(event) => setActive(event.active.data.current as Lifted)} onDragCancel={() => setActive(null)} onDragEnd={(event) => {
       const source = active; setActive(null);
       const target = event.over?.data.current?.date as string | undefined;
       if (!source || !target || target === source.date || disabled) return;
       void move(source, target);
     }}>
-      <div aria-label={`${monthTitle(month)} calendar`} role="group" className="hidden overflow-hidden rounded-lg border border-border bg-border sm:grid sm:gap-px" style={{ gridTemplateColumns: 'repeat(7, minmax(0, 1fr))' }}>
+      <div aria-label={`${monthTitle(month)} calendar`} role="group" className="hidden shrink-0 overflow-hidden rounded-lg border border-border bg-border sm:grid sm:gap-px" style={{ gridTemplateColumns: 'repeat(7, minmax(0, 1fr))' }}>
         {WEEKDAYS.map((date) => <div key={date.getUTCDay()} aria-hidden className="bg-subtle px-2 py-1.5 text-caption font-medium text-muted-foreground">{weekday(date)}</div>)}
         {weeks.flat().map((day) => <DayCell key={day.date} date={day.date} day={day.day} inMonth={day.inMonth} today={day.date === today} cards={days.get(day.date) ?? []} now={now} cardHref={cardHref} disabled={disabled} />)}
       </div>
