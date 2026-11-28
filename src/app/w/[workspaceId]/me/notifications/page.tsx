@@ -4,14 +4,15 @@ import { LoadingSkeleton } from '@/components/skeleton';
 
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/components/toast';
-import { PageHeader } from '@/components/ui';
+import { PageHeader, Switch } from '@/components/ui';
 import { api, errorMessage } from '@/lib/api';
-import type { NotificationPreference } from '@/lib/types';
+import type { DailySummarySetting, NotificationPreference } from '@/lib/types';
 import { useWorkspace } from '@/lib/workspace';
 
 /**
- * Preferences grid (AC20): 6 types × {in-app, email, push}. In-app is the feed
- * and cannot be switched off; the column is shown, locked on.
+ * Calm notifications (API D-032): the daily summary switch, then the preferences grid (AC20):
+ * each type × {in-app, email, push}. In-app is the feed and cannot be switched off; the column is
+ * shown, locked on. By default only mentions and assignments push and nothing emails at once.
  */
 export default function NotificationSettingsPage() {
   const ws = useWorkspace();
@@ -22,6 +23,24 @@ export default function NotificationSettingsPage() {
     queryKey: key,
     queryFn: () => api.get<{ data: NotificationPreference[] }>(`/notifications/preferences?workspaceId=${ws.id}`),
   });
+
+  const summaryKey = ['notification-daily-summary', ws.id] as const;
+  // An API without the daily summary yet answers 404; the section then stays hidden.
+  const summary = useQuery({
+    queryKey: summaryKey,
+    queryFn: () => api.get<{ data: DailySummarySetting }>(`/notifications/daily-summary?workspaceId=${ws.id}`),
+    retry: false,
+  });
+
+  async function setSummary(enabled: boolean) {
+    qc.setQueryData<{ data: DailySummarySetting }>(summaryKey, (old) => (old ? { data: { ...old.data, enabled } } : old));
+    try {
+      qc.setQueryData(summaryKey, await api.put<{ data: DailySummarySetting }>('/notifications/daily-summary', { workspaceId: ws.id, enabled }));
+    } catch (err) {
+      toast(errorMessage(err));
+      void qc.invalidateQueries({ queryKey: summaryKey });
+    }
+  }
 
   async function toggle(p: NotificationPreference, channel: 'email' | 'push') {
     const next = { ...p, [channel]: !p[channel] };
@@ -40,7 +59,20 @@ export default function NotificationSettingsPage() {
 
   return (
     <main className="ui-page">
-      <PageHeader title="Notifications" description={`Choose how you hear about activity in ${ws.name}. Your inbox always shows everything; message and comment emails only go out if you have not read them within 10 minutes.`} />
+      <PageHeader title="Notifications" description={`Choose how you hear about activity in ${ws.name}. Your inbox always shows everything. Anything you have not read reaches you once a day, not every few minutes.`} />
+      {summary.data ? (
+        <section className="mb-6 rounded-lg border border-border bg-surface p-4" aria-label="Daily summary" data-testid="daily-summary">
+          <h2 className="mb-1 font-semibold">Daily summary</h2>
+          <p className="mb-3 text-sm text-secondary-foreground">
+            One email each morning at {localTime(summary.data.data.sendsAt)} ({summary.data.data.timezone}) with what you have not read yet. Nothing unread, no email.
+          </p>
+          <Switch checked={summary.data.data.enabled} onChange={(on) => void setSummary(on)} label="Email me a daily summary" />
+        </section>
+      ) : null}
+      <h2 className="mb-1 font-semibold">Right away</h2>
+      <p className="mb-3 text-sm text-secondary-foreground">
+        By default only mentions and assignments push. Turn on email or push for anything you want the moment it happens; message and comment emails still wait 10 minutes in case you read them first.
+      </p>
       {prefs.isPending ? (
         <LoadingSkeleton variant="form" />
       ) : prefs.error ? (
@@ -75,4 +107,10 @@ export default function NotificationSettingsPage() {
       )}
     </main>
   );
+}
+
+/** "08:00" as the reader's clock shows it, e.g. "8:00 AM". */
+function localTime(hhmm: string): string {
+  const [h, m] = hhmm.split(':').map(Number);
+  return new Date(2000, 0, 1, h ?? 8, m ?? 0).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
 }

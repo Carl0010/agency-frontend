@@ -464,6 +464,13 @@ export interface NotificationFeed extends Page<AppNotification> {
   unreadCount: number;
 }
 
+/** The daily summary email switch (API D-032). `sendsAt` is local wall-clock time, "08:00". */
+export interface DailySummarySetting {
+  enabled: boolean;
+  sendsAt: string;
+  timezone: string;
+}
+
 export interface NotificationPreference {
   type: NotificationType;
   label: string;
