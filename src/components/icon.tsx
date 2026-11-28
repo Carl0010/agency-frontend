@@ -11,6 +11,7 @@ const paths = {
   mail: <><rect x="3" y="5" width="18" height="14" rx="2" /><path d="m3 7 9 6 9-6" /></>,
   bell: <><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9ZM10 21h4" /></>,
   person: <><circle cx="12" cy="7" r="4" /><path d="M4 21v-2a8 8 0 0 1 16 0v2" /></>,
+  calendar: <><rect x="3" y="5" width="18" height="16" rx="3" /><path d="M3 10h18M8 3v4M16 3v4" /></>,
   clock: <><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></>,
   reply: <path d="m9 5-6 6 6 6M3 11h11a7 7 0 0 1 7 7" />,
   mention: <><circle cx="11" cy="12" r="4" /><path d="M15 8v7c0 3 6 2 6-3a9 9 0 1 0-3 7" /></>,
