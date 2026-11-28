@@ -16,6 +16,10 @@ const config: NextConfig = {
   poweredByHeader: false,
   // A self-contained server (.next/standalone) for the Docker image; `next start` still works.
   output: 'standalone',
+  // My work became My tasks (D-034): old links and bookmarks still land.
+  async redirects() {
+    return [{ source: '/w/:workspaceId/my-work/:path*', destination: '/w/:workspaceId/my-tasks/:path*', permanent: true }];
+  },
   async rewrites() {
     return [{ source: '/api/v1/:path*', destination: `${apiOrigin}/api/v1/:path*` }];
   },

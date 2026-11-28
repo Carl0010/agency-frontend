@@ -18,7 +18,7 @@ import type { Channel, Project, Team } from '@/lib/types';
 import { orderByRecent, useRecentProjects } from '@/lib/recent-projects';
 import { useWorkspace } from '@/lib/workspace';
 import { AccountMenu } from '@/components/account-menu';
-import { MODULE_LABELS, MY_WORK_PATH, PERSONAL_SETTINGS_PATH, TEAMS_PATH, type WorkspaceModule } from './workspace-modules';
+import { MODULE_LABELS, MY_TASKS_PATH, PERSONAL_SETTINGS_PATH, TEAMS_PATH, type WorkspaceModule } from './workspace-modules';
 
 function UnreadDot({ label }: { label: string }) {
   return <span role="img" aria-label={label} data-testid="unread-dot" className="inline-block size-2 shrink-0 rounded-full bg-primary" />;
@@ -79,9 +79,9 @@ export function WorkspaceSidebar({ data, projectId, activeModule, onNavigate, on
           <p className="mb-2 px-2.5 text-caption font-medium text-muted-foreground">Organization</p>
           {organization.map((item) => <Link key={item.path} href={base + item.path} onClick={onNavigate} aria-current={pathname.startsWith(base + item.path) ? 'page' : undefined} className="ui-nav-link tap"><Icon name={item.icon} />{item.label}</Link>)}
         </nav> : null}
-        {activeModule === 'my-work' ? <nav aria-label="My work navigation" className="space-y-1">
-          <Link href={base + MY_WORK_PATH} onClick={onNavigate} aria-current="page" className="ui-nav-link tap"><Icon name="check" />Assigned to me</Link>
-          <p className="px-2.5 pt-4 text-caption leading-5 text-muted-foreground">Cards assigned to you in every project you can see, by due date.</p>
+        {activeModule === 'my-tasks' ? <nav aria-label="My tasks navigation" className="space-y-1">
+          <Link href={base + MY_TASKS_PATH} onClick={onNavigate} aria-current="page" className="ui-nav-link tap"><Icon name="check" />My tasks</Link>
+          <p className="px-2.5 pt-4 text-caption leading-5 text-muted-foreground">Cards assigned to you in every project, in sections you arrange. Only you see this board.</p>
         </nav> : null}
         {activeModule === 'inbox' ? <nav aria-label="Inbox navigation" className="space-y-1">
           <p className="mb-2 px-2.5 text-caption font-medium text-muted-foreground">Activity</p>

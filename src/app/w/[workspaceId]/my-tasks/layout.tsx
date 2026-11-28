@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
-import MyWorkLayout from './layout-client';
+import MyTasksLayout from './layout-client';
 
 export default function Layout({ children }: { children: ReactNode }) {
-  return <MyWorkLayout>{children}</MyWorkLayout>;
+  return <MyTasksLayout>{children}</MyTasksLayout>;
 }

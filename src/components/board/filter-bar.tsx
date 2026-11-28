@@ -13,9 +13,11 @@ const toggle = (xs: string[], x: string) => (xs.includes(x) ? xs.filter((y) => y
  * also holds the view options (`options`: group by, what tiles show). On a phone, search is an icon
  * that expands over the row, so the board starts right under it.
  */
-export function FilterBar({ filters, onChange, members, labels, leading, options }: {
+export function FilterBar({ filters, onChange, members, labels, leading, options, assignees = true, dragHint = 'Filters are on — clear them to drag cards in Kanban.' }: {
   filters: BoardFilters; onChange: (update: (current: BoardFilters) => BoardFilters) => void;
   members: Member[]; labels: Label[]; leading?: ReactNode; options?: ReactNode;
+  /** Off where every card is the viewer's own, as on My tasks. */
+  assignees?: boolean; dragHint?: string;
 }) {
   const id = useId();
   const trigger = useRef<HTMLButtonElement>(null);
@@ -88,12 +90,12 @@ export function FilterBar({ filters, onChange, members, labels, leading, options
       onToggle={(event) => setOpen(event.newState === 'open')}
       style={position} className="fixed inset-auto m-0 w-96 max-w-[calc(100vw-1.5rem)] overflow-y-auto overscroll-contain rounded-xl border border-border bg-popover p-0 text-foreground shadow-lg">
       <header className="flex items-start gap-3 border-b border-border px-4 py-3">
-        <div className="min-w-0 flex-1"><h2 id={`${id}-title`} className="text-body font-semibold">View and filters</h2><p id={`${id}-hint`} className="mt-0.5 text-caption text-muted-foreground">{active ? 'Filters are on — clear them to drag cards in Kanban.' : 'Changes apply as you select.'}</p></div>
+        <div className="min-w-0 flex-1"><h2 id={`${id}-title`} className="text-body font-semibold">View and filters</h2><p id={`${id}-hint`} className="mt-0.5 text-caption text-muted-foreground">{active ? dragHint : 'Changes apply as you select.'}</p></div>
         <Button ref={close} variant="ghost" size="icon" aria-label="Close filters" onClick={dismiss}><Icon name="close" /></Button>
       </header>
       <div className="space-y-4 p-4">
         {options ? <div data-testid="view-options" className="space-y-3 border-b border-border pb-4">{options}</div> : null}
-        <fieldset><legend className="mb-2 text-label font-semibold">Assignee</legend>
+        {assignees ? <fieldset><legend className="mb-2 text-label font-semibold">Assignee</legend>
           <div className="max-h-48 space-y-1 overflow-y-auto overscroll-contain">
             {members.length ? members.map((member) => {
               const selected = filters.assignees.includes(member.userId);
@@ -103,8 +105,8 @@ export function FilterBar({ filters, onChange, members, labels, leading, options
               </button>;
             }) : <p className="py-2 text-label text-muted-foreground">No active members available.</p>}
           </div>
-        </fieldset>
-        <fieldset className="border-t border-border pt-3"><legend className="pr-2 text-label font-semibold">Labels</legend>
+        </fieldset> : null}
+        <fieldset className={assignees ? 'border-t border-border pt-3' : ''}><legend className="pr-2 text-label font-semibold">Labels</legend>
           <div className="max-h-48 space-y-1 overflow-y-auto overscroll-contain">
             {labels.length ? labels.map((label) => {
               const selected = filters.labels.includes(label.id);

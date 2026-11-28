@@ -1,12 +1,12 @@
-/** Member areas. My work, Projects, Inbox, Teams and Admin console are rail modules; Your settings opens from the account menu. The current URL owns selection. */
-export type WorkspaceModule = 'my-work' | 'projects' | 'inbox' | 'teams' | 'admin' | 'personal';
+/** Member areas. My tasks, Projects, Inbox, Teams and Admin console are rail modules; Your settings opens from the account menu. The current URL owns selection. */
+export type WorkspaceModule = 'my-tasks' | 'projects' | 'inbox' | 'teams' | 'admin' | 'personal';
 
 export const MODULE_LABELS: Record<WorkspaceModule, string> = {
-  'my-work': 'My work', projects: 'Projects', inbox: 'Inbox', teams: 'Teams', admin: 'Admin console', personal: 'Your settings',
+  'my-tasks': 'My tasks', projects: 'Projects', inbox: 'Inbox', teams: 'Teams', admin: 'Admin console', personal: 'Your settings',
 };
 
-/** The person's own assigned cards across every project they can see. */
-export const MY_WORK_PATH = '/my-work';
+/** The person's private board of the cards assigned to them, in sections they arrange. */
+export const MY_TASKS_PATH = '/my-tasks';
 
 /** The landing page of Your settings. */
 export const PERSONAL_SETTINGS_PATH = '/me/notifications';
@@ -23,7 +23,7 @@ export function canOpenAdminConsole(role: string | null | undefined): boolean {
 }
 
 export function workspaceModule(pathname: string, base: string): WorkspaceModule {
-  if (pathname === base + MY_WORK_PATH || pathname.startsWith(`${base}${MY_WORK_PATH}/`)) return 'my-work';
+  if (pathname === base + MY_TASKS_PATH || pathname.startsWith(`${base}${MY_TASKS_PATH}/`)) return 'my-tasks';
   if (pathname === `${base}/inbox`) return 'inbox';
   if (pathname === base + TEAMS_PATH || pathname.startsWith(`${base}${TEAMS_PATH}/`)) return 'teams';
   if (pathname.startsWith(`${base}/settings/`)) return 'admin';
