@@ -149,9 +149,12 @@ function Row({ card, now, readOnly, busy, onToggle }: { card: MyWorkCard; now: D
         title={readOnly ? 'This workspace is read-only' : done ? 'Reopen' : 'Mark done'}
         disabled={readOnly || busy}
         onClick={() => onToggle(card, !done)}
-        className={`tap grid size-6 shrink-0 place-items-center rounded-full border transition-colors disabled:opacity-50 ${done ? 'border-success-text bg-success-muted text-success-text' : 'border-input text-transparent hover:border-success-text hover:text-success-text'}`}
+        className="tap group grid shrink-0 place-items-center rounded-full disabled:opacity-50"
       >
-        <Icon name="check" className="size-3.5" />
+        {/* `tap` sets a minimum height, so the round mark is its own fixed-size box inside the touch target. */}
+        <span data-testid="my-work-tick" className={`grid size-6 place-items-center rounded-full border transition-colors ${done ? 'border-success-text bg-success-muted text-success-text' : 'border-input text-transparent group-hover:border-success-text group-hover:text-success-text'}`}>
+          <Icon name="check" className="size-3.5" />
+        </span>
       </button>
       <div className="min-w-0 flex-1">
         <Link href={href} scroll={false} aria-expanded={selected} aria-controls={selected ? 'card-drawer' : undefined} className={`tap block truncate rounded-sm text-body hover:text-primary ${done ? 'text-muted-foreground line-through' : 'text-foreground'}`}>
