@@ -61,7 +61,7 @@ test('import: CSV upload → preview + mapping → progress → summary and repo
   await expect(list(page, 'Backlog')).toBeVisible();
   const sidebar = page.getByRole('complementary', { name: 'Workspace sidebar' });
   await expect(sidebar.getByRole('link', { name: 'Acme Website Relaunch', exact: true })).toBeVisible();
-  await expect(sidebar.getByRole('link', { name: 'Board', exact: true })).toHaveAttribute('aria-current', 'page');
+  await expect(page.getByRole('navigation', { name: 'Project sections' }).getByRole('link', { name: 'Board', exact: true })).toHaveAttribute('aria-current', 'page');
 });
 
 /**

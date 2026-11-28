@@ -13,18 +13,22 @@ test('the sidebar owns workspace and project destinations while headers retain l
   expect(railBox!.x + railBox!.width).toBe(sidebarBox!.x);
   await expect(modules.getByRole('link', { name: 'Projects', exact: true })).toHaveAttribute('aria-current', 'location');
   await expect(sidebar.getByRole('link', { name: 'Members', exact: true })).toHaveCount(0);
-  await expect(sidebar.getByRole('link', { name: 'Board', exact: true })).toHaveAttribute('aria-current', 'page');
-  await expect(sidebar.getByTestId('internal-badge')).toHaveText('Internal');
+  // The sidebar lists projects only; a project's board and channels are tabs in its header.
+  const tabs = page.getByRole('navigation', { name: 'Project sections' });
+  await expect(sidebar.getByRole('navigation', { name: 'Project sections' })).toHaveCount(0);
+  await expect(tabs.getByRole('link', { name: 'Board', exact: true })).toHaveAttribute('aria-current', 'page');
+  await expect(tabs.getByTestId('internal-badge')).toHaveText('Internal');
+  await expect(sidebar.getByRole('region', { name: 'Recent', exact: true })).toBeVisible();
   await expect(sidebar.getByRole('link', { name: 'View all projects' })).toHaveCount(0);
   await expect(sidebar.getByRole('button', { name: 'Add project', exact: true })).toBeVisible();
   await expect(page.getByTestId('workspace-header').getByRole('navigation')).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'Share', exact: true })).toBeVisible();
 
-  await sidebar.getByRole('link', { name: 'Team Internal' }).click();
+  await tabs.getByRole('link', { name: 'Team Internal' }).click();
   await expect(page).toHaveURL(/\/team$/);
   await expect(page.getByTestId('channel-badge')).toHaveText('Internal');
-  await expect(sidebar.getByRole('link', { name: 'Team Internal' })).toHaveAttribute('aria-current', 'page');
-  await sidebar.getByRole('link', { name: 'Shared', exact: true }).click();
+  await expect(tabs.getByRole('link', { name: 'Team Internal' })).toHaveAttribute('aria-current', 'page');
+  await tabs.getByRole('link', { name: 'Shared', exact: true }).click();
   await expect(page).toHaveURL(/\/chat$/);
   await expect(page.getByTestId('shared-reminder')).toBeVisible();
 
@@ -84,8 +88,9 @@ test('the sidebar owns workspace and project destinations while headers retain l
   await page.getByRole('button', { name: 'Create project', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Northwind launch', exact: true })).toBeVisible();
   await expect(sidebar.getByRole('link', { name: 'Northwind launch', exact: true })).toHaveAttribute('aria-current', 'location');
-  await expect(sidebar.getByRole('link', { name: 'Board', exact: true })).toHaveAttribute('aria-current', 'page');
-  await sidebar.getByRole('link', { name: 'Shared', exact: true }).click();
+  const projectTabs = page.getByRole('navigation', { name: 'Project sections' });
+  await expect(projectTabs.getByRole('link', { name: 'Board', exact: true })).toHaveAttribute('aria-current', 'page');
+  await projectTabs.getByRole('link', { name: 'Shared', exact: true }).click();
   await expect(page.getByTestId('shared-reminder')).toBeVisible();
   await page.context().close();
 });
@@ -135,7 +140,7 @@ test('mobile drawer traps focus, closes on navigation/Escape/backdrop, and hands
   await expect(page).toHaveURL(/\/projects$/);
   await expect(drawer).toHaveCount(0);
   await trigger.click();
-  await expect(drawer.getByRole('link', { name: 'Import', exact: true })).toBeVisible();
+  await expect(drawer.getByRole('button', { name: 'Add project', exact: true })).toBeVisible();
   await modules.getByRole('link', { name: 'Inbox', exact: true }).click();
   await expect(page).toHaveURL(/\/inbox$/);
   await expect(drawer).toHaveCount(0);

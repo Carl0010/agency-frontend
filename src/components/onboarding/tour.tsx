@@ -27,7 +27,7 @@ export const TOUR_STEPS: TourStep[] = [
   { anchor: 'project', title: 'Open a project', body: 'Projects have boards, a Shared channel for guests, and an internal channel for workspace members.', counted: false },
   { anchor: 'add-card', title: 'Add a card', body: 'Cards are the work: a deliverable, a task, a round of feedback.', counted: true },
   { anchor: 'card', title: 'Open a card', body: 'Details, checklists, files and the comment thread live inside.', counted: true },
-  { anchor: 'shared-channel', title: 'Open the shared channel', body: 'Choose Shared under your project in navigation. Guests only see what you share.', counted: true },
+  { anchor: 'shared-channel', title: 'Open the shared channel', body: 'Choose Shared at the top of your project. Guests only see what you share.', counted: true },
 ];
 
 const PROGRESS_KEY = 'agency:tourStep';
