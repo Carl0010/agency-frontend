@@ -271,6 +271,14 @@ export interface CardTile {
   placementCount?: number;
 }
 
+/** A card on My work: assigned to the viewer, shown in a project they see, with that project and list named. */
+export interface MyWorkCard extends CardTile {
+  projectName: string;
+  projectIcon: string;
+  projectColor: string;
+  listName: string;
+}
+
 /** One project a card is in, as the viewer can see it. */
 export interface CardPlacement {
   projectId: string;

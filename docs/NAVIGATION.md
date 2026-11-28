@@ -9,9 +9,10 @@ The guest portal keeps its separate navigation and imports none of this shell.
 
 | Surface | Responsibility | Contents |
 | --- | --- | --- |
-| Module rail | Switch high-level areas | Projects, Inbox with live unread count, Teams, and Admin console for workspace owners and admins |
+| Module rail | Switch high-level areas | My work, Projects, Inbox with live unread count, Teams, and Admin console for workspace owners and admins |
 | Sidebar identity | Identify workspace and selected module | Workspace name and current module label |
 | App bar | Global actions and navigation visibility | Centered 44px search palette trigger, hamburger, Agency home. No theme switch |
+| My work sidebar | The person's own assigned cards | Assigned to me (the page groups them Overdue, Today, Next 7 days, Later, No due date, then a collapsed Done for the last 7 days) |
 | Projects sidebar | Browse shared work and project surfaces | Projects overview, import, team groups, Starred, create button, per-project menu, current project's Board/Shared/internal Team |
 | Inbox sidebar | Browse activity and configure delivery | All notifications and a link to notification preferences (Your settings) |
 | Teams sidebar | Browse teams | All teams, then Your teams and Other teams (active teams only) |

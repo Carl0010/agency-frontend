@@ -137,7 +137,7 @@ function Drawer({ cardId, projectId, boardHref, open }: DrawerProps & { open: bo
         </Button>
       </header>
       <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-4 sm:p-6" data-testid="card-drawer-content">
-        <CardDetail key={`${projectId}:${cardId}`} cardId={cardId} projectId={projectId} boardHref={boardHref} layout="drawer" />
+        <CardDetail key={`${projectId}:${cardId}`} cardId={cardId} projectId={projectId} layout="drawer" />
       </div>
     </div>
     </>

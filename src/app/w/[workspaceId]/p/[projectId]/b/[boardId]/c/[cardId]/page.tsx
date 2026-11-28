@@ -20,7 +20,7 @@ export default function CardPage() {
         ← Back to board
       </Link>
       <div className="rounded-xl border border-border bg-surface p-4 sm:p-6">
-        <CardDetail cardId={cardId} projectId={projectId} boardHref={boardHref} />
+        <CardDetail cardId={cardId} projectId={projectId} />
       </div>
     </main>
   );

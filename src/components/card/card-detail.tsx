@@ -39,7 +39,7 @@ const LABEL_COLORS = ['grey', 'red', 'orange', 'yellow', 'green', 'teal', 'blue'
  * the URL's project: a card can be in several (docs/CARD_PLACEMENTS.md in the API repository). When
  * the person cannot see it there, the API shows it in a project they can, and the URL follows.
  */
-export function CardDetail({ cardId, projectId, boardHref, layout = 'page' }: { cardId: string; projectId: string; boardHref: string; layout?: 'page' | 'drawer' }) {
+export function CardDetail({ cardId, projectId, layout = 'page' }: { cardId: string; projectId: string; layout?: 'page' | 'drawer' }) {
   const qc = useQueryClient();
   const toast = useToast();
   const now = useNow();
@@ -80,7 +80,8 @@ export function CardDetail({ cardId, projectId, boardHref, layout = 'page' }: { 
   );
   const copyLink = () => {
     void navigator.clipboard
-      .writeText(`${window.location.origin}${boardHref}/c/${c.id}${new URLSearchParams(window.location.search).get('full') === 'true' ? '?full=true' : ''}`)
+      // The card on its own board, so the link works from My work too.
+      .writeText(`${window.location.origin}${cardUrl(ws.id, c, c.id, new URLSearchParams(window.location.search).get('full') === 'true' ? '?full=true' : '')}`)
       .then(() => toast('Link copied.', 'info'))
       .catch(() => toast('Could not copy the link.'));
   };
