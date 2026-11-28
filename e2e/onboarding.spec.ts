@@ -7,7 +7,7 @@ import { signupToBoard } from './helpers';
 
 /**
  * Slice 4 smoke paths: the stopwatch run from a cold signup to a populated
- * board (AC26), the stepper resuming (AC20), the coach-mark tour (AC25),
+ * board (AC26, template picked with the first project), the stepper resuming (AC20), the coach-mark tour (AC25),
  * invited members and guests skipping setup (AC27, AC28), and the billing
  * screen with a workspace dropping to read-only while export still works.
  * Billing and permission rules themselves are proven at the API layer.
@@ -65,13 +65,18 @@ test('AC26 a brand-new user reaches a board with ≥ 6 real cards in under 3 min
   await expect(page).toHaveURL(/\/onboarding$/);
   await page.getByLabel('Agency name').fill(`Timed Studio ${stamp}`);
   await page.getByRole('button', { name: 'Continue' }).click();
+  // The first-run guide offers the templates with the first project, so a skipped invite lands on a filled board.
+  await page.getByRole('radio', { name: /Design sprint/ }).check();
+  await expect(page.getByLabel('Project name')).toHaveValue('Design sprint');
   await page.getByLabel('Project name').fill('Northwind rebrand');
+  await page.getByRole('radio', { name: /Website build/ }).check();
+  await expect(page.getByLabel('Project name')).toHaveValue('Northwind rebrand');
+  await page.getByRole('radio', { name: /Design sprint/ }).check();
 
   await page.getByRole('button', { name: 'Create project' }).click();
   await page.getByRole('heading', { name: 'Invite your team' }).waitFor();
   await page.getByRole('button', { name: 'Skip', exact: true }).click();
-  await page.getByRole('button', { name: /Start from a template/ }).click();
-  await page.getByRole('button', { name: 'Use the Design sprint template' }).click();
+  await expect(page.getByRole('heading', { name: 'Bring your work over' })).toHaveCount(0);
 
   await expect(page).toHaveURL(/\/w\/[^/]+\/p\/[^/]+\/b\/[^/]+$/);
   await expect.poll(() => page.getByTestId('card-tile').count()).toBeGreaterThanOrEqual(6);
